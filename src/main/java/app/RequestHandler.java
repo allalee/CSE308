@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -12,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
  */
 
 @Controller
-public class HttpHandler {
+public class RequestHandler {
+        private StateManager sm = new StateManager();
 
         @Autowired
         SocketHandler socketHandler;
@@ -23,6 +26,14 @@ public class HttpHandler {
         String sayhHello(){
             Test t = new Test();
             return t.print();
+        }
+
+        @RequestMapping(value = "/loadState", method = RequestMethod.POST)
+        public @ResponseBody
+        String sayHello(@RequestBody String stateName){
+            System.out.println(stateName);
+            sm.createState(stateName);
+            return "Works";
         }
 
 }
