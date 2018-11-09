@@ -7,12 +7,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.geojson.GeoJsonReader;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class StateManager {
+    int i = 0;
+    int j = 0;
     private HashMap<String, State> stateMap;
     private State currentState;
 
@@ -21,7 +25,7 @@ public class StateManager {
         currentState = null;
     }
 
-    public void createState(String stateName, Integer stateID) throws IOException, ParseException {
+    public void createState(String stateName, Integer stateID) throws IOException, ParseException, com.vividsolutions.jts.io.ParseException {
         if (stateMap.get(stateName) != null){
             loadState(stateName);
         } else {
@@ -70,31 +74,57 @@ public class StateManager {
         return file;
     }
 
-    private void generateStateData(String stateName, Integer stateID, JSONArray districtJson, JSONObject precinctJsonObject){
+    private void generateStateData(String stateName, Integer stateID, JSONArray districtJson, JSONObject precinctJsonObject) throws com.vividsolutions.jts.io.ParseException {
         State state = new State(stateName, stateID);
         this.stateMap.put(stateName, state);
         HashMap<Integer, District> districtMap = state.getDistricts();
         generateDistricts(districtJson, districtMap, state);
-        generatePrecincts(precinctJsonObject);
+        generatePrecincts(precinctJsonObject, state);
         currentState = state;
     }
 
-    private void generateDistricts(JSONArray json, HashMap<Integer, District> map, State state){
+    private void generateDistricts(JSONArray json, HashMap<Integer, District> map, State state) throws com.vividsolutions.jts.io.ParseException {
         for(Object district: json){
             JSONObject properties = (JSONObject) ((JSONObject)district).get("properties");
             Integer geoID = Integer.parseInt(properties.get("GEOID").toString());
-            District d = new District(geoID, state);
+            GeoJsonReader geoReader = new GeoJsonReader();
+            String districtGeometry = ((JSONObject)district).get("geometry").toString();
+            Geometry geo = geoReader.read(districtGeometry);
+            District d = new District(geoID, state, geo);
             map.put(geoID, d);
         }
     }
 
-    private void generatePrecincts(JSONObject json){
+    private void generatePrecincts(JSONObject json, State state) throws com.vividsolutions.jts.io.ParseException {
         JSONArray precinctList = (JSONArray) json.get("features");
         for(Object precinct : precinctList){
             JSONObject properties = (JSONObject) ((JSONObject)precinct).get("properties");
             Integer precinctID = Integer.parseInt(properties.get("ID").toString());
-            Precinct p = new Precinct(precinctID);
-            System.out.println(precinctID);
+            GeoJsonReader geoReader = new GeoJsonReader();
+            String precinctGeometry = ((JSONObject)precinct).get("geometry").toString();
+            Geometry geo = geoReader.read(precinctGeometry);
+            Precinct p = new Precinct(precinctID, geo);
+            i+=1;
+            findDistrict(state, p);
+        }
+        System.out.println(i);
+        System.out.println(j);
+    }
+
+    /**Finds the district that the precinct is in and all of the neighbors of the district
+     * @param state The state
+     * @param precinct The precinct
+     */
+    private void findDistrict(State state, Precinct precinct){
+        HashMap<Integer, District> map = state.getDistricts();
+        for (District d : map.values()){
+            Geometry dGeo = d.getGeometry();
+            Geometry pGeo = precinct.getGeometry();
+            if(dGeo.covers(pGeo) || dGeo.intersects(pGeo)){
+                d.addPrecinct(precinct);
+                precinct.setDistrict(d);
+                j+=1;
+            }
         }
     }
 }
