@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -15,8 +16,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 public class StateManager {
-    int i = 0;
-    int j = 0;
     private HashMap<String, State> stateMap;
     private State currentState;
 
@@ -104,27 +103,36 @@ public class StateManager {
             String precinctGeometry = ((JSONObject)precinct).get("geometry").toString();
             Geometry geo = geoReader.read(precinctGeometry);
             Precinct p = new Precinct(precinctID, geo);
-            i+=1;
-            findDistrict(state, p);
+            findDistrict(state, p, precinctID);
         }
-        System.out.println(i);
-        System.out.println(j);
     }
 
     /**Finds the district that the precinct is in and all of the neighbors of the district
      * @param state The state
      * @param precinct The precinct
      */
-    private void findDistrict(State state, Precinct precinct){
+    private void findDistrict(State state, Precinct precinct, int precinctID){
         HashMap<Integer, District> map = state.getDistricts();
+        District highestIntersectingDistrict = null;
+        double area = 0;
+        boolean added = false;
         for (District d : map.values()){
             Geometry dGeo = d.getGeometry();
             Geometry pGeo = precinct.getGeometry();
-            if(dGeo.covers(pGeo) || dGeo.intersects(pGeo)){
-                d.addPrecinct(precinct);
+            if(dGeo.contains(pGeo)){
+                d.addPrecinct(precinctID, precinct);
                 precinct.setDistrict(d);
-                j+=1;
+                added = true;
+                break;
             }
+            if(highestIntersectingDistrict == null || dGeo.intersection(pGeo).getArea() > area){
+                highestIntersectingDistrict = d;
+                area = dGeo.intersection(pGeo).getArea();
+            }
+        }
+        if(!added){
+            highestIntersectingDistrict.addPrecinct(precinctID, precinct);
+            precinct.setDistrict(highestIntersectingDistrict);
         }
     }
 }
