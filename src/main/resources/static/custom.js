@@ -152,6 +152,7 @@ function onClickZoom(e){
 			distGeoJson = L.geoJson(kansasDist, {style: styleDist, onEachFeature: onEachFeature});
 			distGeoJson.addTo(mymap);
 			stateSelected = true;
+			loadState("Kansas", currentState);
 		}
 		if(currentState == ""){
 			distGeoJson.addTo(mymap);
@@ -159,6 +160,15 @@ function onClickZoom(e){
 	}
 }
 
+function loadState(state, currentState){
+    var request = new XMLHttpRequest();
+    var url = "http://localhost:8080/getState?stateName=" + state + "&stateID=" + currentState
+    request.open("GET", url, true)
+    request.send(null);
+    request.onreadystatechange = function(e){
+        console.log(request.response)
+    }
+}
 
 
 var mapAccessToken = 'pk.eyJ1Ijoib3ZlcnRoZWNsb3VkcyIsImEiOiJjam1hdWwxc2I1aGhrM3FwNGZ1cXd1c2c5In0.ixJrpwux_Hmz8kuRU-da-w';
