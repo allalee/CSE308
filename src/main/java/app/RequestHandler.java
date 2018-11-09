@@ -1,11 +1,13 @@
 package app;
 
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 
 /**
@@ -28,11 +30,10 @@ public class RequestHandler {
             return t.print();
         }
 
-        @RequestMapping(value = "/loadState", method = RequestMethod.POST)
+        @RequestMapping(value = "/getState", method = RequestMethod.GET)
         public @ResponseBody
-        String sayHello(@RequestBody String stateName){
-            System.out.println(stateName);
-            sm.createState(stateName);
+        String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws IOException, ParseException {
+            sm.createState(state, stateID);
             return "Works";
         }
 

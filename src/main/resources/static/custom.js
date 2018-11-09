@@ -152,7 +152,7 @@ function onClickZoom(e){
 			distGeoJson = L.geoJson(kansasDist, {style: styleDist, onEachFeature: onEachFeature});
 			distGeoJson.addTo(mymap);
 			stateSelected = true;
-			loadState("Kansas");
+			loadState("Kansas", currentState);
 		}
 		if(currentState == ""){
 			distGeoJson.addTo(mymap);
@@ -160,10 +160,11 @@ function onClickZoom(e){
 	}
 }
 
-function loadState(state){
+function loadState(state, currentState){
     var request = new XMLHttpRequest();
-    request.open("POST", "/loadState", true)
-    request.send(state);
+    var url = "http://localhost:8080/getState?stateName=" + state + "&stateID=" + currentState
+    request.open("GET", url, true)
+    request.send(null);
     request.onreadystatechange = function(e){
         console.log(request.response)
     }
