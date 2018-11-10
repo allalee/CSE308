@@ -2,13 +2,13 @@ package app;
 
 import com.vividsolutions.jts.geom.Geometry;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class District {
     private int ID;
     private State state;
-    private ArrayList<Precinct> precincts = new ArrayList<>();
+    private HashMap<Integer, Precinct> precincts = new HashMap<>();
     private Geometry geometry;
 
     public District(int ID, State state, Geometry geometry){
@@ -21,7 +21,7 @@ public class District {
         return this.geometry;
     }
 
-    public void addPrecinct(Precinct p){
-        precincts.add(p);
+    public void addPrecinct(int ID, Precinct p){
+        precincts.put(ID, p);
     }
 }
