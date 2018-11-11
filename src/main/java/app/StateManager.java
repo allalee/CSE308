@@ -6,6 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -16,7 +19,7 @@ public class StateManager {
     private HashMap<String, State> stateMap;
     private State currentState;
 
-    public StateManager(){
+    public StateManager() {
         stateMap = new HashMap<>();
         currentState = null;
     }
@@ -73,7 +76,7 @@ public class StateManager {
     private void generateStateData(String stateName, Integer stateID, JSONArray districtJson, JSONObject precinctJsonObject){
         State state = new State(stateName, stateID);
         this.stateMap.put(stateName, state);
-        HashMap<Integer, District> districtMap = state.getDistricts();
+        HashMap<Integer, District> districtMap = state.getDistrictMap();
         generateDistricts(districtJson, districtMap, state);
         generatePrecincts(precinctJsonObject);
         currentState = state;
@@ -96,5 +99,33 @@ public class StateManager {
             Precinct p = new Precinct(precinctID);
             System.out.println(precinctID);
         }
+    }
+
+    public boolean setState(String name){
+        currentState = stateMap.get(name);
+        return currentState != null;
+    }
+
+    public void addState(String name, State state){
+        stateMap.put(name, state);
+    }
+
+    public Set<Precinct> getNeighborPrecincts(int precinctID){
+        System.out.println("ID Requested "+precinctID);
+        Map<Integer, District> allDistrictMap = currentState.getDistrictMap();
+        Precinct targetPrecinct = new Precinct(-1); // dummy
+
+        for(District district: allDistrictMap.values()){
+            Precinct precinct = district.getPrecinct(precinctID);
+            if( precinct!=null ){
+                targetPrecinct = precinct;
+                break;
+            }
+        }
+
+        if (targetPrecinct.getID() == -1) {
+            System.out.println("PRECINCT NOT FOUDN IN ALL DISTRICTS");
+        }
+        return targetPrecinct.getNeighbors();
     }
 }

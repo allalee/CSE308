@@ -212,6 +212,11 @@ mymap.on("zoomend", function(){
 				}
 				if(currentState == "20"){
 					precinctGeoJson = L.geoJson(kansasPrec, {style: stylePrecincts, onEachFeature: onEachFeature});
+				    precinctGeoJson.eachLayer(function(layer) {
+                      layer.on('click', function(){
+                            color_neighbors(layer.feature.properties['ID'])
+                      });
+                    });
 				}
 				
 				precinctGeoJson.addTo(mymap);
@@ -225,3 +230,41 @@ mymap.on("zoomend", function(){
 		}
 	}
 });
+
+// change precinct color
+function color_district( precinct_id, color ){
+    precinctGeoJson.setStyle(function(feature){
+        if ( feature.properties["ID"] == precinct_id ){
+            return {
+                fillColor: color
+            };
+        }
+    });
+}
+
+function color_neighbors( precinct_id ){
+    $.ajax({
+        type : "GET",
+        url: "/getNeighbor?id="+precinct_id,
+        contentType : "application/json",
+        success: function(res){
+            console.log(res);
+            $.parseJSON(res).forEach(function(e){
+                color_district(e, "red")
+            });
+        },
+        failure: function(e){console.log("get neighbor failed");}
+    })
+}
+
+function serverLoadKansas(){
+    $.ajax({
+        type : "GET",
+        url: "/loadKansas",
+        contentType : "application/json",
+        success: function(e){console.log(e)},
+        failure: function(e){console.log("kansas failed");}
+    })
+}
+serverLoadKansas();
+
