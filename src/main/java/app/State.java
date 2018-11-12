@@ -45,7 +45,7 @@ public class State {
         State clonedState = new State(getName(), getID());
 
         // clone districts
-        District tempDistrict = new District(-1, null);
+        District tempDistrict = new District(-1, null, null);
         for(District district: this.getAllDistricts()){
             clonedState.addDistrict(district.clone(clonedState));
             tempDistrict = district; // get the last district

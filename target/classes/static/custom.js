@@ -242,6 +242,7 @@ function color_district( precinct_id, color ){
     });
 }
 
+// remove all below when DB is done
 function color_neighbors( precinct_id ){
     $.ajax({
         type : "GET",

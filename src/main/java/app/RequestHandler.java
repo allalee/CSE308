@@ -33,8 +33,8 @@ public class RequestHandler {
 
         @RequestMapping(value = "/getState", method = RequestMethod.GET)
         public @ResponseBody
-        String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws IOException, ParseException {
-            //sm.createState(state, stateID);
+        String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws IOException, ParseException, com.vividsolutions.jts.io.ParseException {
+            sm.createState(state, stateID);
             return "Works";
         }
 

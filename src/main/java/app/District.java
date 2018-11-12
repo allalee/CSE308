@@ -5,6 +5,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
+import java.util.HashMap;
 
 public class District{
     private int ID;
@@ -13,17 +14,18 @@ public class District{
     protected Geometry geometry;
 
 
-    public District(int ID, State state){
+    public District(int ID, State state, Geometry geometry){
         this.ID = ID;
         this.state = state;
+        this.geometry = geometry;
         precinctMap = new HashMap<>();
     }
 
     public Precinct getPrecinct(int id){
         return precinctMap.get(id);
     }
-    public void addPrecinct(Precinct precinct){
-        precinctMap.put(precinct.getID(), precinct);
+    public void addPrecinct(int ID, Precinct precinct){
+        precinctMap.put(ID, precinct);
     }
 
     public Collection<Precinct> getAllPrecincts(){
@@ -39,8 +41,7 @@ public class District{
     public int getID(){ return ID; }
 
     public District clone(State newOwnerState){
-        District clonedDistrict = new District(ID, newOwnerState);
-        clonedDistrict.geometry = geometry;
+        District clonedDistrict = new District(ID, newOwnerState, this.geometry);
         clonedDistrict.precinctMap = new HashMap<>();   // empty precincts. to be set in state
         return clonedDistrict;
     }

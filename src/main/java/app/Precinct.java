@@ -10,8 +10,9 @@ public class Precinct{
     private Set<Precinct> neighbors;
     private Geometry geometry;
 
-    public Precinct(int ID){
+    public Precinct(int ID, Geometry geometry){
         this.ID = ID;
+        this.geometry = geometry;
         neighbors = new HashSet<>();
     }
 
@@ -43,7 +44,7 @@ public class Precinct{
     }
 
     private Precinct chainClone(HashMap<Integer, Precinct> clonedSoFar, HashMap<Integer, District> districtMap){
-        Precinct clonedPrecinct = new Precinct(ID);
+        Precinct clonedPrecinct = new Precinct(ID, this.geometry);
         clonedPrecinct.geometry = geometry;
         District clonedDistrict = districtMap.get(district.getID());// get the new cloned district
         clonedPrecinct.district = clonedDistrict;
