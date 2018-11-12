@@ -212,11 +212,11 @@ mymap.on("zoomend", function(){
 				}
 				if(currentState == "20"){
 					precinctGeoJson = L.geoJson(kansasPrec, {style: stylePrecincts, onEachFeature: onEachFeature});
-				    precinctGeoJson.eachLayer(function(layer) {
-                      layer.on('click', function(){
-                            color_neighbors(layer.feature.properties['ID'])
-                      });
-                    });
+				    //precinctGeoJson.eachLayer(function(layer) {
+                    //  layer.on('click', function(){
+                    //        color_neighbors(layer.feature.properties['ID'])
+                    //  });
+                    //});
 				}
 				
 				precinctGeoJson.addTo(mymap);
@@ -242,6 +242,7 @@ function color_district( precinct_id, color ){
     });
 }
 
+// remove all below when DB is done
 function color_neighbors( precinct_id ){
     $.ajax({
         type : "GET",
@@ -258,6 +259,7 @@ function color_neighbors( precinct_id ){
 }
 
 function serverLoadKansas(){
+    console.log("please wait while we set up Kansas")
     $.ajax({
         type : "GET",
         url: "/loadKansas",
@@ -267,4 +269,14 @@ function serverLoadKansas(){
     })
 }
 serverLoadKansas();
+
+$('#start').on("click", function(e){
+    $.ajax({
+        type : "GET",
+        url: "/startAlgorithm?state_name=Kansas_2",
+        contentType : "application/json",
+        success: function(e){console.log(e)},
+        failure: function(e){console.log("Algo failed to start");}
+    })
+});
 

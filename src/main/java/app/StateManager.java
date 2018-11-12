@@ -101,13 +101,16 @@ public class StateManager {
         }
     }
 
-    public boolean setState(String name){
+    public void setActiveState(String name){
         currentState = stateMap.get(name);
-        return currentState != null;
     }
 
-    public void addState(String name, State state){
-        stateMap.put(name, state);
+    public State cloneState(String name){
+        return stateMap.get(name).clone();
+    }
+
+    public void addState(State state){
+        stateMap.put(state.getName(), state);
     }
 
     public Set<Precinct> getNeighborPrecincts(int precinctID){
