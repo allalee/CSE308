@@ -69,7 +69,7 @@ public class JTSConverter {
                     maxArea = area;
                 }
             }
-            p.getDistrict().addPrecinct(p);
+            p.getDistrict().addPrecinct(p.getID(), p);
 
             if ( p.getID() == 1439424){
                 System.out.println("INT compare");
@@ -112,7 +112,7 @@ public class JTSConverter {
 
             // create
             Geometry dGeometry = reader.read(coordinatesJSONString);
-            District d = new District(id, state);
+            District d = new District(id, state, dGeometry);
             state.getDistrictMap().put(id, d);
             d.setGeometry(dGeometry);
 
@@ -150,7 +150,7 @@ public class JTSConverter {
 
             // create
             Geometry precinctGeometry = reader.read(coordinatesJSONString);
-            Precinct precinct = new Precinct(id);
+            Precinct precinct = new Precinct(id, precinctGeometry);
             precinct.setGeometry(precinctGeometry);
 
             // add to list
