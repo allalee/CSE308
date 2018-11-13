@@ -7,6 +7,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.geojson.GeoJsonReader;
@@ -19,7 +22,7 @@ public class StateManager {
     private HashMap<String, State> stateMap;
     private State currentState;
 
-    public StateManager(){
+    public StateManager() {
         stateMap = new HashMap<>();
         currentState = null;
     }
@@ -76,7 +79,7 @@ public class StateManager {
     private void generateStateData(String stateName, Integer stateID, JSONArray districtJson, JSONObject precinctJsonObject) throws com.vividsolutions.jts.io.ParseException {
         State state = new State(stateName, stateID);
         this.stateMap.put(stateName, state);
-        HashMap<Integer, District> districtMap = state.getDistricts();
+        HashMap<Integer, District> districtMap = state.getDistrictMap();
         generateDistricts(districtJson, districtMap, state);
         generatePrecincts(precinctJsonObject, state);
         currentState = state;
@@ -112,7 +115,7 @@ public class StateManager {
      * @param precinct The precinct
      */
     private void findDistrict(State state, Precinct precinct, int precinctID){
-        HashMap<Integer, District> map = state.getDistricts();
+        HashMap<Integer, District> map = state.getDistrictMap();
         District highestIntersectingDistrict = null;
         double area = 0;
         boolean added = false;
@@ -134,5 +137,36 @@ public class StateManager {
             highestIntersectingDistrict.addPrecinct(precinctID, precinct);
             precinct.setDistrict(highestIntersectingDistrict);
         }
+    }
+
+    public void setActiveState(String name){
+        currentState = stateMap.get(name);
+    }
+
+    public State cloneState(String name){
+        return stateMap.get(name).clone();
+    }
+
+    public void addState(State state){
+        stateMap.put(state.getName(), state);
+    }
+
+    public Set<Precinct> getNeighborPrecincts(int precinctID){
+        System.out.println("ID Requested "+precinctID);
+        Map<Integer, District> allDistrictMap = currentState.getDistrictMap();
+        Precinct targetPrecinct = new Precinct(-1, null); // dummy
+
+        for(District district: allDistrictMap.values()){
+            Precinct precinct = district.getPrecinct(precinctID);
+            if( precinct!=null ){
+                targetPrecinct = precinct;
+                break;
+            }
+        }
+
+        if (targetPrecinct.getID() == -1) {
+            System.out.println("PRECINCT NOT FOUDN IN ALL DISTRICTS");
+        }
+        return targetPrecinct.getNeighbors();
     }
 }
