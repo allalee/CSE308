@@ -26,30 +26,22 @@ body {
   height: 100%;
 }
 
-.center-form {
-  padding-left: 40%;
-}
 
 .console-display {
   background-color: black;
-  height: 100px;
+  height: 200px;
   color: green;
   overflow-y: scroll;
   word-wrap: break-word;
 }
 
 .top {
-  height: 50%;
+  height: 55%;
   overflow-y: scroll;
 }
 
-.middle {
-  height: 20%;
-
-}
 .bottom {
-  height: 30%;
-
+  height: 45%;
 }
 
 .media-controls {

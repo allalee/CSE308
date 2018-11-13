@@ -48,7 +48,7 @@ public class Precinct{
         clonedPrecinct.geometry = geometry;
         District clonedDistrict = districtMap.get(district.getID());// get the new cloned district
         clonedPrecinct.district = clonedDistrict;
-        clonedDistrict.addPrecinct(clonedPrecinct);
+        clonedDistrict.addPrecinct(clonedPrecinct.getID(), clonedPrecinct);
 
         clonedSoFar.put(this.hashCode(), clonedPrecinct);
 
