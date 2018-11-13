@@ -19,7 +19,7 @@ public class RegionGrow extends Algorithm{
 
         Collection<Precinct> allPrecincts = state.getAllPrecincts();
         Collection<District> allDistricts = state.getAllDistricts();
-        District dummyDistrict = new District(-1, null);
+        District dummyDistrict = new District(-1, null, null);
         for(Precinct pre: allPrecincts){
             pre.setDistrict(dummyDistrict);
         }
