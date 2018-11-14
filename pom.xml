@@ -56,7 +56,7 @@
         <dependency>
             <artifactId>jboss-logging</artifactId>
             <groupId>org.jboss.logging</groupId>
-            <version>3.3.0.Final</version>
+            <version>3.3.2.Final</version>
         </dependency>
 
     </dependencies>
