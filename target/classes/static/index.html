@@ -35,15 +35,81 @@
 
   <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
     <a class="text-white navbar-brand toggle-btn" onclick="toggleNav()">&#9776;</a>
-	<button class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="resetMap();" style="color : red; border-color : red;">RESET</button>
+
+    <div class="collapse navbar-collapse justify-content-center" id="navbarNavAltMarkup">
+      <div class="navbar-nav">
+        <form class="form-inline px-5">
+          <input class="form-control mr-sm-2 rounded-0" type="search" placeholder="Search" aria-label="Search">
+          <button class="btn btn-outline-success my-2 my-sm-0 rounded-0" type="submit">Search</button>
+        </form>
+        <a class="nav-item nav-link text-light" data-toggle="modal" data-target="#constitutionModal">Constitution</a>
+
+        <!-- Button trigger modal
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModalLong">
+          Constitution
+        </button>
+        -->
+        <!-- Modal -->
+        <div class="modal fade" id="constitutionModal" tabindex="-1" role="dialog" aria-labelledby="constitutionTitle" aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="constitutionTitle">State Constitution</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                ...
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a class="nav-item nav-link text-light" data-toggle="modal" data-target="#aboutModal">About</a>
+
+        <!-- Modal -->
+        <div class="modal fade" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutTitle" aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="aboutTitle">About the Website</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                This webpage will help in redistricting for presidential elections. Running on a custom objective function with custom algorithms, the user can
+        				freely adjust precincts and districts for redistricting and possible gerrymandering. The user may click on a state to zoom into the state's respective
+        				districts. The state's precincts will load upon zooming further in after selecting a state. The user may adjust the objective function values
+        				and weights on the left hand side hamburger menu. The user must select one of the four custom algorithms to run the redistricting process. A console
+        				is provided within the hamburger menu to give the user real time information of the calculation process. The user is also able to pause, resume,
+        				or stop the algorithm mid-way using the media controls below the console in the menu. To reset the map to reselect a state, a RESET
+        				button is provided on the left hand side of the navigation bar.
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a class="nav-item nav-link text-light" href="login.html">Login</a>
+
+      </div>
+    </div>
+<!--
     <form class="form-inline center-form">
       <input class="form-control mr-sm-2 rounded-0" type="search" placeholder="Search" aria-label="Search">
       <button class="btn btn-outline-success my-2 my-sm-0 rounded-0" type="submit">Search</button>
     </form>
-	<button class="btn btn-outline-success my-2 my-sm-0 rounded-0 ml-auto" onclick="location.href='login.html'">Login</button>
-	<button class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="location.href='about.html'">About</button>
+-->
+    <button class="btn btn-outline-danger my-2 my-sm-0 rounded-0" onclick="resetMap();">Reset</button>
   </nav>
-  
+
 
   <div class="content" id="main">
     <div id="mapid">
@@ -54,111 +120,65 @@
   <div id="sidenav">
    <div class="top">
 
-		<div class="card rounded-0">
-		  <div class="card-header">
-			<a data-toggle="collapse" data-parent="#sidenav" href="#home" class="card-link">
-			  Category 1
-			</a>
-		  </div>
-		  <div id="home" class="collapse">
-			<div class="card-body">
-			  <label for="customRange1">Weight 1</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange1">
-			  <label for="customRange2">Weight 2</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange2">
-			  <label for="customRange3">Weight 3</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange3">
-			  <label for="customRange4">Weight 4</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange4">
-			</div>
-		  </div>
-		</div>
+     <div class="card rounded-0">
+       <div class="card-header">
+         <a data-toggle="collapse" data-parent="#sidenav" href="#measures" class="card-link">
+           Measures
+         </a>
+       </div>
+       <div id="measures" class="collapse">
+         <div class="card-body">
+           <label for="customRange1">Population Equality</label>
+           <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange1">
+           <label for="customRange2">Partisan Fairness</label>
+           <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange2">
+           <label for="customRange3">Compactness</label>
+           <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange3">
+         </div>
+       </div>
+     </div>
 
-		<div class="card rounded-0">
-		  <div class="card-header">
-			<a data-toggle="collapse" data-parent="#sidenav" href="#events" class="card-link">
-			  Category 2
-			</a>
-		  </div>
-		  <div id="events" class="collapse">
-			<div class="card-body">
-			  <label for="customRange5">Weight 5</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange5">
-			  <label for="customRange6">Weight 6</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange6">
-			  <label for="customRange7">Weight 7</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange7">
-			  <label for="customRange8">Weight 8</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange8">
-			</div>
-		  </div>
-		</div>
-		
-		<div class="card rounded-0">
-		  <div class="card-header">
-			<a data-toggle="collapse" data-parent="#sidenav" href="#events2" class="card-link">
-			  Category 3
-			</a>
-		  </div>
-		  <div id="events2" class="collapse">
-			<div class="card-body">
-			  <label for="customRange9">Weight 9</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange9">
-			  <label for="customRange10">Weight 10</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange10">
-			  <label for="customRange11">Weight 11</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange11">
-			  <label for="customRange12">Weight 12</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange12">
-			</div>
-		  </div>
-		</div>
-		
-		<div class="card rounded-0">
-		  <div class="card-header">
-			<a data-toggle="collapse" data-parent="#sidenav" href="#events3" class="card-link">
-			  Category 4
-			</a>
-		  </div>
-		  <div id="events3" class="collapse">
-			<div class="card-body">
-			  <label for="customRange5">Weight 13</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange13">
-			  <label for="customRange6">Weight 14</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange14">
-			  <label for="customRange7">Weight 15</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange15">
-			  <label for="customRange8">Weight 16</label>
-			  <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange16">
-			</div>
-		  </div>
-		</div>
-	</div>
-	
-	<div class="middle">
-		<div class="card-body">
-			<input type="radio" id="algorithm1" name="algorithm" value="Region Growing"><label style="color: #FFFFFF;">Region Growing</label><br>
-			<input type="radio" id="algorithm2" name="algorithm" value="Simulated Annealing"><label style="color: #FFFFFF;"> Simulated Annealing</label> <br>
-			<input type="radio" id="algorithm3" name="algorithm" value="Region Growing Modified"><label style="color: #FFFFFF;">Region Growing Modified</label> <br>
-			<input type="radio" id="algorithm4" name="algorithm" value="Simulated Annealing Modified"><label style="color: #FFFFFF;">Simulated Annealing Modified</label><br>
-		</div>
-	</div>
+     <div class="card rounded-0">
+       <div class="card-header">
+         <a data-toggle="collapse" data-parent="#sidenav" href="#algorithms" class="card-link">
+           Algorithms
+         </a>
+       </div>
+       <div id="algorithms" class="collapse">
+         <div class="card-body">
+           <div class="custom-control custom-radio">
+             <input type="radio" id="algorithm1" name="algorithm" class="custom-control-input" value="Region Growing">
+             <label class="custom-control-label" for="algorithm1">Region Growing</label>
+           </div>
+           <div class="custom-control custom-radio">
+             <input type="radio" id="algorithm2" name="algorithm" class="custom-control-input" value="Simulated Annealing">
+             <label class="custom-control-label" for="algorithm2">Simulated Annealing</label>
+           </div>
+           <div class="custom-control custom-radio">
+             <input type="radio" id="algorithm3" name="algorithm" class="custom-control-input" value="Region Growing Modified">
+             <label class="custom-control-label" for="algorithm3">Region Growing Modified</label>
+           </div>
+           <div class="custom-control custom-radio">
+             <input type="radio" id="algorithm4" name="algorithm" class="custom-control-input" value="Simulated Annealing Modified">
+             <label class="custom-control-label" for="algorithm4">Simulated Annealing Modified</label>
+           </div>
+         </div>
+       </div>
+     </div>
 
+
+	</div>
 
 	<div class="bottom">
 
 		<div class="console-display" id="console">
-		  <h>Console</h>
-		  <
+		  <p>Console<</p>
 		</div>
-		
+
 		<div class="media-controls" id="controls">
 		  <i class="material-icons white-icon">pause</i>
 		  <i id="start" class="material-icons white-icon">play_arrow</i>
 		  <i class="material-icons white-icon">stop</i>
-		</div>
-		<div>
-			<button id = "test">Click</button>
 		</div>
 	</div>
   </div>
