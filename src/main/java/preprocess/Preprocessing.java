@@ -4,6 +4,7 @@ import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
 import gerrymandering.model.State;
 
+import javax.persistence.EntityManager;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -20,7 +21,7 @@ public class Preprocessing {
 
         ArrayList<State> states = PreprocessHelper.generateStates();
         ArrayList<District> districts = PreprocessHelper.generateDistricts(districtFiles);
-        for(State s : states){
+        for(State s : states) {
             hb.persistToDB(s);
         }
 //        State state = new State("Dinkleberg", "DB", "SampleText");
