@@ -24,23 +24,23 @@
           <div class='page-header standard-text'><h1>Welcome!</h1></div>
 
         <!--IF USERNAME AND EMAIL DOES NOT EXIST IN DB, GO TO LOGIN PAGE AND POP UP SUCCESSFULLY REGISTERED. OTHERWISE, POPUP 'ALREADY EXIST EMAIL OR USERNAME'-->
-            <form action="INSERT_SERVLET_OR_SERVLET_ABSTRACTION_API_TO_PROCESS_FORM_HERE" method='GET'>
-            <div class='form-group'>
-                <label> Email </label>
-                <input type='text' name='email', class='form-control' placeholder='Email'/>
-            </div>
-            <div class='form-group'>
-                <label> Username </label>
-                <input type='text' name='username', class='form-control' placeholder='Username'/>
-            </div>
-            <div class='form-group'>
-                <label> Password </label>
-                <input type='password' name='password' class='form-control' placeholder='Password'/>
-            </div>
-                <!--AFTER CONFIRM, REDIRECT TO LOGIN PAGE-->
-            <div class='form-group'>
-                <button type='submit' class='btn btn-basic' href="./login.html">Confirm</button>
-            </div>
+            <form action="http://localhost:8080/registration" method='POST'>
+				<div class='form-group'>
+					<label> Email </label>
+					<input type='text' name='email', class='form-control' placeholder='Email'/>
+				</div>
+				<div class='form-group'>
+					<label> Username </label>
+					<input type='text' name='username', class='form-control' placeholder='Username'/>
+				</div>
+				<div class='form-group'>
+					<label> Password </label>
+					<input type='password' name='password' class='form-control' placeholder='Password'/>
+				</div>
+					<!--AFTER CONFIRM, REDIRECT TO LOGIN PAGE-->
+				<div class='form-group'>
+					<button type='submit' class='btn btn-basic' href="./login.html">Confirm</button>
+				</div>
            </form>
 
 
