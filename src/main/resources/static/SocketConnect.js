@@ -10,6 +10,7 @@ function makeConnector(){
     con.socket = null;
     con.stomp = null;
     con.message_queue = [];
+    con.is_reading = false;
     con.reading_interval = 0.1;
 
     // connect
@@ -29,20 +30,26 @@ function makeConnector(){
 
     //handler
     con.handle_socket_message = function (message){
-        //console.log("Got a message: ")
         var body = $.parseJSON(message.body)
         con.message_queue.push(body)
     }
 
+    con.process_message = function(){
+        var message_body = con.message_queue.shift()
+        if (message_body != undefined)
+            dynamic_color_changer.color(message_body);
+            //color_district(message_body.precinct, 'red')
+    }
+
     con.start_reading = function(){
-        con.timer = setInterval(function(){
-            var message_body = con.message_queue.shift()
-            if (message_body != undefined)
-                color_district(message_body.precinct, 'red')
-        }, con.reading_interval);
+        con.is_reading = true;
+        con.timer = setInterval(
+        con.process_message,
+        con.reading_interval);
     }
 
     con.stop_reading = function(){
+        con.is_reading = false;
         clearInterval(con.timer);
     }
 
