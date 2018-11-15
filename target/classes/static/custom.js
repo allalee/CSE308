@@ -21,45 +21,7 @@ function getValueEx() {
 }
 
 
-
-state_fps_hashmap =
-{
-    'ALASKA' : 2,
-    'MISSISSIPPI' : 28,
-    'ALABAMA': 1,
-    'MONTANA': 30,
-    'ARKANSAS': 5,
-    'NORTH CAROLINA': 37,
-    'AMERICAN SAMOA': 60,
-    'NORTH DAKOTA' : 38,
-    'ARIZONA NE': 4,
-    'NEBRASKA': 31,
-    'CALIFORNIA':6,
-	'NEW HAMPSHIRE': 33,
-	'COLORADO':	8,	'NEW JERSEY': 34,
-	'CONNECTICUT': 9,	'NEW MEXICO': 35,
-	'DISTRICT OF COLUMBIA':	11,	'NEVADA': 32,
-	'DELAWARE':	10,	'NEW YORK': 36,
-	'FLORIDA':	12,	'OHIO': 39,
-	'GEORGIA':	13,	'OKLAHOMA': 40,
-	'GUAM':	66,	'OREGON': 41,
-	'HAWAII':15, 'PENNSYLVANIA':42,
-	'IOWA':	19,	'PUERTO RICO': 72,
-	'IDAHO':16,	'RHODE ISLAND': 44,
-	'ILLINOIS':17, 'SOUTH CAROLINA': 45,
-	'INDIANA':18, 'SOUTH DAKOTA': 46,
-	'KANSAS':20, 'TENNESSEE': 47,
-	'KENTUCKY':21,	'TEXAS': 48,
-	'LOUISIANA':22,	'UTAH': 49,
-	'MASSACHUSETTS':25,	'VIRGINIA': 51,
-	'MARYLAND':24, 'VIRGIN ISLANDS': 78,
-	'MAINE':23,	'VERMONT': 50,
-	'MICHIGAN':	26,	'WASHINGTON': 53,
-	'MINNESOTA':27,	'WISCONSIN': 55,
-	'MISSOURI':	29,	'WEST VIRGINIA': 54,
- 	'WYOMING': 56
-};
-
+/*
 var stateGeoJson;
 var distGeoJson;
 var precinctGeoJson;
@@ -302,3 +264,4 @@ function highlightFeature(e) {
 function resetHighlight(e) {
     info.update();
 }
+*/
