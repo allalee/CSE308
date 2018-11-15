@@ -61,13 +61,14 @@ public class PreprocessHelper {
         return precinctSet;
     }
 
-    public static Set<Population> generatePopulations(Set<File> files) throws Exception{
+    public static Set<Population> generatePopulations(Set<File> files) throws Throwable {
         Set<Population> populationSet = new HashSet<>();
         JSONParser parser = new JSONParser();
         Iterator<File> fileIterator = files.iterator();
         FileReader reader = new FileReader(fileIterator.next());
         JSONObject kansasPrecinctJSON = (JSONObject) parser.parse(reader);
         buildPopulations(populationSet, kansasPrecinctJSON);
+        return populationSet;
     }
 
     private static void buildDistricts(Set<District> districtSet, int stateID, JSONArray districtJSONArray) throws Exception {
