@@ -38,10 +38,8 @@
 
     <div class="collapse navbar-collapse justify-content-center" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <form class="form-inline px-5">
-          <input class="form-control mr-sm-2 rounded-0" type="search" placeholder="Search" aria-label="Search">
-          <button class="btn btn-outline-success my-2 my-sm-0 rounded-0" type="submit">Search</button>
-        </form>
+        <input id="statefield" class="form-control mr-sm-2 rounded-0" type="search" placeholder="Search" aria-label="Search">
+        <button class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="stateSearch()">Search</button>
         <a class="nav-item nav-link text-light" data-toggle="modal" data-target="#constitutionModal">Constitution</a>
 
         <!-- Button trigger modal
@@ -186,6 +184,7 @@
 
   <footer>
     <script src="custom.js"></script>
+    <script src="map.js"></script>
     <script src='SocketConnect.js'></script>
 	  <script type="text/javascript" src="sendRequest.js"></script>
   </footer>

@@ -26,7 +26,7 @@ public class RequestHandler {
         // template of ajax handler
         @RequestMapping(value = "/helloworld", method = RequestMethod.GET)
         public @ResponseBody
-        String sayhHello(){
+        String sayhHello() {
             Test t = new Test();
             return t.print();
         }
