@@ -20,6 +20,7 @@ function makeConnector(){
         stomp.connect({}, function(frame){
             stomp.subscribe(con.room, con.handle_socket_message);
         });
+        stomp.debug = null;
         con.stomp = stomp;
     }
 

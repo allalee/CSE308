@@ -10,6 +10,7 @@ function makeConnector(){
     con.socket = null;
     con.stomp = null;
     con.message_queue = [];
+    con.is_reading = false;
     con.reading_interval = 0.1;
 
     // connect
@@ -19,6 +20,7 @@ function makeConnector(){
         stomp.connect({}, function(frame){
             stomp.subscribe(con.room, con.handle_socket_message);
         });
+        stomp.debug = null;
         con.stomp = stomp;
     }
 
@@ -41,12 +43,14 @@ function makeConnector(){
     }
 
     con.start_reading = function(){
+        con.is_reading = true;
         con.timer = setInterval(
         con.process_message,
         con.reading_interval);
     }
 
     con.stop_reading = function(){
+        con.is_reading = false;
         clearInterval(con.timer);
     }
 
