@@ -2,13 +2,11 @@ package preprocess;
 
 import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
+import gerrymandering.model.Precinct;
 import gerrymandering.model.State;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Preprocessing {
     private static HibernateManager hb;
@@ -24,19 +22,11 @@ public class Preprocessing {
 
         Set<State> states = PreprocessHelper.generateStates();
         persistStates(states);
-        HashMap<Integer, String> stateHashMap = generateStateHashMap();
+        HashMap<String, Integer> stateHashMap = generateStateHashMap();
         Set<District> districts = PreprocessHelper.generateDistricts(districtFiles, stateHashMap);
-
-
-
-
-//        State state = new State("Dinkleberg", "DB", "SampleText");
-//        state.setShortName("NY");
-//        state.setName("New York");
-//        state.setStateId(1);
-//        state.setConstitutionText("SampleText");
-//        boolean result = hb.persistToDB(state);
-//        System.out.println(result);
+        persistDistricts(districts);
+        HashMap<Integer, District> kansasDistricts = generateDistrictHashMap(stateHashMap.get("Kansas"));
+        Set<Precinct> precincts = PreprocessHelper.generatePrecincts(precinctFiles, kansasDistricts);
     }
 
     private static void persistStates(Set<State> states) throws Throwable {
@@ -45,15 +35,33 @@ public class Preprocessing {
         }
     }
 
-    private static HashMap<Integer, String> generateStateHashMap() throws Throwable {
+    private static void persistDistricts(Set<District> district) throws Throwable {
+        for(District d: district){
+            hb.persistToDB(d);
+        }
+    }
+
+    private static HashMap<String, Integer> generateStateHashMap() throws Throwable {
         List<Object> list = hb.getAllRecords(State.class);
         Iterator<Object> itr = list.iterator();
-        HashMap<Integer, String> hm = new HashMap<>();
+        HashMap<String, Integer> hm = new HashMap<>();
         while(itr.hasNext()){
             State s = (State) itr.next();
-            hm.put(s.getStateId(), s.getName());
+            hm.put(s.getName(), s.getStateId());
         }
         return hm;
+    }
 
+    private static HashMap<Integer, District> generateDistrictHashMap(int stateID) throws Throwable {
+        Map<String, Object> criteria = new HashMap<>();
+        criteria.put("stateID", stateID);
+        List<Object> list = hb.getRecordsBasedOnCriteria(District.class, criteria);
+        Iterator<Object> itr = list.iterator();
+        HashMap<Integer, District> hm = new HashMap<>();
+        while(itr.hasNext()){
+            District d = (District) itr.next();
+            hm.put(d.getDistrictId(), d);
+        }
+        return hm;
     }
 }
