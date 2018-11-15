@@ -51,12 +51,12 @@ public class PreprocessHelper {
         return districtSet;
     }
 
-    public static Set<Precinct> generatePrecincts(Set<File> files, HashMap<Integer, District> districtMap) throws IOException, ParseException {
+    public static Set<Precinct> generatePrecincts(Set<File> files, HashMap<District, Integer> districtMap) throws Exception {
         Set<Precinct> precinctSet = new HashSet<>();
         JSONParser parser = new JSONParser();
         Iterator<File> fileIterator = files.iterator();
         FileReader reader = new FileReader(fileIterator.next());
-        JSONArray kansasPrecinctJSON = (JSONArray) parser.parse(reader);
+        JSONObject kansasPrecinctJSON = (JSONObject) parser.parse(reader);
         buildPrecincts(precinctSet, kansasPrecinctJSON, districtMap);
         return precinctSet;
     }
@@ -71,31 +71,33 @@ public class PreprocessHelper {
         }
     }
 
-    private static void buildPrecincts(Set<Precinct> precinctSet, JSONArray precinctJSONArray, HashMap<Integer, District> districtMap) throws Exception {
+    private static void buildPrecincts(Set<Precinct> precinctSet, JSONObject precinctJSON, HashMap<District, Integer> districtMap) throws Exception {
+        JSONArray precinctJSONArray = (JSONArray) precinctJSON.get("features");
         for(Object precinct : precinctJSONArray){
-//            JSONObject properties = (JSONObject)((JSONObject)precinct).get("properties");
             GeoJsonReader geoReader = new GeoJsonReader();
             String precinctGeometry = ((JSONObject)precinct).get("geometry").toString();
             Geometry geometry = geoReader.read(precinctGeometry);
             Point centerPoint = geometry.getCentroid();
-            Precinct p = new Precinct(findDistrict(geometry), centerPoint.getBoundary().toString(), precinctGeometry);
+            String centerString = "{x:" + centerPoint.getX() + ",y:" + centerPoint.getY() + "}";
+            Precinct p = new Precinct(findDistrictID(geometry, districtMap), centerString, precinctGeometry);
             precinctSet.add(p);
         }
     }
 
-    private static int findDistrict(Geometry precinctGeometry){
-
+    private static int findDistrictID(Geometry precinctGeometry, HashMap<District, Integer> dMap) throws com.vividsolutions.jts.io.ParseException {
+        District highestIntersectingDistrict = null;
+        double area = 0;
+        GeoJsonReader reader = new GeoJsonReader();
+        for (District d : dMap.keySet()){
+            Geometry dGeo = reader.read(d.getBoundary());
+            if(dGeo.contains(precinctGeometry)){
+                return d.getDistrictId();
+            }
+            if(highestIntersectingDistrict == null || dGeo.intersection(precinctGeometry).getArea() > area){
+                highestIntersectingDistrict = d;
+                area = dGeo.intersection(precinctGeometry).getArea();
+            }
+        }
+        return highestIntersectingDistrict.getDistrictId();
     }
-//    private void generatePrecincts(JSONObject json, State state) throws com.vividsolutions.jts.io.ParseException {
-//        JSONArray precinctList = (JSONArray) json.get("features");
-//        for(Object precinct : precinctList){
-//            JSONObject properties = (JSONObject) ((JSONObject)precinct).get("properties");
-//            Integer precinctID = Integer.parseInt(properties.get("ID").toString());
-//            GeoJsonReader geoReader = new GeoJsonReader();
-//            String precinctGeometry = ((JSONObject)precinct).get("geometry").toString();
-//            Geometry geo = geoReader.read(precinctGeometry);
-//            Precinct p = new Precinct(precinctID, geo);
-//            findDistrict(state, p, precinctID);
-//        }
-//    }
 }

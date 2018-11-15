@@ -15,7 +15,7 @@ public class Preprocessing {
         String[] districtFileNames = new String[1];
         String[] precinctFileNames = new String[1];
         districtFileNames[0] = "CSE308/src/main/resources/static/geojson/kansas_districts.json";
-        precinctFileNames[0] = "src/main/resources/static/geojson/precinct_data/kansas_state_voting_precincts_2012.json";
+        precinctFileNames[0] = "CSE308/src/main/resources/static/geojson/precinct_data/kansas_state_voting_precincts_2012.json";
 
         Set<File> districtFiles = PreprocessHelper.loadFiles(districtFileNames);
         Set<File> precinctFiles = PreprocessHelper.loadFiles(precinctFileNames);
@@ -25,8 +25,9 @@ public class Preprocessing {
         HashMap<String, Integer> stateHashMap = generateStateHashMap();
         Set<District> districts = PreprocessHelper.generateDistricts(districtFiles, stateHashMap);
         persistDistricts(districts);
-        HashMap<Integer, District> kansasDistricts = generateDistrictHashMap(stateHashMap.get("Kansas"));
+        HashMap<District, Integer> kansasDistricts = generateDistrictHashMap(stateHashMap.get("Kansas"));
         Set<Precinct> precincts = PreprocessHelper.generatePrecincts(precinctFiles, kansasDistricts);
+        persistPrecincts(precincts);
     }
 
     private static void persistStates(Set<State> states) throws Throwable {
@@ -41,6 +42,12 @@ public class Preprocessing {
         }
     }
 
+    private static void persistPrecincts(Set<Precinct> precincts) throws Throwable {
+        for (Precinct p : precincts){
+            hb.persistToDB(p);
+        }
+    }
+
     private static HashMap<String, Integer> generateStateHashMap() throws Throwable {
         List<Object> list = hb.getAllRecords(State.class);
         Iterator<Object> itr = list.iterator();
@@ -52,15 +59,15 @@ public class Preprocessing {
         return hm;
     }
 
-    private static HashMap<Integer, District> generateDistrictHashMap(int stateID) throws Throwable {
+    private static HashMap<District, Integer> generateDistrictHashMap(int stateID) throws Throwable {
         Map<String, Object> criteria = new HashMap<>();
-        criteria.put("stateID", stateID);
+        criteria.put("stateId", stateID);
         List<Object> list = hb.getRecordsBasedOnCriteria(District.class, criteria);
         Iterator<Object> itr = list.iterator();
-        HashMap<Integer, District> hm = new HashMap<>();
+        HashMap<District, Integer> hm = new HashMap<>();
         while(itr.hasNext()){
             District d = (District) itr.next();
-            hm.put(d.getDistrictId(), d);
+            hm.put(d, d.getDistrictId());
         }
         return hm;
     }
