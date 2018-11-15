@@ -21,6 +21,39 @@
 
 </nav>
 
+
+
+<script>
+	var req;
+	var errorField;
+	
+	function validateLogin(){
+		errorField = document.getElementById("errmsg");
+		var emailField = document.getElementById("email");
+		var email = emailField.value;
+		var password = document.getElementById("password").value;
+		var url = "http://localhost:8080/login?email="+email+"&password="+password;
+		req = new XMLHttpRequest();
+		req.open("POST", url, true);
+		req.onreadystatechange = validation; //call back function that gets called after servlet runs
+		req.send(null);
+	}
+	
+	function validation(){
+		if (req.readyState == 4 && req.status == 200) {
+			if (req.responseText != "ok") {
+				errorField.innerHTML = req.responseText;
+				emailField.focus();
+			}
+			else{
+				window.location.replace("./index.html");
+			}
+		}
+	}
+	
+</script>
+
+
 <body class='bg-dark'>
   <div class='container standard-text pad-up'>
     <div class=row>
@@ -29,22 +62,22 @@
 
         <div class='jumbotron single-pane'>
           <div class='page-header standard-text'><h1>Login</h1></div>
+		  
+		  <div id="errmsg" style="color:red;"></div>
 
           <!--IF USERNAME AND PASSWORD EXIST IN DB, LOG IN AND REDIRECT TO HOME PAGE. OTHERWISE, GO BACK TO THIS PAGE AND POP UP 'INVALID LOGIN'-->
-          <form action="INSERT_SERVLET_OR_SERVLET_ABSTRACTION_API_TO_PROCESS_FORM_HERE" method='GET'>
             <div class='form-group'>
-                <label> Username </label>
-                <input type='text' name='username' class='form-control' placeholder='Username'/>
+                <label> Email </label>
+                <input type='text' id='email' name='email' class='form-control' placeholder='Email'/>
             </div>
             <div class='form-group'>
                 <label> Password </label>
-                <input type='password' name='password' class='form-control' placeholder='Password'/>
+                <input type='password' id='password' name='password' class='form-control' placeholder='Password'/>
             </div>
               <!--AFTER CLICK, REDIRECT TO HOME PAGE-->
             <div class='form-group'>
-                <input type='submit' class='btn btn-basic'/>
+                <input type="submit" class='btn btn-basic' onClick="validateLogin();"/>
             </div>
-           </form>
 		   <a href="./register.html">Haven't registered? Register here </a>
 
 
