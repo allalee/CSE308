@@ -1,13 +1,13 @@
 package preprocess;
 
 import com.vividsolutions.jts.geom.Point;
+import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
-import gerrymandering.model.Precinct;
+import gerrymandering.model.Population;
 import gerrymandering.model.State;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.geojson.GeoJsonReader;
 
@@ -51,14 +51,23 @@ public class PreprocessHelper {
         return districtSet;
     }
 
-    public static Set<Precinct> generatePrecincts(Set<File> files, HashMap<District, Integer> districtMap) throws Exception {
-        Set<Precinct> precinctSet = new HashSet<>();
+    public static Set<Precincts> generatePrecincts(Set<File> files, HashMap<District, Integer> districtMap) throws Exception {
+        Set<Precincts> precinctSet = new HashSet<>();
         JSONParser parser = new JSONParser();
         Iterator<File> fileIterator = files.iterator();
         FileReader reader = new FileReader(fileIterator.next());
         JSONObject kansasPrecinctJSON = (JSONObject) parser.parse(reader);
         buildPrecincts(precinctSet, kansasPrecinctJSON, districtMap);
         return precinctSet;
+    }
+
+    public static Set<Population> generatePopulations(Set<File> files) throws Exception{
+        Set<Population> populationSet = new HashSet<>();
+        JSONParser parser = new JSONParser();
+        Iterator<File> fileIterator = files.iterator();
+        FileReader reader = new FileReader(fileIterator.next());
+        JSONObject kansasPrecinctJSON = (JSONObject) parser.parse(reader);
+        buildPopulations(populationSet, kansasPrecinctJSON);
     }
 
     private static void buildDistricts(Set<District> districtSet, int stateID, JSONArray districtJSONArray) throws Exception {
@@ -71,16 +80,30 @@ public class PreprocessHelper {
         }
     }
 
-    private static void buildPrecincts(Set<Precinct> precinctSet, JSONObject precinctJSON, HashMap<District, Integer> districtMap) throws Exception {
+    private static void buildPrecincts(Set<Precincts> precinctSet, JSONObject precinctJSON, HashMap<District, Integer> districtMap) throws Exception {
         JSONArray precinctJSONArray = (JSONArray) precinctJSON.get("features");
         for(Object precinct : precinctJSONArray){
+            JSONObject properties = (JSONObject) ((JSONObject)precinct).get("properties");
+            Integer precinctID = Integer.parseInt(properties.get("ID").toString());
             GeoJsonReader geoReader = new GeoJsonReader();
             String precinctGeometry = ((JSONObject)precinct).get("geometry").toString();
             Geometry geometry = geoReader.read(precinctGeometry);
             Point centerPoint = geometry.getCentroid();
             String centerString = "{x:" + centerPoint.getX() + ",y:" + centerPoint.getY() + "}";
-            Precinct p = new Precinct(findDistrictID(geometry, districtMap), centerString, precinctGeometry);
+            Precincts p = new Precincts(precinctID, findDistrictID(geometry, districtMap), centerString, precinctGeometry);
             precinctSet.add(p);
+        }
+    }
+
+    private static void buildPopulations(Set<Population> populationSet, JSONObject json) throws Throwable {
+        JSONArray precinctJSONArray = (JSONArray) json.get("features");
+        HibernateManager hb = HibernateManager.getInstance();
+        for(Object precinct : precinctJSONArray){
+            JSONObject properties = (JSONObject)((JSONObject)precinct).get("properties");
+            Integer precinctID = Integer.parseInt(properties.get("ID").toString());
+            Map<String, Object> criteria = new HashMap<>();
+            criteria.put("precinctId", precinctID);
+            List<Object> list = hb.getRecordsBasedOnCriteria(Precincts.class, criteria);
         }
     }
 
