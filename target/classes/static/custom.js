@@ -22,19 +22,19 @@ function getValueEx() {
 
 
 
-state_fps_hashmap = 
+state_fps_hashmap =
 {
-    'ALASKA' : 2,	
+    'ALASKA' : 2,
     'MISSISSIPPI' : 28,
-    'ALABAMA': 1,		
+    'ALABAMA': 1,
     'MONTANA': 30,
     'ARKANSAS': 5,
     'NORTH CAROLINA': 37,
-    'AMERICAN SAMOA': 60,		
+    'AMERICAN SAMOA': 60,
     'NORTH DAKOTA' : 38,
-    'ARIZONA NE': 4,		
-    'NEBRASKA': 31, 
-    'CALIFORNIA':6,			
+    'ARIZONA NE': 4,
+    'NEBRASKA': 31,
+    'CALIFORNIA':6,
 	'NEW HAMPSHIRE': 33,
 	'COLORADO':	8,	'NEW JERSEY': 34,
 	'CONNECTICUT': 9,	'NEW MEXICO': 35,
@@ -57,7 +57,7 @@ state_fps_hashmap =
 	'MICHIGAN':	26,	'WASHINGTON': 53,
 	'MINNESOTA':27,	'WISCONSIN': 55,
 	'MISSOURI':	29,	'WEST VIRGINIA': 54,
- 	'WYOMING': 56	
+ 	'WYOMING': 56
 };
 
 var stateGeoJson;
@@ -85,17 +85,17 @@ info.addTo(mymap);
 
 function mouseIn(e){
 	var currentLayer = e.target;
-	
+
 	currentLayer.setStyle({
 		weight: 5,
 		color: '#39ff11'
 	});
-	
+
 	currentLayer.bringToFront();
-	
+
 	//IF IT IS A STATE JSON DATA LAYER CURRENTLY LOADED, WE UPDATE THE CURRENT STATE THAT IS SELECTED
 	//TO LOAD THE APPROPRIATE DISTRICT IN SAID STATE.
-	
+
 	//DO NOT DO THIS WHEN THE CURRENT LAYER IS DISTRICTS.
 	if(mymap.hasLayer(stateGeoJson)){
 		info.update(currentLayer.feature.properties);
@@ -112,7 +112,7 @@ function mouseOut(e){
 	if(mymap.hasLayer(precinctGeoJson)){
 		precinctGeoJson.resetStyle(e.target);
 	}
-	
+
 	info.update();
 }
 
@@ -132,12 +132,12 @@ function onEachFeature(feature, currentLayer){
 }
 
 
-function onClickZoom(e){
+function onClickZoom(e){ //State to district
 	//ON CLICK, LOAD THE DISTRICTS AS THE CURRENT LAYER.
 	//REMOVE THE STATES LAYER AND LOAD THE CORRECT DISTRICT LAYER BASED ON THE currentState.
 	mymap.fitBounds(e.target.getBounds());
 	stateGeoJson.remove();
-	if(!mymap.hasLayer(distGeoJson)){
+	if(!mymap.hasLayer(distGeoJson)){ //Check if a dist is loaded
 		if(currentState == "24"){
 			distGeoJson = L.geoJson(marylandDist, {style: styleDist, onEachFeature: onEachFeature});
 			distGeoJson.addTo(mymap);
@@ -154,9 +154,9 @@ function onClickZoom(e){
 			stateSelected = true;
 			loadState("Kansas", currentState);
 		}
-		if(currentState == ""){
+		if(currentState == ""){ //Prevent clicking on NULL
 			distGeoJson.addTo(mymap);
-		}	
+		}
 	}
 }
 
@@ -191,7 +191,7 @@ var styleDist = {
 }
 
 var stylePrecincts = {
-	"color": "#0256ff", 
+	"color": "#0256ff",
 	"weight": 2,
 	"opacity": 0.8
 }
@@ -218,7 +218,7 @@ mymap.on("zoomend", function(){
                     //  });
                     //});
 				}
-				
+
 				precinctGeoJson.addTo(mymap);
 			}
 		}
@@ -279,4 +279,26 @@ $('#start').on("click", function(e){
         failure: function(e){console.log("Algo failed to start");}
     })
 });
+//ADDING POPULATION AND VOTING DATA
+var info_box = L.control();
+info_box.onAdd = function (mymap) {
+    this._div = L.DomUtil.create('div', 'info_box'); // create a div with a class "info"
+    this.update();
+    return this._div;
+};
+// method that we will use to update the control based on feature properties passed
+info_box.update = function (props) {
+    this._div.innerHTML = '<h4>Precinct Information</h4>' +  (props ?
+        '<b>' + props['AREA'] + '</b><br />' + props['AREA'] + ' people / mi<sup>2</sup>'
+        : 'Hover over a precinct');
+};
 
+info_box.addTo(mymap);
+
+function highlightFeature(e) {
+    info.update(layer.feature.properties);
+}
+
+function resetHighlight(e) {
+    info.update();
+}
