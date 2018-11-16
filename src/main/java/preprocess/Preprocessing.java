@@ -2,7 +2,6 @@ package preprocess;
 
 import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
-import gerrymandering.model.Population;
 import gerrymandering.model.State;
 
 import java.io.File;
@@ -21,14 +20,17 @@ public class Preprocessing {
         Set<File> precinctFiles = PreprocessHelper.loadFiles(precinctFileNames);
 
         Set<State> states = PreprocessHelper.generateStates();
-        persistStates(states);
+//        persistStates(states);
         HashMap<String, Integer> stateHashMap = generateStateHashMap();
         Set<District> districts = PreprocessHelper.generateDistricts(districtFiles, stateHashMap);
-        persistDistricts(districts);
+//        persistDistricts(districts);
         HashMap<District, Integer> kansasDistricts = generateDistrictHashMap(stateHashMap.get("Kansas"));
         Set<Precincts> precincts = PreprocessHelper.generatePrecincts(precinctFiles, kansasDistricts);
-        persistPrecincts(precincts);
-        Set<Population> populations = PreprocessHelper.generatePopulations(precinctFiles);
+//        persistPrecincts(precincts);
+        Set<Populations> populations = PreprocessHelper.generatePopulations(precinctFiles);
+//        persistPopulation(populations);
+        Set<Demographics> demographics = PreprocessHelper.generateDemographics(precinctFiles);
+//        persistDemographics(demographics);
     }
 
     private static void persistStates(Set<State> states) throws Throwable {
@@ -46,6 +48,18 @@ public class Preprocessing {
     private static void persistPrecincts(Set<Precincts> precincts) throws Throwable {
         for (Precincts p : precincts){
             hb.persistToDB(p);
+        }
+    }
+
+    private static void persistPopulation(Set<Populations> population) throws Throwable {
+        for(Populations p : population){
+            hb.persistToDB(p);
+        }
+    }
+
+    private static void persistDemographics(Set<Demographics> demographics) throws Throwable {
+        for(Demographics d : demographics){
+            hb.persistToDB(d);
         }
     }
 

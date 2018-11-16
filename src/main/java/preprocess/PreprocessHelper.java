@@ -61,14 +61,24 @@ public class PreprocessHelper {
         return precinctSet;
     }
 
-    public static Set<Population> generatePopulations(Set<File> files) throws Throwable {
-        Set<Population> populationSet = new HashSet<>();
+    public static Set<Populations> generatePopulations(Set<File> files) throws Throwable {
+        Set<Populations> populationSet = new HashSet<>();
         JSONParser parser = new JSONParser();
         Iterator<File> fileIterator = files.iterator();
         FileReader reader = new FileReader(fileIterator.next());
         JSONObject kansasPrecinctJSON = (JSONObject) parser.parse(reader);
         buildPopulations(populationSet, kansasPrecinctJSON);
         return populationSet;
+    }
+
+    public static Set<Demographics> generateDemographics(Set<File> files) throws Throwable {
+        Set<Demographics> demographicsSet = new HashSet<>();
+        JSONParser parser = new JSONParser();
+        Iterator<File> fileIterator = files.iterator();
+        FileReader reader = new FileReader(fileIterator.next());
+        JSONObject kansasJSON = (JSONObject) parser.parse(reader);
+        buildDemographics(demographicsSet, kansasJSON);
+        return demographicsSet;
     }
 
     private static void buildDistricts(Set<District> districtSet, int stateID, JSONArray districtJSONArray) throws Exception {
@@ -96,7 +106,7 @@ public class PreprocessHelper {
         }
     }
 
-    private static void buildPopulations(Set<Population> populationSet, JSONObject json) throws Throwable {
+    private static void buildPopulations(Set<Populations> populationSet, JSONObject json) throws Throwable {
         JSONArray precinctJSONArray = (JSONArray) json.get("features");
         HibernateManager hb = HibernateManager.getInstance();
         for(Object precinct : precinctJSONArray){
@@ -105,7 +115,29 @@ public class PreprocessHelper {
             Map<String, Object> criteria = new HashMap<>();
             criteria.put("precinctId", precinctID);
             List<Object> list = hb.getRecordsBasedOnCriteria(Precincts.class, criteria);
+            Precincts p = (Precincts) list.get(0);
+            int pID = p.getPrecinctId();
+            int dID = p.getDistrictId();
+            Integer population = Integer.parseInt(properties.get("POPULATION").toString());
+            Populations pop = new Populations(population, pID, dID);
+            populationSet.add(pop);
+        }
+    }
 
+    private static void buildDemographics(Set<Demographics> demographicsSet, JSONObject json) throws Throwable {
+        JSONArray precinctJSONArray = (JSONArray) json.get("features");
+        HibernateManager hb = HibernateManager.getInstance();
+        for(Object precinct : precinctJSONArray){
+            JSONObject properties = (JSONObject)((JSONObject)precinct).get("properties");
+            Integer precinctID = Integer.parseInt(properties.get("ID").toString());
+            int asian = Integer.parseInt(properties.get("ASIAN").toString());
+            int caucasian = Integer.parseInt(properties.get("WHITE").toString());
+            int hispanic = Integer.parseInt(properties.get("HISPANIC_O").toString());
+            int african_american = Integer.parseInt(properties.get("BLACK").toString());
+            int native_american = Integer.parseInt(properties.get("AMINDIAN").toString());
+            int other = Integer.parseInt(properties.get("OTHER").toString());
+            Demographics d = new Demographics(precinctID, asian, caucasian, hispanic, african_american, native_american, other);
+            demographicsSet.add(d);
         }
     }
 
