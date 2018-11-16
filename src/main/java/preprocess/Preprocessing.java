@@ -2,7 +2,7 @@ package preprocess;
 
 import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
-import gerrymandering.model.Precinct;
+import gerrymandering.model.Population;
 import gerrymandering.model.State;
 
 import java.io.File;
@@ -26,8 +26,9 @@ public class Preprocessing {
         Set<District> districts = PreprocessHelper.generateDistricts(districtFiles, stateHashMap);
         persistDistricts(districts);
         HashMap<District, Integer> kansasDistricts = generateDistrictHashMap(stateHashMap.get("Kansas"));
-        Set<Precinct> precincts = PreprocessHelper.generatePrecincts(precinctFiles, kansasDistricts);
+        Set<Precincts> precincts = PreprocessHelper.generatePrecincts(precinctFiles, kansasDistricts);
         persistPrecincts(precincts);
+        Set<Population> populations = PreprocessHelper.generatePopulations(precinctFiles);
     }
 
     private static void persistStates(Set<State> states) throws Throwable {
@@ -42,8 +43,8 @@ public class Preprocessing {
         }
     }
 
-    private static void persistPrecincts(Set<Precinct> precincts) throws Throwable {
-        for (Precinct p : precincts){
+    private static void persistPrecincts(Set<Precincts> precincts) throws Throwable {
+        for (Precincts p : precincts){
             hb.persistToDB(p);
         }
     }
