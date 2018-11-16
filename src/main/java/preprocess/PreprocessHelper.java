@@ -3,7 +3,6 @@ package preprocess;
 import com.vividsolutions.jts.geom.Point;
 import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
-import gerrymandering.model.Population;
 import gerrymandering.model.State;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
@@ -71,14 +70,24 @@ public class PreprocessHelper {
         return populationSet;
     }
 
-    public static Set<Demographics> generateDemographics(Set<File> files) throws Throwable {
+    public static Set<Demographics> generateDemographics(Set<File> files, HashMap<String, Integer> map) throws Throwable {
         Set<Demographics> demographicsSet = new HashSet<>();
         JSONParser parser = new JSONParser();
         Iterator<File> fileIterator = files.iterator();
         FileReader reader = new FileReader(fileIterator.next());
         JSONObject kansasJSON = (JSONObject) parser.parse(reader);
-        buildDemographics(demographicsSet, kansasJSON);
+        buildDemographics(demographicsSet, kansasJSON, map, "VTD_S", "VTDNAME");
         return demographicsSet;
+    }
+
+    public static Set<VotingData> generateVotingData(Set<File> files, HashMap<String, Integer> vtdMap) throws Throwable {
+        Set<VotingData> votingDataSet = new HashSet<>();
+        JSONParser parser = new JSONParser();
+        Iterator<File> fileIterator = files.iterator();
+        FileReader reader = new FileReader(fileIterator.next());
+        JSONArray kansasVTDJSON = (JSONArray) parser.parse(reader);
+        buildVTD(votingDataSet, kansasVTDJSON, vtdMap);
+        return votingDataSet;
     }
 
     private static void buildDistricts(Set<District> districtSet, int stateID, JSONArray districtJSONArray) throws Exception {
@@ -124,9 +133,8 @@ public class PreprocessHelper {
         }
     }
 
-    private static void buildDemographics(Set<Demographics> demographicsSet, JSONObject json) throws Throwable {
+    private static void buildDemographics(Set<Demographics> demographicsSet, JSONObject json, HashMap<String, Integer> map, String key1, String key2) throws Throwable {
         JSONArray precinctJSONArray = (JSONArray) json.get("features");
-        HibernateManager hb = HibernateManager.getInstance();
         for(Object precinct : precinctJSONArray){
             JSONObject properties = (JSONObject)((JSONObject)precinct).get("properties");
             Integer precinctID = Integer.parseInt(properties.get("ID").toString());
@@ -136,8 +144,29 @@ public class PreprocessHelper {
             int african_american = Integer.parseInt(properties.get("BLACK").toString());
             int native_american = Integer.parseInt(properties.get("AMINDIAN").toString());
             int other = Integer.parseInt(properties.get("OTHER").toString());
+            String VTD_S = properties.get(key1).toString().replaceAll("\\s", "");
+            String VTDNAME = properties.get(key2).toString().replaceAll("\\s", "");
+            String key = VTD_S + " " + VTDNAME;
+            map.put(key, precinctID);
             Demographics d = new Demographics(precinctID, asian, caucasian, hispanic, african_american, native_american, other);
             demographicsSet.add(d);
+        }
+    }
+
+    private static void buildVTD(Set<VotingData> vtdSet, JSONArray json, HashMap<String, Integer> vtdMap) throws Throwable {
+        for(Object vd : json){
+            JSONObject vdJOBject = ((JSONObject)vd);
+            String VTD_S = vdJOBject.get("VTD").toString().replaceAll("\\s","");
+            String VTDNAME = vdJOBject.get("PRECINCT").toString().replaceAll("\\s","");
+            String key = VTD_S + " " + VTDNAME;
+            Integer pID = vtdMap.get(key);
+            String party = vdJOBject.get("PARTY").toString();
+            if(pID == null){
+                continue;
+            } else if(party.equals("Democratic")){
+                String county = vdJOBject.get("COUNTY").toString();
+                VotingData data = new VotingData(county);
+            }
         }
     }
 

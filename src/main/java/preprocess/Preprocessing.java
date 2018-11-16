@@ -13,11 +13,14 @@ public class Preprocessing {
         hb = HibernateManager.getInstance();
         String[] districtFileNames = new String[1];
         String[] precinctFileNames = new String[1];
+        String[] votingDataFileNames = new String[1];
         districtFileNames[0] = "CSE308/src/main/resources/static/geojson/kansas_districts.json";
         precinctFileNames[0] = "CSE308/src/main/resources/static/geojson/precinct_data/kansas_state_voting_precincts_2012.json";
+        votingDataFileNames[0] = "CSE308/voting_data/kansas_2012_president_election.json";
 
         Set<File> districtFiles = PreprocessHelper.loadFiles(districtFileNames);
         Set<File> precinctFiles = PreprocessHelper.loadFiles(precinctFileNames);
+        Set<File> votingDataFiles = PreprocessHelper.loadFiles(votingDataFileNames);
 
         Set<State> states = PreprocessHelper.generateStates();
 //        persistStates(states);
@@ -29,8 +32,10 @@ public class Preprocessing {
 //        persistPrecincts(precincts);
         Set<Populations> populations = PreprocessHelper.generatePopulations(precinctFiles);
 //        persistPopulation(populations);
-        Set<Demographics> demographics = PreprocessHelper.generateDemographics(precinctFiles);
+        HashMap<String, Integer> precinctVTD = new HashMap<>();
+        Set<Demographics> demographics = PreprocessHelper.generateDemographics(precinctFiles, precinctVTD);
 //        persistDemographics(demographics);
+        Set<VotingData> votingData = PreprocessHelper.generateVotingData(votingDataFiles, precinctVTD);
     }
 
     private static void persistStates(Set<State> states) throws Throwable {
