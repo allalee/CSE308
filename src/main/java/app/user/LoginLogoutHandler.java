@@ -1,6 +1,7 @@
 package app.user;
 
 import gerrymandering.HibernateManager;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,7 +21,7 @@ import java.util.List;
  */
 
 @Controller
-public class Login {
+public class LoginLogoutHandler {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public @ResponseBody
@@ -42,9 +43,9 @@ public class Login {
 
         if(validUser){
             //redirect to homepage with indication that user is logged in.
-            Cookie userCookie = new Cookie("user", email);
-            resp.addCookie(userCookie);
-            userCookie.setPath("/");
+            //addCookie(resp, "user", email, 3600);
+            HttpSession session = req.getSession(true);
+            session.setAttribute("user", email);
             resp.setCharacterEncoding("UTF-8");
             resp.setContentType("text/plain");
             PrintWriter out = resp.getWriter();
@@ -60,6 +61,25 @@ public class Login {
 
     }
 
+    @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    public @ResponseBody
+    void logout(HttpServletRequest req, HttpServletResponse resp) throws Throwable {
+        //removeCookie(resp, "user");
+        HttpSession session = req.getSession(true);
+        session.invalidate();
+    }
 
+
+
+    public void addCookie(HttpServletResponse resp, String cookieName, String value, int maxAge){
+        Cookie userCookie = new Cookie(cookieName, value);
+        userCookie.setMaxAge(maxAge);
+        resp.addCookie(userCookie);
+        userCookie.setPath("/");
+    }
+
+    public void removeCookie(HttpServletResponse resp, String cookieName){
+        addCookie(resp, cookieName, null, 0);
+    }
 
 }
