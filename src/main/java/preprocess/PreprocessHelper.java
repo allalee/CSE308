@@ -105,7 +105,7 @@ public class PreprocessHelper {
             Map<String, Object> criteria = new HashMap<>();
             criteria.put("precinctId", precinctID);
             List<Object> list = hb.getRecordsBasedOnCriteria(Precincts.class, criteria);
-            list = null;
+
         }
     }
 
