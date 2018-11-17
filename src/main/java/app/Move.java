@@ -76,5 +76,4 @@ public class Move {
     public int getPrecinctID() {
         return precinctID;
     }
-    
 }
