@@ -57,4 +57,7 @@ public class State {
 
         return clonedState;
     }
+    public double getIdealPopulation() {
+        return this.totalPopulation/this.districtMap.size();
+    }
 }
