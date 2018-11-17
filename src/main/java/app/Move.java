@@ -1,5 +1,7 @@
 package app;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 /**
  * Created by Yixiu Liu on 11/11/2018.
  */
@@ -13,20 +15,54 @@ public class Move {
     private District dest;
     private Precinct precinct;
 
-    public void move(District src, District dest, Precinct precinct){
-        precinct.setDistrict(dest);
-
-        precinctID = precinct.getID();
-        srcDistrict = src.getID();
-        destDistrict = dest.getID();
-
+    public Move(District src, District dest, Precinct precinct) {
         this.src = src;
         this.dest = dest;
         this.precinct = precinct;
+        this.precinctID = precinct.getID();
+        this.srcDistrict = src.getID();
+        this.destDistrict = dest.getID();
+    }
+    public void execute(){
+        precinct.setDistrict(dest);
+
+        Geometry precinctGeometry = precinct.getGeometry();
+        dest.addToCurrentGeometry(precinctGeometry);
+        src.subtractFromCurrentGeometry(precinctGeometry);
+
+        int precinctPopulation = precinct.getPopulation();
+        dest.addPopulation(precinctPopulation);
+        src.removePopulation(precinctPopulation);
+
+        ElectionData precinctVotes = precinct.getElectionData();
+        int demVotes = precinctVotes.getNumVotesForDem();
+        int repVotes = precinctVotes.getNumVotesForRep();
+        dest.addVotes(Parties.DEMOCRAT, demVotes);
+        dest.addVotes(Parties.REPUBLICAN, repVotes);
+        src.removeVotes(Parties.DEMOCRAT, demVotes);
+        src.removeVotes(Parties.REPUBLICAN, repVotes);
+
     }
 
     public void undo(){
         precinct.setDistrict(src);
+
+        Geometry precinctGeometry = precinct.getGeometry();
+        src.addToCurrentGeometry(precinctGeometry);
+        dest.subtractFromCurrentGeometry(precinctGeometry);
+
+        int precinctPopulation = precinct.getPopulation();
+        src.addPopulation(precinctPopulation);
+        dest.removePopulation(precinctPopulation);
+
+        ElectionData precinctVotes = precinct.getElectionData();
+        int demVotes = precinctVotes.getNumVotesForDem();
+        int repVotes = precinctVotes.getNumVotesForRep();
+        src.addVotes(Parties.DEMOCRAT, demVotes);
+        src.addVotes(Parties.REPUBLICAN, repVotes);
+        dest.removeVotes(Parties.DEMOCRAT, demVotes);
+        dest.removeVotes(Parties.REPUBLICAN, repVotes);
+
     }
 
     public int getSrcDistrict() {
@@ -40,5 +76,5 @@ public class Move {
     public int getPrecinctID() {
         return precinctID;
     }
-
+    
 }

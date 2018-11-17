@@ -9,6 +9,9 @@ public class Precinct{
     private District district;
     private Set<Precinct> neighbors;
     private Geometry geometry;
+    private double area;
+    private int population;
+    private ElectionData electionData;
 
     public Precinct(int ID, Geometry geometry){
         this.ID = ID;
@@ -38,6 +41,9 @@ public class Precinct{
         neighbors.add(other);
         other.neighbors.add(this);
     }
+    public ElectionData getElectionData() {
+        return electionData;
+    }
 
     public Precinct chainClone(HashMap<Integer, District> districtMap){
         return chainClone(new HashMap<>(), districtMap);
@@ -63,6 +69,13 @@ public class Precinct{
             clonedPrecinct.neighbors.add(clonedNeighbor);
         }
         return clonedPrecinct;
+    }
+    public double getArea() {
+        return area;
+    }
+
+    public int getPopulation(){
+        return population;
     }
 
 }
