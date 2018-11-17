@@ -58,6 +58,10 @@
             <groupId>org.jboss.logging</groupId>
             <version>3.3.0.Final</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
 
     </dependencies>
 

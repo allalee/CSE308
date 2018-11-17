@@ -3,6 +3,7 @@ package app.user;
 import gerrymandering.HibernateManager;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,10 +25,12 @@ import java.util.List;
 public class LoginLogoutHandler {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public @ResponseBody
-    void login(@RequestParam("password") String password, @RequestParam("email") String email, HttpServletRequest req, HttpServletResponse resp) throws Throwable {
+    public String login(@RequestParam("password") String password, @RequestParam("email") String email, HttpServletRequest req, HttpServletResponse resp, Model model) throws Throwable {
 
         resp.setHeader("Access-Control-Allow-Origin", "*");
+
+        String username = "";
+        String usertype = null;
 
         HibernateManager hm = HibernateManager.getInstance();
         List<Object> users = hm.getAllRecords(UsersModel.class);
@@ -38,35 +41,45 @@ public class LoginLogoutHandler {
             UsersModel user = (UsersModel) itr.next();
             if(user.getEmail().equals(email) && user.getPassword().equals(password)) {
                 validUser = true;
+                username = user.getUsername();
+                usertype = user.getType();
             }
         }
 
         if(validUser){
             //redirect to homepage with indication that user is logged in.
-            //addCookie(resp, "user", email, 3600);
-            HttpSession session = req.getSession(true);
-            session.setAttribute("user", email);
-            resp.setCharacterEncoding("UTF-8");
-            resp.setContentType("text/plain");
-            PrintWriter out = resp.getWriter();
-            out.write("ok");
+            addCookie(resp, "user", email, 3600);
+            model.addAttribute("username", username);
+            model.addAttribute("usertype", usertype);
+            return "../static/index.html";
+//            resp.setCharacterEncoding("UTF-8");
+//            resp.setContentType("text/plain");
+//            PrintWriter out = resp.getWriter();
+//            out.write("ok");
         }
         else{
             //redirect to login page stating invalid login
-            resp.setCharacterEncoding("UTF-8");
-            resp.setContentType("text/plain");
-            PrintWriter out = resp.getWriter();
-            out.write("Invalid Login Email or Password."); //message is passed as response to ajax in javascript
+            model.addAttribute("invalid","");
+            return "../static/login.html";
+//            resp.setCharacterEncoding("UTF-8");
+//            resp.setContentType("text/plain");
+//            PrintWriter out = resp.getWriter();
+//            out.write("Invalid Login Email or Password."); //message is passed as response to ajax in javascript
+//            return null;
         }
 
     }
 
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
-    public @ResponseBody
-    void logout(HttpServletRequest req, HttpServletResponse resp) throws Throwable {
-        //removeCookie(resp, "user");
+    public String logout(HttpServletRequest req, HttpServletResponse resp, Model model) throws Throwable {
+        removeCookie(resp, "user");
         HttpSession session = req.getSession(true);
-        session.invalidate();
+        model.addAttribute("usertype",null);
+        if(session != null) {
+            session.invalidate();
+        }
+        return "../static/index.html";
+
     }
 
 

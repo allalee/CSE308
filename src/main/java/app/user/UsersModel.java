@@ -34,12 +34,17 @@ public class UsersModel implements Serializable {
     )
     private String password;
 
-    public UsersModel(String username, String password, String email) throws Exception {
+    @Column(
+            name = "ROLE"
+    )
+    private String role;
+
+    public UsersModel(String username, String password, String email, String role) throws Exception {
 
         this.username = username;
         this.password = password;
         this.email = email;
-
+        this.role = role;
     }
 
     public UsersModel() {
@@ -56,4 +61,6 @@ public class UsersModel implements Serializable {
     public String getEmail(){
         return this.email;
     }
+
+    public String getType() { return this.role; }
 }

@@ -23,7 +23,7 @@
 
 
 
-<script>
+<!-- <script>
 	var req;
 	var errorField;
 	
@@ -35,7 +35,7 @@
 		var url = "http://localhost:8080/login?email="+email+"&password="+password;
 		req = new XMLHttpRequest();
 		req.open("POST", url, true);
-		req.onreadystatechange = validation; //call back function that gets called after servlet runs
+		//req.onreadystatechange = validation; //call back function that gets called after servlet runs
 		req.send(null);
 	}
 	
@@ -45,13 +45,10 @@
 				errorField.innerHTML = req.responseText;
 				emailField.focus();
 			}
-			else{
-				window.location.replace("./index.html");
-			}
 		}
 	}
 	
-</script>
+</script> -->
 
 
 <body class='bg-dark'>
@@ -62,9 +59,7 @@
 
         <div class='jumbotron single-pane'>
           <div class='page-header standard-text'><h1>Login</h1></div>
-		  
-		  <div id="errmsg" style="color:red;"></div>
-
+		<form action="http://localhost:8080/login" method="POST">
           <!--IF USERNAME AND PASSWORD EXIST IN DB, LOG IN AND REDIRECT TO HOME PAGE. OTHERWISE, GO BACK TO THIS PAGE AND POP UP 'INVALID LOGIN'-->
             <div class='form-group'>
                 <label> Email </label>
@@ -76,10 +71,10 @@
             </div>
               <!--AFTER CLICK, REDIRECT TO HOME PAGE-->
             <div class='form-group'>
-                <input type="submit" class='btn btn-basic' onClick="validateLogin();"/>
+                <input type="submit" class='btn btn-basic'/>
             </div>
 		   <a href="./register.html">Haven't registered? Register here </a>
-
+		</form>
 
         </div>
       </div>
