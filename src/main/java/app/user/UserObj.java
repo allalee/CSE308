@@ -7,11 +7,13 @@ public class UserObj {
     private String username;
     private String password;
     private String email;
+    private String role;
 
-    public UserObj(String username, String password, String email){
+    public UserObj(String username, String password, String email, String role){
         this.username = username;
         this.password = password;
         this.email = email;
+        this.role = role;
     }
 
     public String getUsername(){
@@ -24,5 +26,9 @@ public class UserObj {
 
     public String getEmail(){
         return this.email;
+    }
+
+    public String getRole(){
+        return this.role;
     }
 }
