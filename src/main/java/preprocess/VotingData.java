@@ -4,11 +4,7 @@ import app.ElectionType;
 import app.Parties;
 
 import java.io.Serializable;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table (
@@ -37,10 +33,12 @@ public class VotingData implements Serializable{
             name = "REPRESENTATIVE"
     )
     private String representative;
+    @Enumerated(EnumType.STRING)
     @Column(
             name = "PARTY"
     )
     private Parties party;
+    @Enumerated(EnumType.STRING)
     @Column(
             name = "ELECTION_TYPE"
     )

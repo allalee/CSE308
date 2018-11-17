@@ -1,5 +1,7 @@
 package preprocess;
 
+import app.ElectionType;
+import app.Parties;
 import com.vividsolutions.jts.geom.Point;
 import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
@@ -163,9 +165,13 @@ public class PreprocessHelper {
             String party = vdJOBject.get("PARTY").toString();
             if(pID == null){
                 continue;
-            } else if(party.equals("Democratic")){
+            } else if(party.equals("Democratic") || party.equals("Republican") || party.equals("Libertarian") || party.equals("Green") || party.equals("Other")){
                 String county = vdJOBject.get("COUNTY").toString();
-                VotingData data = new VotingData(county);
+                Integer voteCount = Integer.parseInt(vdJOBject.get("VOTES").toString());
+                String representative = vdJOBject.get("CANDIDATE").toString();
+                String repParty = vdJOBject.get("PARTY").toString().toUpperCase();
+                VotingData data = new VotingData(county, voteCount, pID, representative, Parties.valueOf(repParty), ElectionType.PRESIDENTIAL, 2012);
+                vtdSet.add(data);
             }
         }
     }
