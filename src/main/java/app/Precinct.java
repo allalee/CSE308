@@ -13,38 +13,22 @@ public class Precinct{
     private double area;
     private int population;
     private ElectionData electionData;
+    private HashMap<Ethnicity, Integer> demographics;
 
     public Precinct(int ID, Geometry geometry){
         this.ID = ID;
         this.geometry = geometry;
-        neighbors = new HashSet<>();
+        this.neighbors = new HashSet<>();
+        this.demographics = new HashMap<>();
     }
-
-    public int getID(){ return ID; }
-    public District getDistrict(){
-        return district;
-    }
-    public void setDistrict(District district){
-        this.district = district;
-        this.districtID = district.getID();
-    }
-    public Geometry getGeometry() {
-        return geometry;
-    }
-    public void setGeometry(Geometry geometry) {
-        this.geometry = geometry;
-    }
-    public Set<Precinct> getNeighbors(){
-        return neighbors;
-    }
-
-
+  
     public void addNeighbor(Precinct other) {
         neighbors.add(other);
         other.neighbors.add(this);
     }
-    public ElectionData getElectionData() {
-        return electionData;
+
+    public void addDemographic(Ethnicity ethn, Integer pop){
+        demographics.put(ethn, pop);
     }
 
     public Precinct chainClone(HashMap<Integer, District> districtMap){
@@ -72,12 +56,45 @@ public class Precinct{
         }
         return clonedPrecinct;
     }
+
     public double getArea() {
         return area;
+    }
+
+    public void setPopulation(int pop){
+        this.population = pop;
     }
 
     public int getPopulation(){
         return population;
     }
+
+    public int getID(){ return ID; }
+
+    public District getDistrict(){
+        return district;
+    }
+    public void setDistrict(District district){
+        this.district = district;
+        this.districtID = district.getID();
+    }
+
+    public Geometry getGeometry() {
+        return geometry;
+    }
+
+    public void setGeometry(Geometry geometry) {
+        this.geometry = geometry;
+    }
+
+    public Set<Precinct> getNeighbors(){
+        return neighbors;
+    }
+
+
+    public ElectionData getElectionData() {
+        return electionData;
+    }
+
 
 }
