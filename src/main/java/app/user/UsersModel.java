@@ -20,6 +20,11 @@ public class UsersModel implements Serializable {
 
     @Id
     @Column(
+            name = "EMAIL"
+    )
+    private String email;
+
+    @Column(
             name = "USERNAME"
     )
     private String username;
@@ -30,16 +35,16 @@ public class UsersModel implements Serializable {
     private String password;
 
     @Column(
-            name = "EMAIL"
+            name = "ROLE"
     )
-    private String email;
+    private String role;
 
-    public UsersModel(String username, String password, String email) throws Exception {
+    public UsersModel(String username, String password, String email, String role) throws Exception {
 
         this.username = username;
         this.password = password;
         this.email = email;
-
+        this.role = role;
     }
 
     public UsersModel() {
@@ -56,4 +61,6 @@ public class UsersModel implements Serializable {
     public String getEmail(){
         return this.email;
     }
+
+    public String getType() { return this.role; }
 }

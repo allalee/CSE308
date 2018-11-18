@@ -42,8 +42,8 @@ public class RegionGrow extends Algorithm{
 
             //try claiming one or all (depend on algo) of the neighbors
             for(Precinct neighbor: availableNeighbors){
-                Move move = new Move();
-                move.move(neighbor.getDistrict(), currentPrecinct.getDistrict(), neighbor);
+                Move move = new Move(neighbor.getDistrict(), currentPrecinct.getDistrict(), neighbor);
+                move.execute();
                 double newFunctionValue = calculateFunctionValue();
                 if ( isBetter(newFunctionValue, functionValue) ){
                     functionValue = newFunctionValue;

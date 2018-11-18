@@ -2,7 +2,6 @@ package preprocess;
 
 import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
-import gerrymandering.model.Precinct;
 import gerrymandering.model.State;
 
 import java.io.File;
@@ -14,20 +13,30 @@ public class Preprocessing {
         hb = HibernateManager.getInstance();
         String[] districtFileNames = new String[1];
         String[] precinctFileNames = new String[1];
+        String[] votingDataFileNames = new String[1];
         districtFileNames[0] = "CSE308/src/main/resources/static/geojson/kansas_districts.json";
         precinctFileNames[0] = "CSE308/src/main/resources/static/geojson/precinct_data/kansas_state_voting_precincts_2012.json";
+        votingDataFileNames[0] = "CSE308/voting_data/kansas_2012_president_election.json";
 
         Set<File> districtFiles = PreprocessHelper.loadFiles(districtFileNames);
         Set<File> precinctFiles = PreprocessHelper.loadFiles(precinctFileNames);
+        Set<File> votingDataFiles = PreprocessHelper.loadFiles(votingDataFileNames);
 
         Set<State> states = PreprocessHelper.generateStates();
-        persistStates(states);
+//        persistStates(states);
         HashMap<String, Integer> stateHashMap = generateStateHashMap();
         Set<District> districts = PreprocessHelper.generateDistricts(districtFiles, stateHashMap);
-        persistDistricts(districts);
+//        persistDistricts(districts);
         HashMap<District, Integer> kansasDistricts = generateDistrictHashMap(stateHashMap.get("Kansas"));
-        Set<Precinct> precincts = PreprocessHelper.generatePrecincts(precinctFiles, kansasDistricts);
-        persistPrecincts(precincts);
+        Set<Precincts> precincts = PreprocessHelper.generatePrecincts(precinctFiles, kansasDistricts);
+//        persistPrecincts(precincts);
+        Set<Populations> populations = PreprocessHelper.generatePopulations(precinctFiles);
+//        persistPopulation(populations);
+        HashMap<String, Integer> precinctVTD = new HashMap<>();
+        Set<Demographics> demographics = PreprocessHelper.generateDemographics(precinctFiles, precinctVTD);
+//        persistDemographics(demographics);
+        Set<VotingData> votingData = PreprocessHelper.generateVotingData(votingDataFiles, precinctVTD);
+        persistVotingData(votingData);
     }
 
     private static void persistStates(Set<State> states) throws Throwable {
@@ -42,9 +51,27 @@ public class Preprocessing {
         }
     }
 
-    private static void persistPrecincts(Set<Precinct> precincts) throws Throwable {
-        for (Precinct p : precincts){
+    private static void persistPrecincts(Set<Precincts> precincts) throws Throwable {
+        for (Precincts p : precincts){
             hb.persistToDB(p);
+        }
+    }
+
+    private static void persistPopulation(Set<Populations> population) throws Throwable {
+        for(Populations p : population){
+            hb.persistToDB(p);
+        }
+    }
+
+    private static void persistDemographics(Set<Demographics> demographics) throws Throwable {
+        for(Demographics d : demographics){
+            hb.persistToDB(d);
+        }
+    }
+
+    private static void persistVotingData(Set<VotingData> votingData) throws Throwable {
+        for(VotingData v : votingData){
+            hb.persistToDB(v);
         }
     }
 

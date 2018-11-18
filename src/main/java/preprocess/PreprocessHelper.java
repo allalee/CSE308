@@ -1,13 +1,14 @@
 package preprocess;
 
+import app.ElectionType;
+import app.Parties;
 import com.vividsolutions.jts.geom.Point;
+import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
-import gerrymandering.model.Precinct;
 import gerrymandering.model.State;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.geojson.GeoJsonReader;
 
@@ -51,14 +52,44 @@ public class PreprocessHelper {
         return districtSet;
     }
 
-    public static Set<Precinct> generatePrecincts(Set<File> files, HashMap<District, Integer> districtMap) throws Exception {
-        Set<Precinct> precinctSet = new HashSet<>();
+    public static Set<Precincts> generatePrecincts(Set<File> files, HashMap<District, Integer> districtMap) throws Exception {
+        Set<Precincts> precinctSet = new HashSet<>();
         JSONParser parser = new JSONParser();
         Iterator<File> fileIterator = files.iterator();
         FileReader reader = new FileReader(fileIterator.next());
         JSONObject kansasPrecinctJSON = (JSONObject) parser.parse(reader);
         buildPrecincts(precinctSet, kansasPrecinctJSON, districtMap);
         return precinctSet;
+    }
+
+    public static Set<Populations> generatePopulations(Set<File> files) throws Throwable {
+        Set<Populations> populationSet = new HashSet<>();
+        JSONParser parser = new JSONParser();
+        Iterator<File> fileIterator = files.iterator();
+        FileReader reader = new FileReader(fileIterator.next());
+        JSONObject kansasPrecinctJSON = (JSONObject) parser.parse(reader);
+        buildPopulations(populationSet, kansasPrecinctJSON);
+        return populationSet;
+    }
+
+    public static Set<Demographics> generateDemographics(Set<File> files, HashMap<String, Integer> map) throws Throwable {
+        Set<Demographics> demographicsSet = new HashSet<>();
+        JSONParser parser = new JSONParser();
+        Iterator<File> fileIterator = files.iterator();
+        FileReader reader = new FileReader(fileIterator.next());
+        JSONObject kansasJSON = (JSONObject) parser.parse(reader);
+        buildDemographics(demographicsSet, kansasJSON, map, "VTD_S", "VTDNAME");
+        return demographicsSet;
+    }
+
+    public static Set<VotingData> generateVotingData(Set<File> files, HashMap<String, Integer> vtdMap) throws Throwable {
+        Set<VotingData> votingDataSet = new HashSet<>();
+        JSONParser parser = new JSONParser();
+        Iterator<File> fileIterator = files.iterator();
+        FileReader reader = new FileReader(fileIterator.next());
+        JSONArray kansasVTDJSON = (JSONArray) parser.parse(reader);
+        buildVTD(votingDataSet, kansasVTDJSON, vtdMap);
+        return votingDataSet;
     }
 
     private static void buildDistricts(Set<District> districtSet, int stateID, JSONArray districtJSONArray) throws Exception {
@@ -71,16 +102,77 @@ public class PreprocessHelper {
         }
     }
 
-    private static void buildPrecincts(Set<Precinct> precinctSet, JSONObject precinctJSON, HashMap<District, Integer> districtMap) throws Exception {
+    private static void buildPrecincts(Set<Precincts> precinctSet, JSONObject precinctJSON, HashMap<District, Integer> districtMap) throws Exception {
         JSONArray precinctJSONArray = (JSONArray) precinctJSON.get("features");
         for(Object precinct : precinctJSONArray){
+            JSONObject properties = (JSONObject) ((JSONObject)precinct).get("properties");
+            Integer precinctID = Integer.parseInt(properties.get("ID").toString());
             GeoJsonReader geoReader = new GeoJsonReader();
             String precinctGeometry = ((JSONObject)precinct).get("geometry").toString();
             Geometry geometry = geoReader.read(precinctGeometry);
             Point centerPoint = geometry.getCentroid();
             String centerString = "{x:" + centerPoint.getX() + ",y:" + centerPoint.getY() + "}";
-            Precinct p = new Precinct(findDistrictID(geometry, districtMap), centerString, precinctGeometry);
+            Precincts p = new Precincts(precinctID, findDistrictID(geometry, districtMap), centerString, precinctGeometry);
             precinctSet.add(p);
+        }
+    }
+
+    private static void buildPopulations(Set<Populations> populationSet, JSONObject json) throws Throwable {
+        JSONArray precinctJSONArray = (JSONArray) json.get("features");
+        HibernateManager hb = HibernateManager.getInstance();
+        for(Object precinct : precinctJSONArray){
+            JSONObject properties = (JSONObject)((JSONObject)precinct).get("properties");
+            Integer precinctID = Integer.parseInt(properties.get("ID").toString());
+            Map<String, Object> criteria = new HashMap<>();
+            criteria.put("precinctId", precinctID);
+            List<Object> list = hb.getRecordsBasedOnCriteria(Precincts.class, criteria);
+            Precincts p = (Precincts) list.get(0);
+            int pID = p.getPrecinctId();
+            int dID = p.getDistrictId();
+            Integer population = Integer.parseInt(properties.get("POPULATION").toString());
+            Populations pop = new Populations(population, pID, dID);
+            populationSet.add(pop);
+        }
+    }
+
+    private static void buildDemographics(Set<Demographics> demographicsSet, JSONObject json, HashMap<String, Integer> map, String key1, String key2) throws Throwable {
+        JSONArray precinctJSONArray = (JSONArray) json.get("features");
+        for(Object precinct : precinctJSONArray){
+            JSONObject properties = (JSONObject)((JSONObject)precinct).get("properties");
+            Integer precinctID = Integer.parseInt(properties.get("ID").toString());
+            int asian = Integer.parseInt(properties.get("ASIAN").toString());
+            int caucasian = Integer.parseInt(properties.get("WHITE").toString());
+            int hispanic = Integer.parseInt(properties.get("HISPANIC_O").toString());
+            int african_american = Integer.parseInt(properties.get("BLACK").toString());
+            int native_american = Integer.parseInt(properties.get("AMINDIAN").toString());
+            int other = Integer.parseInt(properties.get("OTHER").toString());
+            String VTD_S = properties.get(key1).toString().replaceAll("\\s", "");
+            String VTDNAME = properties.get(key2).toString().replaceAll("\\s", "");
+            String key = VTD_S + " " + VTDNAME;
+            map.put(key, precinctID);
+            Demographics d = new Demographics(precinctID, asian, caucasian, hispanic, african_american, native_american, other);
+            demographicsSet.add(d);
+        }
+    }
+
+    private static void buildVTD(Set<VotingData> vtdSet, JSONArray json, HashMap<String, Integer> vtdMap) throws Throwable {
+        for(Object vd : json){
+            JSONObject vdJOBject = ((JSONObject)vd);
+            String VTD_S = vdJOBject.get("VTD").toString().replaceAll("\\s","");
+            String VTDNAME = vdJOBject.get("PRECINCT").toString().replaceAll("\\s","");
+            String key = VTD_S + " " + VTDNAME;
+            Integer pID = vtdMap.get(key);
+            String party = vdJOBject.get("PARTY").toString();
+            if(pID == null){
+                continue;
+            } else if(party.equals("Democratic") || party.equals("Republican") || party.equals("Libertarian") || party.equals("Green") || party.equals("Other")){
+                String county = vdJOBject.get("COUNTY").toString();
+                Integer voteCount = Integer.parseInt(vdJOBject.get("VOTES").toString());
+                String representative = vdJOBject.get("CANDIDATE").toString();
+                String repParty = vdJOBject.get("PARTY").toString().toUpperCase();
+                VotingData data = new VotingData(county, voteCount, pID, representative, Parties.valueOf(repParty), ElectionType.PRESIDENTIAL, 2012);
+                vtdSet.add(data);
+            }
         }
     }
 

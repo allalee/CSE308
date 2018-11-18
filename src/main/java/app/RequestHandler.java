@@ -38,51 +38,23 @@ public class RequestHandler {
             return "Works";
         }
 
-        @RequestMapping(value = "/loadKansas", method = RequestMethod.GET)
-        public @ResponseBody
-        String loadKansas() throws IOException, ParseException,com.vividsolutions.jts.io.ParseException {
-
-            State kansas = new State("Kansas_2", 2222222);
-            JTSConverter jtsConverter = new JTSConverter();
-
-            jtsConverter.loadAndSetUpKansas(kansas);
-
-            sm.addState(kansas);
-            sm.setActiveState("Kansas_2");
-
-            return "Kansas_2 Loaded";
-        }
-
-        @RequestMapping(value = "/getNeighbor", method = RequestMethod.GET)
-        public @ResponseBody
-        String getNeighbors(@RequestParam ("id") String precinctId) throws IOException, ParseException {
-            Set<Precinct> neighbors = sm.getNeighborPrecincts(Integer.parseInt(precinctId));
-
-            String neighborJSON = "[";
-            for(Precinct p : neighbors)
-                neighborJSON += p.getID() + ",";
-            neighborJSON += "-1]";
-
-            return neighborJSON;
-        }
-
         @Autowired BeanFactory beanFactory;
 
-        @RequestMapping(value = "/startAlgorithm", method = RequestMethod.GET)
-        public @ResponseBody
-        String startAlgo(@RequestParam ("state_name") String stateName) throws IOException, ParseException {
-
-            sm.setActiveState(stateName);
-            State state = sm.cloneState(stateName);
-
-            System.out.println("Districts: "+state.getAllDistricts().size());
-            System.out.println("Precincts: "+ state.getAllPrecincts().size());
-
-            solver.addAlgoirhtm(beanFactory.getBean(RegionGrow.class));
-            solver.setState(state);
-            solver.run();
-
-            return "Algo started";
-        }
+//        @RequestMapping(value = "/startAlgorithm", method = RequestMethod.GET)
+//        public @ResponseBody
+//        String startAlgo(@RequestParam ("state_name") String stateName) throws IOException, ParseException {
+//
+//            sm.setActiveState(stateName);
+//            State state = sm.cloneState(stateName);
+//
+//            System.out.println("Districts: "+state.getAllDistricts().size());
+//            System.out.println("Precincts: "+ state.getAllPrecincts().size());
+//
+//            solver.addAlgoirhtm(beanFactory.getBean(RegionGrow.class));
+//            solver.setState(state);
+//            solver.run();
+//
+//            return "Algo started";
+//        }
 
 }
