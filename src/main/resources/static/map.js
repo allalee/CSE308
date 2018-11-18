@@ -143,6 +143,7 @@ function addDistrictsLayer() {
   districtJson = L.geoJson(districtData, {
       onEachFeature: onEachDistrictFeature
   }).addTo(mymap);
+  layer_manager.manage_district(districtJson);
 }
 
 function loadPrecincts(e) {
@@ -158,6 +159,7 @@ function addPrecintsLayer() {
   precinctJson = L.geoJson(precinctData, {
       onEachFeature: onEachPrecinctFeature
   }).addTo(mymap);
+  layer_manager.manage_precinct(precinctJson);
 }
 
 function addStateLayer () {

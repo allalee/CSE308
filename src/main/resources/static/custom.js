@@ -20,7 +20,6 @@ function getValueEx() {
   console.log(val);
 }
 
-
 /*
 var stateGeoJson;
 var distGeoJson;
