@@ -24,6 +24,7 @@ public class StateManager {
             app.State state = getState(stateName);
             getDistricts(state);
             getPrecincts(state.getDistrictMap());
+            getPrecinctNeighbors(state);
             stateMap.put(stateName, state);
             currentState = state;
         }
@@ -77,6 +78,15 @@ public class StateManager {
                 d.addPrecinct(precinct.getID(), precinct);
             }
         }
+    }
+
+    private void getPrecinctNeighbors(app.State state){
+        List<Precinct> precinctList = new ArrayList<>();
+        for(app.District d : state.getDistrictMap().values()){
+            precinctList.addAll(d.getAllPrecincts());
+        }
+        JTSConverter converter = new JTSConverter();
+        converter.buildNeighbor(precinctList);
     }
 
     public State cloneState(String name){
