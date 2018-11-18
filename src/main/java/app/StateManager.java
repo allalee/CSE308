@@ -4,6 +4,8 @@ import java.util.*;
 
 import com.vividsolutions.jts.geom.Geometry;
 import gerrymandering.HibernateManager;
+import gerrymandering.model.Population;
+import preprocess.Populations;
 
 
 public class StateManager {
@@ -25,6 +27,7 @@ public class StateManager {
             getDistricts(state);
             getPrecincts(state.getDistrictMap());
             getPrecinctNeighbors(state);
+            getPopulation(state);
             stateMap.put(stateName, state);
             currentState = state;
         }
@@ -78,6 +81,40 @@ public class StateManager {
                 d.addPrecinct(precinct.getID(), precinct);
             }
         }
+    }
+
+    private void getPopulation(app.State state) throws Throwable {
+        List<Object> l;
+        Map<String, Object> criteria = new HashMap<>();
+        HashMap<Integer, District> dMap = state.getDistrictMap();
+        for(District d : dMap.values()){
+            criteria.put("districtId", d.getID());
+            l = hb.getRecordsBasedOnCriteria(Populations.class, criteria);
+            for(Object o : l){
+                Populations pop = (Populations)o;
+                d.getPrecinct(pop.getPrecinctId()).setPopulation(pop.getPopulation());
+            }
+        }
+
+    }
+
+    private void getDemographics(app.Precinct precinct) throws Throwable{
+        Map<String, Object> criteria = new HashMap<>();
+        List<Object> l;
+        criteria.put("precinctID", precinct.getID());
+        l = hb.getRecordsBasedOnCriteria(preprocess.Demographics.class, criteria);
+        preprocess.Demographics d = (preprocess.Demographics)l.get(0);
+        HashMap<String, Integer> dMap = d.getDemographicMap();
+        precinct.addDemographic(Ethnicity.ASIAN, dMap.get("Asian"));
+        precinct.addDemographic(Ethnicity.AFRICAN_AMERICAN, dMap.get("African-American"));
+        precinct.addDemographic(Ethnicity.CAUCASIAN, dMap.get("Caucasian"));
+        precinct.addDemographic(Ethnicity.HISPANIC, dMap.get("Hispanic"));
+        precinct.addDemographic(Ethnicity.NATIVE_AMERICAN, dMap.get("Native-American"));
+        precinct.addDemographic(Ethnicity.OTHER, dMap.get("Other"));
+    }
+
+    private void getElectionData(){
+
     }
 
     private void getPrecinctNeighbors(app.State state){
