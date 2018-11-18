@@ -1,13 +1,18 @@
 package app;
 
+import com.google.gson.annotations.Expose;
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.util.*;
 
 public class Precinct{
+    @Expose
     private int ID;
     private District district;
+    @Expose
+    private int districtID;
     private Set<Precinct> neighbors;
+    @Expose
     private Geometry geometry;
     private double area;
     private int population;
@@ -25,6 +30,7 @@ public class Precinct{
     }
     public void setDistrict(District district){
         this.district = district;
+        this.districtID = district.getID();
     }
     public Geometry getGeometry() {
         return geometry;
