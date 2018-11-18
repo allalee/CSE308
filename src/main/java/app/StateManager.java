@@ -1,25 +1,17 @@
 package app;
 
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.geojson.GeoJsonReader;
 import gerrymandering.HibernateManager;
 import org.json.simple.parser.ParseException;
 
 public class StateManager {
-    private HashMap<String, State> stateMap;
-    private State currentState;
+    private HashMap<String, app.State> stateMap;
+    private app.State currentState;
     private HibernateManager hb;
-    private List<Object> l;
 
     public StateManager() throws Exception {
         stateMap = new HashMap<>();
@@ -27,13 +19,17 @@ public class StateManager {
         currentState = null;
     }
 
-    public void createState(String stateName, Integer stateID) throws IOException, ParseException, com.vividsolutions.jts.io.ParseException {
+    public void createState(String stateName, Integer stateID) throws Throwable {
         if (stateMap.get(stateName) != null){
             loadState(stateName);
         } else {
-            State state = createState(stateName);
+            app.State state = getState(stateName);
+            getDistricts(state);
+            stateMap.put(stateName, state);
+            currentState = state;
         }
     }
+
 
     /**If a state already exists, then get it from the HashMap
      * @param stateName Name of the state you wish to get
@@ -42,10 +38,19 @@ public class StateManager {
         currentState = stateMap.get(stateName);
     }
 
-    private State createState(String stateName) throws Throwable {
+    private State getState(String stateName) throws Throwable {
+        List<Object> l;
         Map<String, Object> criteria = new HashMap<>();
         criteria.put("name", stateName);
         l = hb.getRecordsBasedOnCriteria(gerrymandering.model.State.class, criteria);
+        gerrymandering.model.State s = (gerrymandering.model.State) l.iterator().next();
+        app.State state = new State(s.getName(), s.getStateId());
+        return state;
+    }
+
+    private void getDistricts(app.State state) throws Throwable {
+        int stateID = state.getID();
+
     }
 
     public State cloneState(String name){

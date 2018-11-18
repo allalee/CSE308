@@ -36,7 +36,7 @@ public class Preprocessing {
         Set<Demographics> demographics = PreprocessHelper.generateDemographics(precinctFiles, precinctVTD);
 //        persistDemographics(demographics);
         Set<VotingData> votingData = PreprocessHelper.generateVotingData(votingDataFiles, precinctVTD);
-        persistVotingData(votingData);
+//        persistVotingData(votingData);
     }
 
     private static void persistStates(Set<State> states) throws Throwable {
