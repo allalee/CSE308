@@ -63,7 +63,7 @@ public class District{
     }
     public void addVotes(Parties p,int votes) {
         switch(p){
-            case DEMOCRAT:
+            case DEMOCRATIC:
                 democraticVotes+=votes;
                 break;
             case REPUBLICAN:
@@ -73,7 +73,7 @@ public class District{
     }
     public void removeVotes(Parties p,int votes) {
         switch(p){
-            case DEMOCRAT:
+            case DEMOCRATIC:
                 democraticVotes-=votes;
                 break;
             case REPUBLICAN:

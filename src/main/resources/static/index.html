@@ -101,9 +101,7 @@
 
           <a th:if="${usertype == 'admin'}" th:text="Logout" class="nav-item nav-link text-light" href="http://localhost:8080/logout"></a>
 
-          <p th:if="${usertype == '' || usertype == null}" >
-             <a class="nav-item nav-link text-light" href="login.html">Login</a>
-          </p>
+          <a th:if="${usertype == '' || usertype == null}" class="nav-item nav-link text-light" href="login.html">Login</a>
 
 
 
