@@ -23,6 +23,7 @@ public abstract class Algorithm {
             stop();
         }
         algoThread = new Thread(()->{
+            functionValue = 0;
             running = true;
             run();
         });
