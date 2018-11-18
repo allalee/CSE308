@@ -8,6 +8,7 @@ var layer_manager = (function(){
     m = {}
     m.district_layer_map = {}
     m.precinct_layer_map = {}
+    m.precinct_district_map = {}
 
     m.manage_district = function(layer_group){
         layers = layer_group._layers
@@ -23,6 +24,8 @@ var layer_manager = (function(){
             var id = layers[key].feature[ATTR_PROPERTY_NAME][ATTR_PRECINCT_ID_NAME]
             m.precinct_layer_map[id] = layers[key]
         }
+
+        // get the precinct's owner district property. set it in a map
     }
 
     m.color_district = function(district_id, color){
@@ -34,6 +37,10 @@ var layer_manager = (function(){
     }
 
     m.clear = function(){ m.district_layer_map = {}; m.precinct_layer_map = {} }
+
+    m.map_precinct_color = function(district_id){
+
+    }
 
     return m
 
@@ -55,7 +62,7 @@ var dynamic_color_changer = (function(){
             cc.color_map[move_object.dest] = to_color;
         }
         layer_manager.color_precinct(move_object.precinct, to_color);
-
+        return to_color;
     }
     cc.next_color = function(){
         if ( cc.color_pointer > cc.color_list.length - 1 )
@@ -71,5 +78,6 @@ var dynamic_color_changer = (function(){
         return new_color;
         */
     }
+    cc.reset = function(){ cc.color_map = {} }
     return cc
 })();

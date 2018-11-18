@@ -25,6 +25,10 @@ public class Move {
     }
     public void execute(){
         precinct.setDistrict(dest);
+        dest.addPrecinct(precinctID, precinct);
+        dest.addBoundary(precinctID, precinct);
+        src.removePrecinct(precinct);
+        src.removeBoundary(precinct);
 
         Geometry precinctGeometry = precinct.getGeometry();
         dest.addToCurrentGeometry(precinctGeometry);
@@ -46,6 +50,10 @@ public class Move {
 
     public void undo(){
         precinct.setDistrict(src);
+        dest.removePrecinct(precinct);
+        dest.removeBoundary(precinct);
+        src.addPrecinct(precinctID, precinct);
+        src.addBoundary(precinctID, precinct);
 
         Geometry precinctGeometry = precinct.getGeometry();
         src.addToCurrentGeometry(precinctGeometry);
@@ -63,6 +71,15 @@ public class Move {
         dest.removeVotes(Parties.DEMOCRATIC, demVotes);
         dest.removeVotes(Parties.REPUBLICAN, repVotes);
 
+    }
+
+    public String toString(){
+        String json = "{";
+        json += "\"src\":\""+getSrcDistrict();
+        json += "\",\"dest\":\""+getDestDistrict();
+        json += "\",\"precinct\":\""+getPrecinctID();
+        json += "\"}";
+        return json;
     }
 
     public int getSrcDistrict() {
