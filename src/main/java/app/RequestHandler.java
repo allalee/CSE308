@@ -23,7 +23,10 @@ public class RequestHandler {
         @Autowired
         SocketHandler socketHandler;
 
-        // template of ajax handler
+    public RequestHandler() throws Exception {
+    }
+
+    // template of ajax handler
         @RequestMapping(value = "/helloworld", method = RequestMethod.GET)
         public @ResponseBody
         String sayhHello() {
@@ -33,7 +36,7 @@ public class RequestHandler {
 
         @RequestMapping(value = "/getState", method = RequestMethod.GET)
         public @ResponseBody
-        String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws IOException, ParseException, com.vividsolutions.jts.io.ParseException {
+        String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws Throwable {
             sm.createState(state, stateID);
             return "Works";
         }
