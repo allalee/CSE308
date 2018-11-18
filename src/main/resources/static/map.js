@@ -12,6 +12,7 @@ var districtJson; //District handler added to the map
 var precinctJson;
 
 var currentStateID; //Keeping track of which state the user clicks on
+var currentStateName;
 
 var statesData;
 var districtData=kansasDist;
@@ -59,13 +60,17 @@ function stateSearch() {
   if(mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
     return;
   }
-  stateName = document.getElementById('statefield').value.toUpperCase();
+  stateName = document.getElementById('statefield').value;
+  stateNameUpper = stateName.toUpperCase();
   //console.log(stateName);
-  if(id = state_fps_hashmap[stateName]) {
+  if(id = state_fps_hashmap[stateNameUpper]) {
     currentStateID= id;
+    currentStateName = stateNameUpper.value.toLowerCase();
+    currentStateName = currentStateName.charAt(0).toUpperCase(); //Make first letter uppercase
     targetState = findState(currentStateID);
     mymap.fitBounds(targetState.getBounds());
     //Retrieve districts data from server and set
+    loadStateJson(currentStateName, currentStateID)
     stateJson.remove();
     addDistrictsLayer();
   }
@@ -129,12 +134,14 @@ function zoomToFeature(e) {
 
 function setCurrentState(target) {
     currentStateID = target.feature.properties['STATE'];
+    currentStateName = target.feature.properties['NAME'];
 }
 
 function loadDistricts(e) {
     mymap.fitBounds(e.target.getBounds());
     setCurrentState(e.target);
     //Retrieve districts data from server and set
+    loadStateJson(currentStateName, currentStateID);
     stateJson.remove();
     addDistrictsLayer();
 
@@ -234,5 +241,16 @@ info.update = function (props) {
         + props['AREA']
         : 'Hover over a precinct');
 };
+
+function loadStateJson(state, currentState){
+    var request = new XMLHttpRequest();
+    var url = "http://localhost:8080/getState?stateName=" + state + "&stateID=" + currentState
+    request.open("GET", url, true)
+    request.send(null);
+    request.onreadystatechange = function(e){
+        console.log(request.response)
+    }
+}
+
 
 info.addTo(mymap);
