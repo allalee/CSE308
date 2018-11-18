@@ -1,6 +1,5 @@
 package app;
 
-import com.google.gson.annotations.Expose;
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.util.Collection;
@@ -8,11 +7,9 @@ import java.util.HashMap;
 import java.util.Set;
 
 public class District{
-    @Expose
     private int ID;
     private State state;
     private HashMap<Integer, Precinct> precinctMap;
-    @Expose
     protected Geometry geometry; //Set once for finding precinct in district
     private Geometry currentGeometry; //For calculating area and perimeter
     private int population; //Population

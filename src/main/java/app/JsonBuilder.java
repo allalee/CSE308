@@ -15,7 +15,7 @@ public class JsonBuilder {
 
     public JsonBuilder() {
         gsonBuilder = new GsonBuilder();
-        gsonBuilder.excludeFieldsWithoutExposeAnnotation().setPrettyPrinting();
+        gsonBuilder.setPrettyPrinting();
         gson = gsonBuilder.create();
     }
 
