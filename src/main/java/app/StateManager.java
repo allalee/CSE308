@@ -1,12 +1,10 @@
 package app;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import com.vividsolutions.jts.geom.Geometry;
 import gerrymandering.HibernateManager;
-import org.json.simple.parser.ParseException;
+
 
 public class StateManager {
     private HashMap<String, app.State> stateMap;
@@ -25,6 +23,8 @@ public class StateManager {
         } else {
             app.State state = getState(stateName);
             getDistricts(state);
+            getPrecincts(state.getDistrictMap());
+            getPrecinctNeighbors(state);
             stateMap.put(stateName, state);
             currentState = state;
         }
@@ -50,7 +50,43 @@ public class StateManager {
 
     private void getDistricts(app.State state) throws Throwable {
         int stateID = state.getID();
+        List<Object> l;
+        Map<String, Object> criteria = new HashMap<>();
+        criteria.put("stateId", stateID);
+        l = hb.getRecordsBasedOnCriteria(gerrymandering.model.District.class, criteria);
+        GeoJsonReader reader = new GeoJsonReader();
+        for(Object o : l){
+            gerrymandering.model.District d = (gerrymandering.model.District) o;
+            app.District district = new app.District(d.getDistrictId(), state, reader.read(d.getBoundary()));
+            state.addDistrict(district);
+        }
+    }
 
+    private void getPrecincts(HashMap<Integer, District> map) throws Throwable {
+        List<Object> l;
+        Map<String, Object> criteria;
+        com.vividsolutions.jts.io.geojson.GeoJsonReader reader = new com.vividsolutions.jts.io.geojson.GeoJsonReader();
+        for(Integer key : map.keySet()){
+            app.District d = map.get(key);
+            criteria = new HashMap<>();
+            criteria.put("districtId", d.getID());
+            l = hb.getRecordsBasedOnCriteria(preprocess.Precincts.class, criteria);
+            for(Object o : l){
+                preprocess.Precincts p = (preprocess.Precincts) o;
+                app.Precinct precinct = new app.Precinct(p.getPrecinctId(), reader.read(p.getBoundaryJSON()));
+                precinct.setDistrict(d);
+                d.addPrecinct(precinct.getID(), precinct);
+            }
+        }
+    }
+
+    private void getPrecinctNeighbors(app.State state){
+        List<Precinct> precinctList = new ArrayList<>();
+        for(app.District d : state.getDistrictMap().values()){
+            precinctList.addAll(d.getAllPrecincts());
+        }
+        JTSConverter converter = new JTSConverter();
+        converter.buildNeighbor(precinctList);
     }
 
     public State cloneState(String name){
