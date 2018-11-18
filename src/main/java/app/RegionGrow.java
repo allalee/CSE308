@@ -26,13 +26,15 @@ public class RegionGrow extends Algorithm{
 
         // main algo loop
         ArrayDeque<Precinct> precinctsToGrow = generateSeeds(allDistricts, IterationType.Random);
-        int iter = 0;
+        Collection<Precinct> leftOvers = allPrecincts;
+        leftOvers.removeAll(precinctsToGrow);
+
         while(!precinctsToGrow.isEmpty() && running){
             // pop head
             Precinct currentPrecinct = nextPrecinct(precinctsToGrow);
 
             // remove already claimed neighbors
-            Set<Precinct> availableNeighbors = new HashSet<>();
+            ArrayDeque<Precinct> availableNeighbors = new ArrayDeque<>();
             for(Precinct pre: currentPrecinct.getNeighbors()){
                 if( pre.getDistrict() == dummyDistrict )
                     availableNeighbors.add(pre);
@@ -47,6 +49,7 @@ public class RegionGrow extends Algorithm{
                     functionValue = newFunctionValue;
                     addToMoveStack(move);
                     precinctsToGrow.addLast(neighbor);
+                    leftOvers.remove(neighbor);
                     updateClient(move);
                 }
                 else {
@@ -56,6 +59,7 @@ public class RegionGrow extends Algorithm{
         }
 
         running = false;
+        System.out.println("Algo done");
     }
 
     private ArrayDeque<Precinct> generateSeeds(Collection<District> districtList, IterationType type){
@@ -91,9 +95,6 @@ public class RegionGrow extends Algorithm{
         return availablePrecincts.pollFirst();
     }
 
-    private boolean isBetter(double newValue, double oldValue){
-        return newValue >= oldValue;
-    }
 
     private void updateClient(Move move){
         // make JSON

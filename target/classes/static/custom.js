@@ -49,7 +49,7 @@ function serverLoadKansas(){
         failure: function(e){console.log("kansas failed");}
     })
 }
-serverLoadKansas();
+//serverLoadKansas();
 
 $('#start').on("click", function(e){
     $.ajax({

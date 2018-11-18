@@ -48,5 +48,9 @@ public abstract class Algorithm {
         return 1;
     }
 
+    protected boolean isBetter(double newValue, double oldValue){
+        return newValue >= oldValue;
+    }
+
     abstract void run();
 }

@@ -43,6 +43,8 @@ var dynamic_color_changer = (function(){
     cc = {};
     cc.color_map = {};
     cc.used_colors = [];
+    cc.color_list = ["red", "black", "yellow", "pink", "purple", "blue", "green", "aqua", "silver"];
+    cc.color_pointer = 0;
     cc.color = function(move_object){
         var to_color = undefined
         if ( cc.color_map[move_object.dest] ){
@@ -56,6 +58,10 @@ var dynamic_color_changer = (function(){
 
     }
     cc.next_color = function(){
+        if ( cc.color_pointer > cc.color_list.length - 1 )
+            cc.color_pointer = 0;
+        return cc.color_list[cc.color_pointer++];
+        /*
         var new_color = 'rgb('+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+')'
         while( cc.used_colors.indexOf(new_color) != -1 ){
             new_color = 'rgb('+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+','+Math.floor(Math.random()*255)+')'
@@ -63,6 +69,7 @@ var dynamic_color_changer = (function(){
         cc.used_colors.push(new_color);
         console.log("New Color Created")
         return new_color;
+        */
     }
     return cc
 })();
