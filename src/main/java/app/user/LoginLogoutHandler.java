@@ -73,11 +73,12 @@ public class LoginLogoutHandler {
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
     public String logout(HttpServletRequest req, HttpServletResponse resp, Model model) throws Throwable {
         removeCookie(resp, "user");
-        HttpSession session = req.getSession(true);
+        model.addAttribute("username", null);
         model.addAttribute("usertype",null);
-        if(session != null) {
-            session.invalidate();
-        }
+//        HttpSession session = req.getSession(true);
+//        if(session != null) {
+//            session.invalidate();
+//        }
         return "../static/index.html";
 
     }

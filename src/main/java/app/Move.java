@@ -37,9 +37,9 @@ public class Move {
         ElectionData precinctVotes = precinct.getElectionData();
         int demVotes = precinctVotes.getNumVotesForDem();
         int repVotes = precinctVotes.getNumVotesForRep();
-        dest.addVotes(Parties.DEMOCRAT, demVotes);
+        dest.addVotes(Parties.DEMOCRATIC, demVotes);
         dest.addVotes(Parties.REPUBLICAN, repVotes);
-        src.removeVotes(Parties.DEMOCRAT, demVotes);
+        src.removeVotes(Parties.DEMOCRATIC, demVotes);
         src.removeVotes(Parties.REPUBLICAN, repVotes);
 
     }
@@ -58,9 +58,9 @@ public class Move {
         ElectionData precinctVotes = precinct.getElectionData();
         int demVotes = precinctVotes.getNumVotesForDem();
         int repVotes = precinctVotes.getNumVotesForRep();
-        src.addVotes(Parties.DEMOCRAT, demVotes);
+        src.addVotes(Parties.DEMOCRATIC, demVotes);
         src.addVotes(Parties.REPUBLICAN, repVotes);
-        dest.removeVotes(Parties.DEMOCRAT, demVotes);
+        dest.removeVotes(Parties.DEMOCRATIC, demVotes);
         dest.removeVotes(Parties.REPUBLICAN, repVotes);
 
     }

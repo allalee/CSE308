@@ -8,7 +8,7 @@ public class ElectionData {
 
     }
     public int getNumVotesForDem() {
-        return voterDistribution.get(Parties.DEMOCRAT);
+        return voterDistribution.get(Parties.DEMOCRATIC);
     }
     public int getNumVotesForRep() {
         return voterDistribution.get(Parties.REPUBLICAN);
