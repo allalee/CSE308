@@ -7,6 +7,7 @@ import java.util.*;
 public class Precinct{
     private int ID;
     private District district;
+    private int districtID;
     private Set<Precinct> neighbors;
     private Geometry geometry;
     private double area;
@@ -20,7 +21,7 @@ public class Precinct{
         this.neighbors = new HashSet<>();
         this.demographics = new HashMap<>();
     }
-
+  
     public void addNeighbor(Precinct other) {
         neighbors.add(other);
         other.neighbors.add(this);
@@ -73,9 +74,9 @@ public class Precinct{
     public District getDistrict(){
         return district;
     }
-
     public void setDistrict(District district){
         this.district = district;
+        this.districtID = district.getID();
     }
 
     public Geometry getGeometry() {
