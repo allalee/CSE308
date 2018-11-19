@@ -17,12 +17,13 @@ import java.util.List;
 public class AdminHandler {
     int numberOfUsers;
 
-    @RequestMapping(value="/admin", method = RequestMethod.POST)
-    public String admin(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, Model model) throws Throwable {
+    @RequestMapping(value="/admin", method = RequestMethod.GET)
+    public String admin(Model model) throws Throwable {
         HibernateManager hm = HibernateManager.getInstance();
         List<Object> users = hm.getAllRecords(UsersModel.class);
         numberOfUsers = users.size();
         model.addAttribute("numberOfUsers", numberOfUsers);
+        model.addAttribute("listOfUsers", users);
 
         return "../static/admin.html";
     }
