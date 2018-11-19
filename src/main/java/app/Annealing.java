@@ -1,11 +1,15 @@
 package app;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+@Service
+@Scope(value = "prototype")
 public class Annealing extends Algorithm{
     @Autowired
     SocketHandler handler;
@@ -15,6 +19,7 @@ public class Annealing extends Algorithm{
         Collection<Precinct> allPrecincts = state.getAllPrecincts();
         Collection<District> allDistricts = state.getAllDistricts();
 
+        // stagnation is when the objective value barely changes after X iterations.
         int stagnant_iterations = 0;
         int max_stagnant = 10;
         double startFunctionValue = functionValue;
@@ -85,14 +90,8 @@ public class Annealing extends Algorithm{
     }
 
     private void updateClient(Move move){
-        // make JSON
-        System.out.println("Sent");
-        String json = "{";
-        json += "\"src\":\""+move.getSrcDistrict();
-        json += "\",\"dest\":\""+move.getDestDistrict();
-        json += "\",\"precinct\":\""+move.getPrecinctID();
-        json += "\"}";
-        handler.send(json);
+        System.out.println("SEND");
+        handler.send(move.toString());
     }
 
 }

@@ -12,6 +12,7 @@ function makeConnector(){
     con.message_queue = [];
     con.is_reading = false;
     con.reading_interval = 0.1;
+    oon.message_pointer = 0;
 
     // connect
     con.connect = function(){
@@ -36,10 +37,13 @@ function makeConnector(){
     }
 
     con.process_message = function(){
-        var message_body = con.message_queue.shift()
+        //var message_body = con.message_queue.shift()
+        if ( con.message_pointer < con.message_queue.length ){
+        var message_body = con.message_queue[con.message_pointer++];
         if (message_body != undefined)
             dynamic_color_changer.color(message_body);
             //color_district(message_body.precinct, 'red')
+            }
     }
 
     con.start_reading = function(){

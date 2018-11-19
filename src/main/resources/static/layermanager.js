@@ -8,6 +8,7 @@ var layer_manager = (function(){
     m = {}
     m.district_layer_map = {}
     m.precinct_layer_map = {}
+    m.precinct_district_map = {}
 
     m.manage_district = function(layer_group){
         layers = layer_group._layers
@@ -24,7 +25,7 @@ var layer_manager = (function(){
             m.precinct_layer_map[id] = layers[key]
         }
 
-        //
+        // get the precinct's owner district property. set it in a map
     }
 
     m.color_district = function(district_id, color){
@@ -77,5 +78,6 @@ var dynamic_color_changer = (function(){
         return new_color;
         */
     }
+    cc.reset = function(){ cc.color_map = {} }
     return cc
 })();
