@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -15,7 +15,7 @@
 			<a class="text-white navbar-brand toggle-btn" onclick="toggleNav()">&#9776;</a>
 		<div class="collapse navbar-collapse" id="navbarNavAltMarkup">
 			<div class="navbar-nav">
-				<a class="nav-item nav-link text-light" href="index.html">Home <span class="sr-only">(current)</span></a>
+				<a class="nav-item nav-link text-light" href="http://localhost:8080/">Home <span class="sr-only">(current)</span></a>
 			</div>
 		</div>
 
@@ -37,34 +37,22 @@
 	    		<tr>
 	      		<th scope="col">Username</th>
 	      		<th scope="col">Password</th>
+				<th scope="col">Email</th>
 	      		<th scope="col">Actions</th>
 	    		</tr>
 	  		</thead>
 				<tbody>
+				<option>
 	    		<tr>
-	      		<td>Mark</td>
-	      		<td>Otto</td>
-	      		<td>
+	      		<td></td>
+	      		<td></td>
+	      		<td></td>
+				<td>
 							<button type="button" class="btn btn-outline-danger btn-primary btn-sm">Delete</button>
 							<button type="button" class="btn btn-outline-info btn-primary btn-sm" data-toggle="modal" data-target="#editModal">Edit</button>
 						</td>
 	    		</tr>
-	    		<tr>
-	      		<td>Jacob</td>
-	      		<td>Thornton</td>
-	      		<td>
-							<button type="button" class="btn btn-outline-danger btn-primary btn-sm">Delete</button>
-							<button type="button" class="btn btn-outline-info btn-primary btn-sm" data-toggle="modal" data-target="#editModal">Edit</button>
-						</td>
-	    		</tr>
-	    		<tr>
-	      		<td>Larry</td>
-	      		<td>the Bird</td>
-	      		<td>
-							<button type="button" class="btn btn-outline-danger btn-primary btn-sm">Delete</button>
-							<button type="button" class="btn btn-outline-info btn-primary btn-sm" data-toggle="modal" data-target="#editModal">Edit</button>
-						</td>
-	    		</tr>
+				</option>
 	  		</tbody>
 			</table>
 
@@ -79,22 +67,26 @@
 			          <span aria-hidden="true">&times;</span>
 			        </button>
 			      </div>
+				<form action="http://localhost:8080/adminEdit" method='POST'>
 			      <div class="modal-body">
-							<form action="INSERT_SERVLET_OR_SERVLET_ABSTRACTION_API_TO_PROCESS_FORM_HERE" method='GET'>
-								<div class='form-group'>
-									<label>New Username </label>
-									<input type='text' name='username' class='form-control' placeholder='Username'>
-								</div>
-								<div class='form-group'>
-									<label>New Password </label>
-									<input type='password' name='password' class='form-control' placeholder='Password'>
-								</div>
-							 </form>
+									<div class='form-group'>
+										<label>New Username</label>
+										<input type='text' name='username' class='form-control' placeholder='Username'>
+									</div>
+									<div class='form-group'>
+										<label>New Password</label>
+										<input type='password' name='password' class='form-control' placeholder='Password'>
+									</div>
+									  <div class='form-group'>
+										  <label>New Email</label>
+										  <input type='text' name='email' class='form-control' placeholder='Email'>
+									  </div>
 			      </div>
 			      <div class="modal-footer">
 			        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-			        <button type="button" class="btn btn-primary">Save changes</button>
+			        <input type="submit" class="btn btn-primary" value="Save changes"/>
 			      </div>
+				</form>
 			    </div>
 			  </div>
 			</div>

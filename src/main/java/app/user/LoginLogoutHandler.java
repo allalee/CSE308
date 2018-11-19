@@ -24,6 +24,32 @@ import java.util.List;
 @Controller
 public class LoginLogoutHandler {
 
+    @RequestMapping(value = "/")
+    public String index(HttpServletRequest req, Model model) throws Throwable {
+        Cookie userCookie = getCookie(req, "user");
+        String email = "";
+        String username = "";
+        String usertype = null;
+        if(userCookie != null) {
+            email = userCookie.getValue();
+        }
+        List<Object> users = getUsers();
+        Iterator<Object> itr = users.iterator();
+
+        //Check to see if a user is logged in through cookie.
+        while(itr.hasNext()){
+            UsersModel user = (UsersModel) itr.next();
+            if(user.getEmail().equals(email)) {
+                username = user.getUsername();
+                usertype = user.getType();
+                model.addAttribute("username", username);
+                model.addAttribute("usertype", usertype);
+            }
+        }
+        return "../static/index.html";
+    }
+
+
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String login(@RequestParam("password") String password, @RequestParam("email") String email, HttpServletRequest req, HttpServletResponse resp, Model model) throws Throwable {
 
@@ -31,9 +57,7 @@ public class LoginLogoutHandler {
 
         String username = "";
         String usertype = null;
-
-        HibernateManager hm = HibernateManager.getInstance();
-        List<Object> users = hm.getAllRecords(UsersModel.class);
+        List<Object> users = getUsers();
         Iterator<Object> itr = users.iterator();
 
         boolean validUser = false;
@@ -52,20 +76,11 @@ public class LoginLogoutHandler {
             model.addAttribute("username", username);
             model.addAttribute("usertype", usertype);
             return "../static/index.html";
-//            resp.setCharacterEncoding("UTF-8");
-//            resp.setContentType("text/plain");
-//            PrintWriter out = resp.getWriter();
-//            out.write("ok");
         }
         else{
             //redirect to login page stating invalid login
             model.addAttribute("invalid","");
             return "../static/login.html";
-//            resp.setCharacterEncoding("UTF-8");
-//            resp.setContentType("text/plain");
-//            PrintWriter out = resp.getWriter();
-//            out.write("Invalid Login Email or Password."); //message is passed as response to ajax in javascript
-//            return null;
         }
 
     }
@@ -75,10 +90,6 @@ public class LoginLogoutHandler {
         removeCookie(resp, "user");
         model.addAttribute("username", null);
         model.addAttribute("usertype",null);
-//        HttpSession session = req.getSession(true);
-//        if(session != null) {
-//            session.invalidate();
-//        }
         return "../static/index.html";
 
     }
@@ -96,4 +107,21 @@ public class LoginLogoutHandler {
         addCookie(resp, cookieName, null, 0);
     }
 
+    public Cookie getCookie(HttpServletRequest req, String cookieName){
+        Cookie[] cookies = req.getCookies();
+        if(cookies != null) {
+            for(Cookie cookie : cookies){
+                if(cookie.getName().equals(cookieName)){
+                    return cookie;
+                }
+            }
+        }
+        return null;
+    }
+
+    public List<Object> getUsers() throws Throwable {
+        HibernateManager hm = HibernateManager.getInstance();
+        List<Object> users = hm.getAllRecords(UsersModel.class);
+        return users;
+    }
 }
