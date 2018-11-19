@@ -28,21 +28,15 @@ public class JsonBuilder {
         String districtsJson = buildDistrictJson(districts);
         String precinctsJson = buildPrecinctJson(precincts);
         System.out.println(districtsJson);
+        System.out.println(precinctsJson);
 //        gson.toJson(districtsJson); This line does work with the district json
 
     }
     private String buildDistrictJson(Collection<District> districts) {
         StringBuilder builder = new StringBuilder("[");
         for(District district: districts) {
-            builder.append("{\"type\":\"Feature\", \"geometry\": {\"type\":");
             Geometry districtGeometry = district.getGeometry();
-            String districtCoordinate = districtGeometry.toString();
-            String geoType = districtGeometry.getGeometryType();
-            districtCoordinate = districtCoordinate.replace("POLYGON ", "[");
-            districtCoordinate = districtCoordinate.replace(", ", "],[");
-            districtCoordinate = districtCoordinate.replace("(", "[");
-            districtCoordinate = districtCoordinate.replace(")", "]");
-            builder.append("\"" + geoType + "\", \"coordinates\":" + districtCoordinate + "]},");
+            jsonBuilderHelper(builder, districtGeometry);
             builder.append(" \"properties\": {\"DISTRICTID\": \"" + district.getID() + "\"}},");
         }
         builder.setCharAt(builder.length()-1, ']');
@@ -50,17 +44,32 @@ public class JsonBuilder {
     }
 
     private String buildPrecinctJson(Collection<Precinct> precincts) {
-        String precinctsJson = "";
-//        for(Precinct precinct: precincts) {
-//            precinctsJson+=gson.toJson(precinct);
-//        }
-        return precinctsJson;
+        StringBuilder builder = new StringBuilder("\"features\": [");
+        for(Precinct precinct: precincts) {
+            Geometry precinctGeometry = precinct.getGeometry();
+            jsonBuilderHelper(builder, precinctGeometry);
+            builder.append(" \"properties\": {\"DISTRICTID\": \"" + precinct.getDistrict().getID() + "\", \"PRECINCTID\": \"" + precinct.getID() + "\"}},\n");
+        }
+        builder.setCharAt(builder.length()-1, ']');
+        return builder.toString();
+    }
+
+    private void jsonBuilderHelper(StringBuilder builder, Geometry geo){
+        builder.append("{\"type\":\"Feature\", \"geometry\": {\"type\":");
+        String coordinates = geo.toString();
+        String geoType = geo.getGeometryType();
+        coordinates = coordinates.replace("POLYGON ", "[");
+        coordinates = coordinates.replace(", ", "],[");
+        coordinates = coordinates.replace("(", "[");
+        coordinates = coordinates.replace(")", "]");
+        coordinates = coordinates.replace(" ", ",");
+        builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates + "]},");
     }
 
     private String combinedJson(String district, String precinct){
         String combinedJson = "{\"district\" : [district], \"precinct\": [precinct] }";
-        combinedJson.replace("[district]", district);
-        combinedJson.replace("[precinct]", precinct);
-        return null;
+        combinedJson = combinedJson.replace("[district]", district);
+        combinedJson = combinedJson.replace("[precinct]", precinct);
+        return combinedJson;
     }
 }
