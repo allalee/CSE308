@@ -30,6 +30,8 @@ public class StateManager {
             getPopulation(state);
             stateMap.put(stateName, state);
             currentState = state;
+            JsonBuilder jsonBuilder = new JsonBuilder();
+            jsonBuilder.buildStateJson(state);
         }
     }
 
