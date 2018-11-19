@@ -21,7 +21,7 @@ public class Populations implements Serializable {
     @Column(
             name = "POPULATION"
     )
-    private double population;
+    private int population;
     @Column(
             name = "PRECINCT_ID"
     )
@@ -31,7 +31,7 @@ public class Populations implements Serializable {
     )
     private int districtId;
 
-    public Populations(double population, int precinctId, int districtId) {
+    public Populations(int population, int precinctId, int districtId) {
         this.population = population;
         this.precinctId = precinctId;
         this.districtId = districtId;
@@ -45,11 +45,11 @@ public class Populations implements Serializable {
         this.poputationId = poputationId;
     }
 
-    public double getPopulation() {
+    public int getPopulation() {
         return this.population;
     }
 
-    public void setPopulation(double population) {
+    public void setPopulation(int population) {
         this.population = population;
     }
 

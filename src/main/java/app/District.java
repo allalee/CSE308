@@ -10,6 +10,7 @@ public class District{
     private int ID;
     private State state;
     private HashMap<Integer, Precinct> precinctMap;
+    private HashMap<Integer, Precinct> borderPrecincts;
     protected Geometry geometry; //Set once for finding precinct in district
     private Geometry currentGeometry; //For calculating area and perimeter
     private int population; //Population
@@ -23,13 +24,33 @@ public class District{
         this.geometry = geometry;
         this.currentGeometry = (Geometry) geometry.clone();
         precinctMap = new HashMap<>();
+        borderPrecincts = new HashMap<>();
     }
 
+    public Collection<Precinct> getBoundaries(){
+        return borderPrecincts.values();
+    }
+    public void removeBoundary(int id){
+        borderPrecincts.remove(id);
+    }
+    public void removeBoundary(Precinct precinct){
+        removeBoundary(precinct.getID());
+    }
+    public void addBoundary(int id, Precinct precinct){
+        borderPrecincts.put(id, precinct);
+    }
     public Precinct getPrecinct(int id){
         return precinctMap.get(id);
     }
     public void addPrecinct(int ID, Precinct precinct){
         precinctMap.put(ID, precinct);
+    }
+    public void removePrecinct(Precinct precinct){
+        removePrecinct(precinct.getID());
+    }
+
+    public void removePrecinct(int ID){
+        precinctMap.remove(ID);
     }
 
     public Collection<Precinct> getAllPrecincts(){
