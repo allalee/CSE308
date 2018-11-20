@@ -15,8 +15,8 @@ var currentStateID; //Keeping track of which state the user clicks on
 var currentStateName;
 
 var statesData;
-var districtData=kansasDist;
-var precinctData=kansasPrec;
+var districtData;
+var precinctData;
 
 state_fps_hashmap =
 {
@@ -70,7 +70,7 @@ function stateSearch() {
     targetState = findState(currentStateID);
     mymap.fitBounds(targetState.getBounds());
     //Retrieve districts data from server and set
-    loadStateJson(currentStateName, currentStateID)
+    loadStateJson(currentStateName, currentStateID);
     stateJson.remove();
     addDistrictsLayer();
   }
@@ -248,10 +248,15 @@ function loadStateJson(state, currentState){
     var request = new XMLHttpRequest();
     var url = "http://localhost:8080/getState?stateName=" + state + "&stateID=" + currentState
     request.open("GET", url, true)
-    request.send(null);
-    request.onreadystatechange = function(e){
-        console.log(request.response)
+    request.onreadystatechange = function(){
+        if(request.status == 200){
+            var loadedJson = $.parseJSON(request.response);
+            districtData = loadedJson.district;
+            precinctData = loadedJson.precinct;
+            console.log(loadedJson);
+        }
     }
+    request.send(null);
 }
 
 

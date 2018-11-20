@@ -40,13 +40,13 @@ public class JsonBuilder {
     }
 
     private String buildPrecinctJson(Collection<Precinct> precincts) {
-        StringBuilder builder = new StringBuilder("\"features\": [");
+        StringBuilder builder = new StringBuilder("[");
         for(Precinct precinct: precincts) {
             Geometry precinctGeometry = precinct.getGeometry();
             jsonBuilderHelper(builder, precinctGeometry);
             builder.append(" \"properties\": {\"DISTRICTID\": \"" + precinct.getDistrict().getID() + "\", \"PRECINCTID\": \"" + precinct.getID() + "\"}},\n");
         }
-        builder.setCharAt(builder.length()-1, ']');
+        builder.setCharAt(builder.length()-2, ']');
         return builder.toString();
     }
 
@@ -59,7 +59,14 @@ public class JsonBuilder {
         coordinates = coordinates.replace("(", "[");
         coordinates = coordinates.replace(")", "]");
         coordinates = coordinates.replace(" ", ",");
-        builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates + "]},");
+        if(coordinates.contains("MULTI")){
+            coordinates = coordinates.replace("MULTI", "");
+            builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates + "]},");
+//            builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates);
+//            builder.append("]},");
+        } else {
+            builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates + "]},");
+        }
     }
 
     private String combinedJson(String district, String precinct){
