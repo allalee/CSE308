@@ -250,10 +250,11 @@ function loadStateJson(state, currentState){
     request.open("GET", url, true)
     request.onreadystatechange = function(){
         if(request.status == 200){
-            var loadedJson = $.parseJSON(request.response);
-            districtData = loadedJson.district;
-            precinctData = loadedJson.precinct;
-            console.log(loadedJson);
+            var loadedJson = request.response;
+            var obj = JSON.parse(loadedJson);
+            districtData = obj.district;
+            precinctData = obj.precinct;
+            console.log(obj);
         }
     }
     request.send(null);

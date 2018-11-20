@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import org.json.JSONException;
+import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,7 +20,7 @@ public class JsonBuilder {
         gson = gsonBuilder.create();
     }
 
-    public String buildStateJson(State state) {
+    public String buildStateJson(State state) throws JSONException {
         Collection<District> districts = state.getAllDistricts();
         Collection<Precinct> precincts = new ArrayList<>();
         for(District d : districts){
@@ -26,7 +28,7 @@ public class JsonBuilder {
         }
         String districtsJson = buildDistrictJson(districts);
         String precinctsJson = buildPrecinctJson(precincts);
-        return gson.toJson(combinedJson(districtsJson, precinctsJson));
+        return gson.toJson("{\"Area\": \"Invalid\"}");
     }
     private String buildDistrictJson(Collection<District> districts) {
         StringBuilder builder = new StringBuilder("[");
@@ -71,6 +73,7 @@ public class JsonBuilder {
         String combinedJson = "{\"district\" : [district], \"precinct\": [precinct] }";
         combinedJson = combinedJson.replace("[district]", district);
         combinedJson = combinedJson.replace("[precinct]", precinct);
+        combinedJson = combinedJson.replace(" ", "");
         return combinedJson;
     }
 }
