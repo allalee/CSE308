@@ -18,6 +18,7 @@ var statesData;
 var districtData;
 var precinctData;
 
+
 state_fps_hashmap =
 {
     'ALASKA' : 2,
@@ -143,7 +144,7 @@ function loadDistricts(e) {
     //Retrieve districts data from server and set
     loadStateJson(currentStateName, currentStateID);
     stateJson.remove();
-    addDistrictsLayer();
+//    addDistrictsLayer();
 
 }
 function addDistrictsLayer() {
@@ -250,11 +251,12 @@ function loadStateJson(state, currentState){
     request.open("GET", url, true)
     request.onreadystatechange = function(){
         if(request.status == 200){
-            var loadedJson = request.response;
+            var loadedJson = request.response
             var obj = JSON.parse(loadedJson);
+            obj = JSON.parse(obj);
             districtData = obj.district;
             precinctData = obj.precinct;
-            console.log(obj);
+            addDistrictsLayer();
         }
     }
     request.send(null);

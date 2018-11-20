@@ -24,7 +24,6 @@ var layer_manager = (function(){
             var id = layers[key].feature[ATTR_PROPERTY_NAME][ATTR_PRECINCT_ID_NAME]
             m.precinct_layer_map[id] = layers[key]
         }
-
         // get the precinct's owner district property. set it in a map
     }
 

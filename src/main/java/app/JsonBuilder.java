@@ -28,7 +28,7 @@ public class JsonBuilder {
         }
         String districtsJson = buildDistrictJson(districts);
         String precinctsJson = buildPrecinctJson(precincts);
-        return gson.toJson("{\"Area\": \"Invalid\"}");
+        return gson.toJson(combinedJson(districtsJson, precinctsJson));
     }
     private String buildDistrictJson(Collection<District> districts) {
         StringBuilder builder = new StringBuilder("[");
