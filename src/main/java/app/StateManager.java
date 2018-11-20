@@ -19,7 +19,7 @@ public class StateManager {
         currentState = null;
     }
 
-    public void createState(String stateName, Integer stateID) throws Throwable {
+    public String createState(String stateName, Integer stateID) throws Throwable {
         if (stateMap.get(stateName) != null){
             loadState(stateName);
         } else {
@@ -30,9 +30,9 @@ public class StateManager {
             getPopulation(state);
             stateMap.put(stateName, state);
             currentState = state;
-            JsonBuilder jsonBuilder = new JsonBuilder();
-            jsonBuilder.buildStateJson(state);
         }
+        JsonBuilder jsonBuilder = new JsonBuilder();
+        return jsonBuilder.buildStateJson(currentState);
     }
 
 

@@ -10,16 +10,15 @@ import java.util.Collection;
 
 
 public class JsonBuilder {
-    private GsonBuilder gsonBuilder;
     private Gson gson;
 
     public JsonBuilder() {
-        gsonBuilder = new GsonBuilder();
+        GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setPrettyPrinting();
         gson = gsonBuilder.create();
     }
 
-    public void buildStateJson(State state) {
+    public String buildStateJson(State state) {
         Collection<District> districts = state.getAllDistricts();
         Collection<Precinct> precincts = new ArrayList<>();
         for(District d : districts){
@@ -27,10 +26,7 @@ public class JsonBuilder {
         }
         String districtsJson = buildDistrictJson(districts);
         String precinctsJson = buildPrecinctJson(precincts);
-        System.out.println(districtsJson);
-        System.out.println(precinctsJson);
-//        gson.toJson(districtsJson); This line does work with the district json
-
+        return gson.toJson(combinedJson(districtsJson, precinctsJson));
     }
     private String buildDistrictJson(Collection<District> districts) {
         StringBuilder builder = new StringBuilder("[");

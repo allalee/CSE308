@@ -37,8 +37,7 @@ public class RequestHandler {
         @RequestMapping(value = "/getState", method = RequestMethod.GET)
         public @ResponseBody
         String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws Throwable {
-            sm.createState(state, stateID);
-            return "Works";
+            return sm.createState(state, stateID);
         }
 
         @Autowired BeanFactory beanFactory;
