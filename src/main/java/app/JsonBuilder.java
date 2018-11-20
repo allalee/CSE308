@@ -10,16 +10,15 @@ import java.util.Collection;
 
 
 public class JsonBuilder {
-    private GsonBuilder gsonBuilder;
     private Gson gson;
 
     public JsonBuilder() {
-        gsonBuilder = new GsonBuilder();
+        GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.setPrettyPrinting();
         gson = gsonBuilder.create();
     }
 
-    public void buildStateJson(State state) {
+    public String buildStateJson(State state) {
         Collection<District> districts = state.getAllDistricts();
         Collection<Precinct> precincts = new ArrayList<>();
         for(District d : districts){
@@ -27,10 +26,7 @@ public class JsonBuilder {
         }
         String districtsJson = buildDistrictJson(districts);
         String precinctsJson = buildPrecinctJson(precincts);
-        System.out.println(districtsJson);
-        System.out.println(precinctsJson);
-//        gson.toJson(districtsJson); This line does work with the district json
-
+        return gson.toJson(combinedJson(districtsJson, precinctsJson));
     }
     private String buildDistrictJson(Collection<District> districts) {
         StringBuilder builder = new StringBuilder("[");
@@ -44,13 +40,13 @@ public class JsonBuilder {
     }
 
     private String buildPrecinctJson(Collection<Precinct> precincts) {
-        StringBuilder builder = new StringBuilder("\"features\": [");
+        StringBuilder builder = new StringBuilder("[");
         for(Precinct precinct: precincts) {
             Geometry precinctGeometry = precinct.getGeometry();
             jsonBuilderHelper(builder, precinctGeometry);
             builder.append(" \"properties\": {\"DISTRICTID\": \"" + precinct.getDistrict().getID() + "\", \"PRECINCTID\": \"" + precinct.getID() + "\"}},\n");
         }
-        builder.setCharAt(builder.length()-1, ']');
+        builder.setCharAt(builder.length()-2, ']');
         return builder.toString();
     }
 
@@ -63,7 +59,12 @@ public class JsonBuilder {
         coordinates = coordinates.replace("(", "[");
         coordinates = coordinates.replace(")", "]");
         coordinates = coordinates.replace(" ", ",");
-        builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates + "]},");
+        if(coordinates.contains("MULTI")){
+            coordinates = coordinates.replace("MULTI", "");
+            builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates + "]},");
+        } else {
+            builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates + "]},");
+        }
     }
 
     private String combinedJson(String district, String precinct){

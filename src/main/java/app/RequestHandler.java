@@ -34,11 +34,10 @@ public class RequestHandler {
             return t.print();
         }
 
-        @RequestMapping(value = "/getState", method = RequestMethod.GET)
+        @RequestMapping(value = "/getState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
         public @ResponseBody
         String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws Throwable {
-            sm.createState(state, stateID);
-            return "Works";
+            return sm.createState(state, stateID);
         }
 
         @Autowired BeanFactory beanFactory;
