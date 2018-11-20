@@ -28,6 +28,7 @@
 		</div>
 		<div class="container">
 			<button type="button" class="btn btn-outline-primary btn-sm mb-2" data-toggle="modal" data-target="#addModal">Add User</button>
+			<button type="button" class="btn btn-outline-danger btn-sm mb-2" data-toggle="modal" data-target="#deleteModal">Delete</button>
 		</div>
 
 	<form action="http://localhost:8080/admin" method="GET">
@@ -47,7 +48,6 @@
 						<td th:text="${user.getPassword()}"></td>
 						<td th:text="${user.getEmail()}"></td>
 						<td>
-									<button type="button" class="btn btn-outline-danger btn-primary btn-sm">Delete</button>
 									<button type="button" class="btn btn-outline-info btn-primary btn-sm" data-toggle="modal" data-target="#editModal">Edit</button>
 								</td>
 						</tr>
@@ -129,6 +129,33 @@
 			    </div>
 			  </div>
 			</div>
+
+		<!-- Delete Modal -->
+		<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="deleteModalLabel">Add User</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<form action="http://localhost:8080/adminDelete" method='POST'>
+						<div class="modal-body">
+							<div class='form-group'>
+								<label>Email of Account to Remove</label>
+								<input type='text' name='email' class='form-control' placeholder='Email'>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+							<input type="submit" class="btn btn-primary" value="Delete"/>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
 
 		</div>
 	</div>

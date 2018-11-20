@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -50,7 +51,28 @@ public class AdminHandler {
 
 
     @RequestMapping(value="/adminDelete", method = RequestMethod.POST)
-    public String adminDelete(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, Model model) throws Throwable {
+    public String adminDelete(@RequestParam("email") String email, Model model) throws Throwable {
+        HibernateManager hm = HibernateManager.getInstance();
+        String username = "";
+        String password = "";
+        List<Object> users = hm.getAllRecords(UsersModel.class);
+        Iterator<Object> itr = users.iterator();
+
+        //Check to see if a user is logged in through cookie.
+        while(itr.hasNext()) {
+            UsersModel user = (UsersModel) itr.next();
+            if (user.getEmail().equals(email)) {
+                username = user.getUsername();
+                password = user.getPassword();
+            }
+        }
+
+        //only if the account exists we remove it.
+        if(!username.equals("") && !password.equals("")) {
+            UsersModel usersModel = new UsersModel(username, password, email, "user");
+            boolean persisted = hm.removeFromDB(usersModel);
+            System.out.println(persisted);
+        }
 
         return "redirect:http://localhost:8080/admin";
     }
