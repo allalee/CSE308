@@ -62,8 +62,6 @@ public class JsonBuilder {
         if(coordinates.contains("MULTI")){
             coordinates = coordinates.replace("MULTI", "");
             builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates + "]},");
-//            builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates);
-//            builder.append("]},");
         } else {
             builder.append("\"" + geoType + "\", \"coordinates\":" + coordinates + "]},");
         }
