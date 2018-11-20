@@ -30,12 +30,28 @@ public class AdminHandler {
 
     @RequestMapping(value="/adminEdit", method = RequestMethod.POST)
     public String adminEdit(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, Model model) throws Throwable {
-//        HibernateManager hm = HibernateManager.getInstance();
-//        UsersModel usersModel = new UsersModel(username, password, email, "user");
-//        boolean persisted = hm.persistToDB(usersModel);
-//        System.out.println(persisted);
+        HibernateManager hm = HibernateManager.getInstance();
+        UsersModel usersModel = new UsersModel(username, password, email, "user");
+        boolean persisted = hm.persistToDB(usersModel);
+        System.out.println(persisted);
 
         return "../static/admin.html";
     }
 
+    @RequestMapping(value="/adminAdd", method = RequestMethod.POST)
+    public String adminAdd(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, Model model) throws Throwable {
+        HibernateManager hm = HibernateManager.getInstance();
+        UsersModel usersModel = new UsersModel(username, password, email, "user");
+        boolean persisted = hm.persistToDB(usersModel);
+        System.out.println(persisted);
+
+        return "redirect:http://localhost:8080/admin";
+    }
+
+
+    @RequestMapping(value="/adminDelete", method = RequestMethod.POST)
+    public String adminDelete(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, Model model) throws Throwable {
+
+        return "redirect:http://localhost:8080/admin";
+    }
 }

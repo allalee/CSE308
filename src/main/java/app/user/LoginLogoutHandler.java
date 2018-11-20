@@ -75,12 +75,12 @@ public class LoginLogoutHandler {
             addCookie(resp, "user", email, 3600);
             model.addAttribute("username", username);
             model.addAttribute("usertype", usertype);
-            return "../static/index.html";
+            return "redirect:http://localhost:8080/";
         }
         else{
             //redirect to login page stating invalid login
             model.addAttribute("invalid","");
-            return "../static/login.html";
+            return "redirect:http://localhost:8080/";
         }
 
     }
@@ -90,7 +90,7 @@ public class LoginLogoutHandler {
         removeCookie(resp, "user");
         model.addAttribute("username", null);
         model.addAttribute("usertype",null);
-        return "../static/index.html";
+        return "redirect:http://localhost:8080/";
 
     }
 
