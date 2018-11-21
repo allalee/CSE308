@@ -120,7 +120,8 @@ function resetHighlight(e) {
     stateJson.resetStyle(e.target);
 }
 function resetDistrictHighlight(e) {
-    districtJson.resetStyle(e.target);
+    console.log(e.target)
+    manager.reset_district_color(e.target)
 }
 function resetPrecinctHighlight(e) {
     precinctJson.resetStyle(e.target);
@@ -149,9 +150,15 @@ function loadDistricts(e) {
 }
 function addDistrictsLayer() {
   districtJson = L.geoJson(districtData, {
+      style: function(){
+        return {
+            fillOpacity: 0.4
+        }
+      },
       onEachFeature: onEachDistrictFeature
   }).addTo(mymap);
-  layer_manager.manage_district(districtJson);
+  layer_manager.build_district_maps(districtJson)
+  layer_manager.color_districts()
 }
 
 function loadPrecincts(e) {
