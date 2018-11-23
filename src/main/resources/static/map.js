@@ -273,14 +273,12 @@ function loadStateJson(state, currentState){
 function loadPrecinctProperties(layer){
       var district_id = layer.feature["properties"]["DISTRICTID"]
       var precinct_id = layer.feature["properties"]["PRECINCTID"]
-      console.log(precinct_id)
       var url = "http://localhost:8080/loadPrecinctData?districtID=" + district_id + "&precinctID=" + precinct_id
       var request = new XMLHttpRequest()
       request.open("GET", url, true)
       request.onreadystatechange = function(){
         if(request.status == 200){
             var loadedJson = request.response
-            console.log(request.response)
             var obj = JSON.parse(loadedJson)
             info.update(obj)
             if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
