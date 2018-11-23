@@ -20,6 +20,7 @@ public class Precinct{
         this.geometry = geometry;
         this.neighbors = new HashSet<>();
         this.demographics = new HashMap<>();
+        this.electionData = new ElectionData();
     }
   
     public void addNeighbor(Precinct other) {

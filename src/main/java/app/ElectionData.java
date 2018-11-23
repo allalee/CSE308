@@ -1,5 +1,6 @@
 package app;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -11,8 +12,13 @@ public class ElectionData {
     private int totalVotes;
     private List<Representative> reps;
     private Parties winner;
-    public ElectionData(){
 
+    public ElectionData(){
+        this.voterDistribution = new HashMap<>();
+        this.reps = new ArrayList<>();
+    }
+    public void addRepresentative(Representative rep){
+        reps.add(rep);
     }
     public int getNumVotesForDem() {
         return voterDistribution.get(Parties.DEMOCRATIC);
@@ -53,5 +59,13 @@ public class ElectionData {
 
     public void setWinner(Parties winner) {
         this.winner = winner;
+    }
+
+    public void setYear(int year){
+        this.electionYear = year;
+    }
+
+    public void setElectionType(ElectionType type){
+        this.electionType = type;
     }
 }
