@@ -107,21 +107,23 @@ public class StateManager {
         return builder.buildPrecinctDataJson(precinct);
     }
     private void getDemographics(app.Precinct precinct) throws Throwable{
-        Map<String, Object> criteria = new HashMap<>();
-        List<Object> l;
-        criteria.put("precinctID", precinct.getID());
-        l = hb.getRecordsBasedOnCriteria(preprocess.Demographics.class, criteria);
-        preprocess.Demographics d = (preprocess.Demographics)l.get(0);
-        HashMap<String, Integer> dMap = d.getDemographicMap();
-        precinct.addDemographic(Ethnicity.ASIAN, dMap.get("Asian"));
-        precinct.addDemographic(Ethnicity.AFRICAN_AMERICAN, dMap.get("African-American"));
-        precinct.addDemographic(Ethnicity.CAUCASIAN, dMap.get("Caucasian"));
-        precinct.addDemographic(Ethnicity.HISPANIC, dMap.get("Hispanic"));
-        precinct.addDemographic(Ethnicity.NATIVE_AMERICAN, dMap.get("Native-American"));
-        precinct.addDemographic(Ethnicity.OTHER, dMap.get("Other"));
+        if(precinct.getDemographics().isEmpty()){
+            Map<String, Object> criteria = new HashMap<>();
+            List<Object> l;
+            criteria.put("precinctID", precinct.getID());
+            l = hb.getRecordsBasedOnCriteria(preprocess.Demographics.class, criteria);
+            preprocess.Demographics d = (preprocess.Demographics)l.get(0);
+            HashMap<String, Integer> dMap = d.getDemographicMap();
+            precinct.addDemographic(Ethnicity.ASIAN, dMap.get("Asian"));
+            precinct.addDemographic(Ethnicity.AFRICAN_AMERICAN, dMap.get("African-American"));
+            precinct.addDemographic(Ethnicity.CAUCASIAN, dMap.get("Caucasian"));
+            precinct.addDemographic(Ethnicity.HISPANIC, dMap.get("Hispanic"));
+            precinct.addDemographic(Ethnicity.NATIVE_AMERICAN, dMap.get("Native-American"));
+            precinct.addDemographic(Ethnicity.OTHER, dMap.get("Other"));
+        }
     }
 
-    private void getElectionData(){
+    private void getElectionData(app.Precinct precinct){
 
     }
 

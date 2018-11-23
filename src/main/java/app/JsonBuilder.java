@@ -33,13 +33,18 @@ public class JsonBuilder {
     }
 
     public String buildPrecinctDataJson(Precinct p){
-        StringBuilder builder = new StringBuilder("[\"demographics\": {");
+        StringBuilder builder = new StringBuilder("{\"demographics\": {");
         HashMap<Ethnicity, Integer> demoMap = p.getDemographics();
         for(Ethnicity e : demoMap.keySet()){
+            String ethnicity = e.toString();
             int population = demoMap.get(e);
-            System.out.println(population);
+            builder.append("\"" + ethnicity + "\": \"" + population + "\",");
         }
-        return "";
+        builder.setCharAt(builder.length()-1, '}');
+        builder.append(",\"population\": \"" + p.getPopulation() + "\"");
+        //STILL MISSING VOTING DATA
+        builder.append("}");
+        return builder.toString();
     }
 
     private String buildDistrictJson(Collection<District> districts) {

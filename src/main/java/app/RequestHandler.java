@@ -43,7 +43,6 @@ public class RequestHandler {
         @RequestMapping(value = "/loadPrecinctData", method = RequestMethod.GET)
         public @ResponseBody
         String loadPrecinctData(@RequestParam ("districtID") Integer districtID, @RequestParam("precinctID") Integer precinctID) throws Throwable {
-            System.out.println("Reaches this point");
             return sm.loadPrecinctData(districtID, precinctID);
         }
 

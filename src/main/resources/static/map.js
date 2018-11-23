@@ -239,17 +239,17 @@ info.onAdd = function (mymap) {
 info.update = function (props) {
     this._div.innerHTML = '<h4>Precinct Information</h4>' +  (props ?
         '<b>Demographics </b><br>'
-        +'Asian/Pacific Islander: ' + props['AREA'] + '<br>'
-        + 'Caucasian: ' + props['AREA'] + '<br>'
-        + 'Hispanic: ' + props['AREA'] + '<br>'
-        + 'African-American: ' + props['AREA'] + '<br>'
-        + 'Native American: ' + props['AREA'] + '<br>'
-        + 'Other: ' + props['AREA'] + '<br>'
+        +'Asian/Pacific Islander: ' + props['demographics']['ASIAN'] + '<br>'
+        + 'Caucasian: ' + props['demographics']['CAUCASIAN'] + '<br>'
+        + 'Hispanic: ' + props['demographics']['HISPANIC'] + '<br>'
+        + 'African-American: ' + props['demographics']['AFRICAN_AMERICAN'] + '<br>'
+        + 'Native American: ' + props['demographics']['NATIVE_AMERICAN'] + '<br>'
+        + 'Other: ' + props['demographics']['OTHER'] + '<br>'
         + '<br><b>Election</b><br>'
         + 'Democrat: ' + props['AREA'] + '<br>'
         + 'Republican: ' + props['AREA'] + '<br>'
         + '<br><b>Population</b><br>'
-        + props['AREA']
+        + props['population']
         : 'Hover over a precinct');
 };
 
@@ -273,17 +273,22 @@ function loadStateJson(state, currentState){
 function loadPrecinctProperties(layer){
       var district_id = layer.feature["properties"]["DISTRICTID"]
       var precinct_id = layer.feature["properties"]["PRECINCTID"]
+      console.log(precinct_id)
       var url = "http://localhost:8080/loadPrecinctData?districtID=" + district_id + "&precinctID=" + precinct_id
       var request = new XMLHttpRequest()
       request.open("GET", url, true)
       request.onreadystatechange = function(){
+        if(request.status == 200){
+            var loadedJson = request.response
+            console.log(request.response)
+            var obj = JSON.parse(loadedJson)
+            info.update(obj)
+            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+               layer.bringToFront();
+            }
+        }
       }
-
-//    info.update(layer.feature.properties);
-//
-//    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-//        layer.bringToFront();
-//    }
+      request.send(null)
 }
 
 

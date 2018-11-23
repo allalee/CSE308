@@ -146,6 +146,8 @@ public class PreprocessHelper {
             int african_american = Integer.parseInt(properties.get("BLACK").toString());
             int native_american = Integer.parseInt(properties.get("AMINDIAN").toString());
             int other = Integer.parseInt(properties.get("OTHER").toString());
+            other += Integer.parseInt(properties.get("HAWAIIAN").toString());
+            other += Integer.parseInt(properties.get("F2_RACES").toString());
             String VTD_S = properties.get(key1).toString().replaceAll("\\s", "");
             String VTDNAME = properties.get(key2).toString().replaceAll("\\s", "");
             String key = VTD_S + " " + VTDNAME;

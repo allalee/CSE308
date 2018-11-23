@@ -34,7 +34,7 @@ public class Preprocessing {
 //        persistPopulation(populations);
         HashMap<String, Integer> precinctVTD = new HashMap<>();
         Set<Demographics> demographics = PreprocessHelper.generateDemographics(precinctFiles, precinctVTD);
-//        persistDemographics(demographics);
+        persistDemographics(demographics);
         Set<VotingData> votingData = PreprocessHelper.generateVotingData(votingDataFiles, precinctVTD);
 //        persistVotingData(votingData);
     }
