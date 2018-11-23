@@ -246,8 +246,8 @@ info.update = function (props) {
         + 'Native American: ' + props['demographics']['NATIVE_AMERICAN'] + '<br>'
         + 'Other: ' + props['demographics']['OTHER'] + '<br>'
         + '<br><b>Election</b><br>'
-        + 'Democrat: ' + props['AREA'] + '<br>'
-        + 'Republican: ' + props['AREA'] + '<br>'
+        + 'Democrat: ' + props['voting_data']['DEMOCRATIC'] + '<br>'
+        + 'Republican: ' + props['voting_data']['REPUBLICAN'] + '<br>'
         + '<br><b>Population</b><br>'
         + props['population']
         : 'Hover over a precinct');

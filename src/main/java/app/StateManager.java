@@ -103,6 +103,7 @@ public class StateManager {
     public String loadPrecinctData(Integer districtID, Integer precinctID) throws Throwable {
         app.Precinct precinct = currentState.getDistrictMap().get(districtID).getPrecinct(precinctID);
         getDemographics(precinct);
+        getElectionData(precinct);
         JsonBuilder builder = new JsonBuilder();
         return builder.buildPrecinctDataJson(precinct);
     }
@@ -123,8 +124,35 @@ public class StateManager {
         }
     }
 
-    private void getElectionData(app.Precinct precinct){
-
+    private void getElectionData(app.Precinct precinct) throws Throwable{
+        if(precinct.getElectionData().getVoterDistribution().isEmpty()){
+            int totalVotes = 0;
+            ElectionData ed = precinct.getElectionData();
+            Map<String, Object> criteria = new HashMap<>();
+            List<Object> l;
+            criteria.put("precinct_id", precinct.getID());
+            l = hb.getRecordsBasedOnCriteria(preprocess.VotingData.class, criteria);
+            Iterator itr = l.iterator();
+            while(itr.hasNext()){
+                preprocess.VotingData p = (preprocess.VotingData)itr.next();
+                HashMap<Parties, Integer> vd = ed.getVoterDistribution();
+                if(vd.containsKey(p.getParty())){
+                    totalVotes += p.getVoteCount();
+                    int count = vd.get(p.getParty()) + p.getVoteCount();
+                    vd.replace(p.getParty(), count);
+                } else {
+                    totalVotes += p.getVoteCount();
+                    vd.put(p.getParty(), p.getVoteCount());
+                }
+                Representative rep = new Representative(p.getRepresentative());
+                if(ed.getReps().contains(rep)){
+                    ed.addRepresentative(rep);
+                }
+                ed.setYear(p.getYear());
+                ed.setElectionType(p.getElectionType());
+            }
+            ed.setTotalVotes(totalVotes);
+        }
     }
 
     private void getPrecinctNeighbors(app.State state){

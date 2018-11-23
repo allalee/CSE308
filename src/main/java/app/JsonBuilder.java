@@ -41,8 +41,15 @@ public class JsonBuilder {
             builder.append("\"" + ethnicity + "\": \"" + population + "\",");
         }
         builder.setCharAt(builder.length()-1, '}');
-        builder.append(",\"population\": \"" + p.getPopulation() + "\"");
+        builder.append(",\"population\": \"" + p.getPopulation() + "\",\"voting_data\": {");
         //STILL MISSING VOTING DATA
+        ElectionData ed = p.getElectionData();
+        for(Parties parties : ed.getVoterDistribution().keySet()){
+            String party = parties.toString();
+            int votes = ed.getVoterDistribution().get(parties);
+            builder.append("\"" + party + "\": \"" + votes + "\",");
+        }
+        builder.setCharAt(builder.length()-1, '}');
         builder.append("}");
         return builder.toString();
     }
