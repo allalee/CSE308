@@ -4,9 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import org.json.JSONException;
+import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 
 public class JsonBuilder {
@@ -18,7 +21,7 @@ public class JsonBuilder {
         gson = gsonBuilder.create();
     }
 
-    public String buildStateJson(State state) {
+    public String buildStateJson(State state) throws JSONException {
         Collection<District> districts = state.getAllDistricts();
         Collection<Precinct> precincts = new ArrayList<>();
         for(District d : districts){
@@ -28,6 +31,22 @@ public class JsonBuilder {
         String precinctsJson = buildPrecinctJson(precincts);
         return gson.toJson(combinedJson(districtsJson, precinctsJson));
     }
+
+    public String buildPrecinctDataJson(Precinct p){
+        StringBuilder builder = new StringBuilder("{\"demographics\": {");
+        HashMap<Ethnicity, Integer> demoMap = p.getDemographics();
+        for(Ethnicity e : demoMap.keySet()){
+            String ethnicity = e.toString();
+            int population = demoMap.get(e);
+            builder.append("\"" + ethnicity + "\": \"" + population + "\",");
+        }
+        builder.setCharAt(builder.length()-1, '}');
+        builder.append(",\"population\": \"" + p.getPopulation() + "\"");
+        //STILL MISSING VOTING DATA
+        builder.append("}");
+        return builder.toString();
+    }
+
     private String buildDistrictJson(Collection<District> districts) {
         StringBuilder builder = new StringBuilder("[");
         for(District district: districts) {
@@ -71,6 +90,7 @@ public class JsonBuilder {
         String combinedJson = "{\"district\" : [district], \"precinct\": [precinct] }";
         combinedJson = combinedJson.replace("[district]", district);
         combinedJson = combinedJson.replace("[precinct]", precinct);
+        combinedJson = combinedJson.replace(" ", "");
         return combinedJson;
     }
 }

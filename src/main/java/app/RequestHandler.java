@@ -40,6 +40,12 @@ public class RequestHandler {
             return sm.createState(state, stateID);
         }
 
+        @RequestMapping(value = "/loadPrecinctData", method = RequestMethod.GET)
+        public @ResponseBody
+        String loadPrecinctData(@RequestParam ("districtID") Integer districtID, @RequestParam("precinctID") Integer precinctID) throws Throwable {
+            return sm.loadPrecinctData(districtID, precinctID);
+        }
+
         @Autowired BeanFactory beanFactory;
 
 //        @RequestMapping(value = "/startAlgorithm", method = RequestMethod.GET)
