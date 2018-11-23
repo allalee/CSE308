@@ -8,6 +8,7 @@ var layer_manager = (function(){
     manager.precinct_map = {}
     manager.district_layer_color_map = {}
 
+    //Builds a hashmap of district_ids and the layer associated with the id
     manager.build_district_maps = function(layer_group){
         var district_layers = layer_group._layers
         var temp_district_map = {}
@@ -24,6 +25,16 @@ var layer_manager = (function(){
         manager.district_layer_color_map = temp_color_map
     }
 
+    manager.build_precincts_map = function(layer_group){
+        var precinct_layers = layer_group._layers
+        var temp_precinct_map = {}
+        for(var key in precinct_layers){
+            var precinct_id = precinct_layers[key].feature[ATTR_PROPERTY_NAME][ATTR_PRECINCT_ID_NAME]
+            temp_precinct_map[precinct_id] = precinct_layers[key]
+        }
+        manager.precinct_map = temp_precinct_map
+    }
+
     manager.color_districts = function(){
         for(var id in manager.district_map){
             var color = manager.district_layer_color_map[id]
@@ -31,10 +42,26 @@ var layer_manager = (function(){
         }
     }
 
+    manager.color_precincts = function(){
+        for(var id in manager.precinct_map){
+            var layer = manager.precinct_map[id]
+            var district_id = layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME]
+            var color = manager.district_layer_color_map[district_id]
+            manager.precinct_map[id].setStyle({fillColor: color})
+        }
+    }
+
     manager.reset_district_color = function(layer){
         var district_id = layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME]
         var color = manager.district_layer_color_map[district_id]
-        manager.district_map[district_id].setStyle({fillColor: color, fillOpacity: 0.4})
+        manager.district_map[district_id].setStyle({fillColor: color, fillOpacity: 0.4, color: "grey"})
+    }
+
+    manager.reset_precinct_color = function(layer){
+        var district_id = layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME]
+        var precinct_id = layer.feature[ATTR_PROPERTY_NAME][ATTR_PRECINCT_ID_NAME]
+        var color = manager.district_layer_color_map[district_id]
+        manager.precinct_map[precinct_id].setStyle({fillColor: color, fillOpacity: 0.4, color: "grey"})
     }
 
     return manager

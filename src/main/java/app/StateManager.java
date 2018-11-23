@@ -100,6 +100,12 @@ public class StateManager {
 
     }
 
+    public String loadPrecinctData(Integer districtID, Integer precinctID) throws Throwable {
+        app.Precinct precinct = currentState.getDistrictMap().get(districtID).getPrecinct(precinctID);
+        getDemographics(precinct);
+        JsonBuilder builder = new JsonBuilder();
+        return builder.buildPrecinctDataJson(precinct);
+    }
     private void getDemographics(app.Precinct precinct) throws Throwable{
         Map<String, Object> criteria = new HashMap<>();
         List<Object> l;

@@ -9,6 +9,7 @@ import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 
 
 public class JsonBuilder {
@@ -30,6 +31,17 @@ public class JsonBuilder {
         String precinctsJson = buildPrecinctJson(precincts);
         return gson.toJson(combinedJson(districtsJson, precinctsJson));
     }
+
+    public String buildPrecinctDataJson(Precinct p){
+        StringBuilder builder = new StringBuilder("[\"demographics\": {");
+        HashMap<Ethnicity, Integer> demoMap = p.getDemographics();
+        for(Ethnicity e : demoMap.keySet()){
+            int population = demoMap.get(e);
+            System.out.println(population);
+        }
+        return "";
+    }
+
     private String buildDistrictJson(Collection<District> districts) {
         StringBuilder builder = new StringBuilder("[");
         for(District district: districts) {

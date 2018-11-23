@@ -63,7 +63,6 @@ function stateSearch() {
   }
   stateName = document.getElementById('statefield').value;
   stateNameUpper = stateName.toUpperCase();
-  //console.log(stateName);
   if(id = state_fps_hashmap[stateNameUpper]) {
     currentStateID= id;
     currentStateName = stateNameUpper.value.toLowerCase();
@@ -110,21 +109,16 @@ function highlightPrecinctFeature(e) {
         fillOpacity: 0.7
     });
 
-    info.update(layer.feature.properties);
-
-    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-        layer.bringToFront();
-    }
+    loadPrecinctProperties(layer)
 }
 function resetHighlight(e) {
     stateJson.resetStyle(e.target);
 }
 function resetDistrictHighlight(e) {
-    console.log(e.target)
     manager.reset_district_color(e.target)
 }
 function resetPrecinctHighlight(e) {
-    precinctJson.resetStyle(e.target);
+    manager.reset_precinct_color(e.target)
     info.update();
 }
 
@@ -145,14 +139,14 @@ function loadDistricts(e) {
     //Retrieve districts data from server and set
     loadStateJson(currentStateName, currentStateID);
     stateJson.remove();
-//    addDistrictsLayer();
 
 }
 function addDistrictsLayer() {
   districtJson = L.geoJson(districtData, {
       style: function(){
         return {
-            fillOpacity: 0.4
+            fillOpacity: 0.4,
+            color: "grey"
         }
       },
       onEachFeature: onEachDistrictFeature
@@ -166,15 +160,22 @@ function loadPrecincts(e) {
     districtJson.remove();
     //Checks if the zoom in already loaded the precinct data
     if (!mymap.hasLayer(precinctJson)) {
-      addPrecintsLayer();
+      addPrecinctsLayer();
     }
 }
 
-function addPrecintsLayer() {
+function addPrecinctsLayer() {
   precinctJson = L.geoJson(precinctData, {
+        style: function(){
+            return {
+                fillOpacity: 0.4,
+                color: "grey"
+            }
+        },
       onEachFeature: onEachPrecinctFeature
   }).addTo(mymap);
-  layer_manager.manage_precinct(precinctJson);
+  layer_manager.build_precincts_map(precinctJson)
+  layer_manager.color_precincts()
 }
 
 function addStateLayer () {
@@ -223,7 +224,7 @@ mymap.on("zoomend", function() {
     if(currentStateID) {
       if(mymap.getZoom() > 9 && mymap.hasLayer(districtJson)) {
         districtJson.remove();
-        addPrecintsLayer();
+        addPrecinctsLayer();
       }
     }
 })
@@ -267,6 +268,22 @@ function loadStateJson(state, currentState){
         }
     }
     request.send(null);
+}
+
+function loadPrecinctProperties(layer){
+      var district_id = layer.feature["properties"]["DISTRICTID"]
+      var precinct_id = layer.feature["properties"]["PRECINCTID"]
+      var url = "http://localhost:8080/loadPrecinctData?districtID=" + district_id + "&precinctID=" + precinct_id
+      var request = new XMLHttpRequest()
+      request.open("GET", url, true)
+      request.onreadystatechange = function(){
+      }
+
+//    info.update(layer.feature.properties);
+//
+//    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+//        layer.bringToFront();
+//    }
 }
 
 

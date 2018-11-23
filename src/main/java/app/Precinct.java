@@ -91,6 +91,7 @@ public class Precinct{
         return neighbors;
     }
 
+    public HashMap<Ethnicity, Integer> getDemographics(){ return demographics;}
 
     public ElectionData getElectionData() {
         return electionData;
