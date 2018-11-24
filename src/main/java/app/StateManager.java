@@ -190,4 +190,13 @@ public class StateManager {
         }
         return targetPrecinct.getNeighbors();
     }
+
+    public String getStateConstitution(String stateName) throws Throwable {
+        Map<String, Object> criteria = new HashMap<>();
+        List<Object> l;
+        criteria.put("name", stateName);
+        l = hb.getRecordsBasedOnCriteria(gerrymandering.model.State.class, criteria);
+        gerrymandering.model.State state = (gerrymandering.model.State) l.get(0);
+        return state.getConstitutionText();
+    }
 }

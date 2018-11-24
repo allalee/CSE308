@@ -1,5 +1,6 @@
 package app;
 
+import gerrymandering.HibernateManager;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 
 
@@ -44,6 +46,26 @@ public class RequestHandler {
         public @ResponseBody
         String loadPrecinctData(@RequestParam ("districtID") Integer districtID, @RequestParam("precinctID") Integer precinctID) throws Throwable {
             return sm.loadPrecinctData(districtID, precinctID);
+        }
+
+        @RequestMapping(value = "/stateConst", method = RequestMethod.GET)
+        public @ResponseBody
+        String getStateConst(@RequestParam ("stateName") String state, @RequestParam("stateID") int stateID) throws Throwable {
+            if(state.equals("Kansas")){
+                String stateConst = sm.getStateConstitution(state);
+                return stateConst;
+            }
+            if(state.equals("Maryland")){
+                String stateConst = sm.getStateConstitution(state);
+                return stateConst;
+            }
+            if(state.equals("Connecticut")){
+                String stateConst = sm.getStateConstitution(state);
+                return stateConst;
+            }
+            else{
+                return null;
+            }
         }
 
         @Autowired BeanFactory beanFactory;
