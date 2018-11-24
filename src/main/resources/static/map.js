@@ -18,6 +18,8 @@ var statesData;
 var districtData;
 var precinctData;
 
+var currentConstText;
+
 
 state_fps_hashmap =
 {
@@ -131,6 +133,7 @@ function zoomToFeature(e) {
 function setCurrentState(target) {
     currentStateID = target.feature.properties['STATE'];
     currentStateName = target.feature.properties['NAME'];
+    sendState(currentStateID, currentStateName);
 }
 
 function loadDistricts(e) {
@@ -211,7 +214,8 @@ function resetMap(){
   } else if(mymap.hasLayer(precinctJson)) {
     precinctJson.remove();
   }
-	currentStateID = null;
+    currentStateID = null;
+    currentConstText = null;
   addStateLayer();
   mymap.setView([37.0902, -95.7129], 4);
 }
@@ -253,6 +257,21 @@ info.update = function (props) {
         : 'Hover over a precinct');
 };
 
+//create a button onto leaflet that will show the constitution in alert
+var constInfo = L.control({position: 'bottomright'});
+constInfo.onAdd = function (mymap) {
+    this._button = L.DomUtil.create('button', 'constInfo');
+    this._button.style.height = "50px";
+    this._button.style.width = "200px";
+    this._button.innerHTML = "State Constitution";
+    this._button.onclick = function(){
+            alert((currentConstText != null ? currentConstText : "Select a State"));
+    };
+    return this._button;
+};
+
+
+
 function loadStateJson(state, currentState){
     var request = new XMLHttpRequest();
     var url = "http://localhost:8080/getState?stateName=" + state + "&stateID=" + currentState
@@ -289,5 +308,17 @@ function loadPrecinctProperties(layer){
       request.send(null)
 }
 
+function sendState(currentStateID, currentStateName){
+    var url = "http://localhost:8080/stateConst?stateID=" + currentStateID + "&stateName=" + currentStateName;
+    var request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.onreadystatechange = function(){
+       if(request.status == 200){
+            currentConstText = request.response;
+       }
+   }
+   request.send(null);
+}
 
 info.addTo(mymap);
+constInfo.addTo(mymap);

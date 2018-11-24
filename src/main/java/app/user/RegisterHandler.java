@@ -21,7 +21,9 @@ public class RegisterHandler {
 
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
     public @ResponseBody
-    void registration(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, HttpServletResponse resp) throws Throwable {
+    void registration(@RequestParam("username") String username,
+                      @RequestParam("password") String password,
+                      @RequestParam("email") String email, HttpServletResponse resp) throws Throwable {
 
         HibernateManager hm = HibernateManager.getInstance();
         UsersModel usersModel = new UsersModel(username, password, email, "user");

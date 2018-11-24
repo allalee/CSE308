@@ -24,7 +24,7 @@ import java.util.List;
 @Controller
 public class LoginLogoutHandler {
 
-    @RequestMapping(value = "/")
+    @RequestMapping(value = "/", method = RequestMethod.GET)
     public String index(HttpServletRequest req, Model model) throws Throwable {
         Cookie userCookie = getCookie(req, "user");
         String email = "";
@@ -46,12 +46,21 @@ public class LoginLogoutHandler {
                 model.addAttribute("usertype", usertype);
             }
         }
+
         return "../static/index.html";
     }
 
+//    @RequestMapping(value = "/stateConst", method = RequestMethod.GET)
+//    public String stateConst(HttpServletRequest req, Model model) throws Throwable {
+//
+//        return "redirect:http://localhost:8080/";
+//    }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public String login(@RequestParam("password") String password, @RequestParam("email") String email, HttpServletRequest req, HttpServletResponse resp, Model model) throws Throwable {
+    public String login(@RequestParam("password") String password,
+                        @RequestParam("email") String email,
+                        HttpServletRequest req,
+                        HttpServletResponse resp, Model model) throws Throwable {
 
         resp.setHeader("Access-Control-Allow-Origin", "*");
 

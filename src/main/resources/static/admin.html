@@ -5,9 +5,23 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <script src="bootstrap/js/bootstrap.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
     <link rel="stylesheet" href="style.css">
 
 </head>
+
+
+<script>
+	function sendCurrentEmail(e){
+		var row = $(e).closest('tr').index();
+		var currentEmail = document.getElementById("usertable").rows[row+1].cells[2].innerHTML;
+		var req = new XMLHttpRequest();
+    	var url = "http://localhost:8080/adminCurEmail?currentEmail=" + currentEmail;
+    	req.open("GET", url, true);
+    	req.send(null);
+	}
+</script>
+
 
 
 <body class="bg-secondary">
@@ -33,7 +47,7 @@
 
 	<form action="http://localhost:8080/admin" method="GET">
 		<div class="container bg-light pb-3">
-			<table class="table table-striped table-hover table-bordered">
+			<table id="usertable" class="table table-striped table-hover table-bordered">
 				<thead class="thead-light">
 					<tr>
 					<th scope="col">Username</th>
@@ -44,11 +58,11 @@
 	  			</thead>
 				<tbody>
 						<tr th:each="user : ${listOfUsers}">
-						<td th:text="${user.getUsername()}"></td>
-						<td th:text="${user.getPassword()}"></td>
-						<td th:text="${user.getEmail()}"></td>
+						<td name="usernameRow" th:text="${user.getUsername()}"></td>
+						<td name="passwordRow" th:text="${user.getPassword()}"></td>
+						<td name="emailRow" th:text="${user.getEmail()}"></td>
 						<td>
-									<button type="button" class="btn btn-outline-info btn-primary btn-sm" data-toggle="modal" data-target="#editModal">Edit</button>
+									<button type="button" class="btn btn-outline-info btn-primary btn-sm" data-toggle="modal" data-target="#editModal" onclick="sendCurrentEmail(this);">Edit</button>
 								</td>
 						</tr>
 	  			</tbody>
@@ -129,6 +143,8 @@
 			    </div>
 			  </div>
 			</div>
+
+
 
 		<!-- Delete Modal -->
 		<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
