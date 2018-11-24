@@ -51,7 +51,10 @@ public class LoginLogoutHandler {
 
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public String login(@RequestParam("password") String password, @RequestParam("email") String email, HttpServletRequest req, HttpServletResponse resp, Model model) throws Throwable {
+    public String login(@RequestParam("password") String password,
+                        @RequestParam("email") String email,
+                        HttpServletRequest req,
+                        HttpServletResponse resp, Model model) throws Throwable {
 
         resp.setHeader("Access-Control-Allow-Origin", "*");
 

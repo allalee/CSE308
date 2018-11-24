@@ -17,6 +17,7 @@ import java.util.List;
 @Controller
 public class AdminHandler {
     int numberOfUsers;
+    String currentEmail = null;
 
     @RequestMapping(value="/admin", method = RequestMethod.GET)
     public String admin(Model model) throws Throwable {
@@ -29,18 +30,45 @@ public class AdminHandler {
         return "../static/admin.html";
     }
 
-    @RequestMapping(value="/adminEdit", method = RequestMethod.POST)
-    public String adminEdit(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, Model model) throws Throwable {
-        HibernateManager hm = HibernateManager.getInstance();
-        UsersModel usersModel = new UsersModel(username, password, email, "user");
-        boolean persisted = hm.persistToDB(usersModel);
-        System.out.println(persisted);
+    @RequestMapping(value="/adminCurEmail", method = RequestMethod.GET)
+    public void adminEmail(@RequestParam("currentEmail") String currentEmail) throws Throwable {
+        this.currentEmail = currentEmail;
+    }
 
-        return "../static/admin.html";
+    @RequestMapping(value="/adminEdit", method = RequestMethod.POST)
+    public String adminEdit(@RequestParam("username") String username,
+                            @RequestParam("password") String password,
+                            @RequestParam("email") String email, Model model) throws Throwable {
+        HibernateManager hm = HibernateManager.getInstance();
+        List<Object> users = hm.getAllRecords(UsersModel.class);
+        Iterator<Object> itr = users.iterator();
+        String currentUsername = "";
+        String currentPassword = "";
+        if(!currentEmail.equals("")) {
+            while (itr.hasNext()) {
+                UsersModel user = (UsersModel) itr.next();
+                if (user.getEmail().equals(currentEmail)) {
+                    currentUsername = user.getUsername();
+                    currentPassword = user.getPassword();
+                }
+            }
+        }
+
+        if(!username.equals("") && !password.equals("")) {
+            UsersModel usersModel = new UsersModel(currentUsername, currentPassword, currentEmail, "user");
+            boolean persisted = hm.removeFromDB(usersModel);
+            currentEmail = "";
+            UsersModel newUsersModel = new UsersModel(username, password, email, "user");
+            hm.persistToDB(newUsersModel);
+            System.out.println(persisted);
+        }
+        return "redirect:http://localhost:8080/admin";
     }
 
     @RequestMapping(value="/adminAdd", method = RequestMethod.POST)
-    public String adminAdd(@RequestParam("username") String username, @RequestParam("password") String password, @RequestParam("email") String email, Model model) throws Throwable {
+    public String adminAdd(@RequestParam("username") String username,
+                           @RequestParam("password") String password,
+                           @RequestParam("email") String email, Model model) throws Throwable {
         HibernateManager hm = HibernateManager.getInstance();
         UsersModel usersModel = new UsersModel(username, password, email, "user");
         boolean persisted = hm.persistToDB(usersModel);
@@ -58,7 +86,6 @@ public class AdminHandler {
         List<Object> users = hm.getAllRecords(UsersModel.class);
         Iterator<Object> itr = users.iterator();
 
-        //Check to see if a user is logged in through cookie.
         while(itr.hasNext()) {
             UsersModel user = (UsersModel) itr.next();
             if (user.getEmail().equals(email)) {
