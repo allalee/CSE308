@@ -11,8 +11,8 @@ var stateJson; //State handler added to map
 var districtJson; //District handler added to the map
 var precinctJson;
 
-var currentStateID; //Keeping track of which state the user clicks on
-var currentStateName;
+var currentStateID = null; //Keeping track of which state the user clicks on
+var currentStateName = null;
 
 var statesData;
 var districtData;
@@ -318,6 +318,13 @@ function sendState(currentStateID, currentStateName){
        }
    }
    request.send(null);
+}
+
+document.getElementById("start").onclick = startAlgorithm
+
+function startAlgorithm(){
+    console.log("BOY")
+    console.log($('input[name="algorithm"]:checked').val())
 }
 
 info.addTo(mymap);
