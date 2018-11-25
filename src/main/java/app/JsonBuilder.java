@@ -42,6 +42,7 @@ public class JsonBuilder {
         }
         builder.setCharAt(builder.length()-1, '}');
         builder.append(",\"population\": \"" + p.getPopulation() + "\",\"voting_data\": {");
+        //PERHAPS MISSING VOTING DATA FOR THAT PRECINCT, RESULTING IN BAD JSON i.e: "population" : "948","voting_data" : }}
         //STILL MISSING VOTING DATA
         ElectionData ed = p.getElectionData();
         for(Parties parties : ed.getVoterDistribution().keySet()){
