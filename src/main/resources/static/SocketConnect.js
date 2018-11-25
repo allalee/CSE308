@@ -12,7 +12,7 @@ function makeConnector(){
     con.message_queue = [];
     con.is_reading = false;
     con.reading_interval = 0.1;
-    oon.message_pointer = 0;
+    con.message_pointer = 0;
 
     // connect
     con.connect = function(){

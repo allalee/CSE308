@@ -11,13 +11,13 @@
     integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
     crossorigin=""></script>
 	<script type="text/javascript" src="./geojson/usa_states_500k.js"></script>
-	<script type="text/javascript" src="./geojson/cb_2017_us_cd115_500k.js"></script><!--
+	<script type="text/javascript" src="./geojson/cb_2017_us_cd115_500k.js"></script>
 	<script type="text/javascript" src="./geojson/maryland_districts.js"></script>
 	<script type="text/javascript" src="./geojson/connecticut_districts.js"></script>
 	<script type="text/javascript" src="./geojson/kansas_districts.js"></script>
 	<script type="text/javascript" src="./geojson/precinct_data/kansas_state_voting_precincts_2012.js"></script>
 	<script type="text/javascript" src="./geojson/precinct_data/maryland_precincts_2012.js"></script>
-	<script type="text/javascript" src="./geojson/precinct_data/connecticut_precincts.js"></script>-->
+	<script type="text/javascript" src="./geojson/precinct_data/connecticut_precincts.js"></script>
 	  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -160,6 +160,23 @@
        </div>
      </div>
 
+       <div class="card rounded-0">
+           <div class="card-header">
+               <a data-toggle="collapse" data-parent="#sidenav" href="#district_selector" class="card-link">
+                   Manual Move
+               </a>
+           </div>
+           <div id="district_selector" class="collapse">
+               <div id="district_selector_options" class="card-body">
+                   <!--dynamically generated in map.js -> populateDistrictOptions-->
+               </div>
+               <div>
+                   <button id = "move_temporary" class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="precinctMoveTemporary()">Move</button>
+                   <button id = "move_lock" class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="precinctMoveLock()">Lock</button>
+
+               </div>
+           </div>
+       </div>
 
 	</div>
 

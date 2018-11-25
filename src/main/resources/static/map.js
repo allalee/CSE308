@@ -208,6 +208,23 @@ function onEachPrecinctFeature(feature, layer) {
         click: zoomToFeature
     });
 }
+var MODE = {
+    NORMAL: 0,
+    MANUAL_SELECT: 1
+}
+var mode = MODE.NORMAL
+function precinctClickEvent(e){
+    switch(mode){
+        case MODE.NORMAL:
+            console.log("normal")
+        break;
+        case MODE.MANUAL_SELECT:
+            console.log("manual")
+        break;
+        default: console.log("invalid mode: "+ mode)
+    }
+}
+
 function resetMap(){
 	if(mymap.hasLayer(districtJson)) {
     districtJson.remove();
@@ -325,7 +342,7 @@ constInfo.addTo(mymap);
 
 var stateOptionTemplate = "<div class=\"custom-control custom-radio\"> <input type=\"radio\" id=\"[id]\" name=\"state_option\" class=\"custom-control-input\" value=\"[name]\"> <label class=\"custom-control-label\" for=\"[id]\">[name]</label> </div>"
 function createStateOption(id, name){
-    div = stateOptionTemplate.split('[id]').join(id)
+    var div = stateOptionTemplate.split('[id]').join(id)
     div = div.split('[name]').join(name)
     return div
 }
@@ -339,8 +356,8 @@ function populateStateSelect(){
 }
 
 function toggleStateSearch(){
-    dropdown = document.getElementById("dropdownStateSearch")
-    text = document.getElementById("textStateSearch")
+    var dropdown = document.getElementById("dropdownStateSearch")
+    var text = document.getElementById("textStateSearch")
 
     dropdown.disabled = !dropdown.disabled
     text.disabled = !text.disabled
@@ -366,3 +383,50 @@ function dropdownStateSearch(){
 
 }
 populateStateSelect();
+
+// when manual mode toggled
+//  enable pane, init empty, move/lock disabled
+//  precinctlayer's onClick = populateDistrcitSelect,
+//                              move/lock enable,
+//                              reset mm.selected_district,
+//                              mm.selected_district = e
+//                              mm.selected_district
+//  precinctlayer's oneneter = same
+//  precinctlayer's onexit = same + if e == mm.selected_district { setStyle("{fillColor: "+mm.selected_color+"}") }
+
+
+manualMover = (function(){
+
+    var mm = {}
+    mm.selected_district;
+    mm.selected_color = "black"
+
+
+
+    return mm
+})()
+
+
+var districtOptionTemplate = "<div class=\"custom-control custom-radio\"> <input type=\"radio\" id=\"district[id]\" name=\"district_option\" class=\"custom-control-input\" value=\"[id]\"> <label id=\"districtlabel[id]\" class=\"custom-control-label\" for=\"district[id]\">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</label> </div>"
+function insertDistrictOption(id, color){
+    var div = districtOptionTemplate.split('[id]').join(id)
+        var selectorDiv = document.getElementById('district_selector_options')
+        selectorDiv.innerHTML += div
+        var label = document.getElementById('districtlabel'+id)
+        label.setAttribute("style", "background-color:"+color)
+    return div
+}
+
+function populateDistrictSelect(){
+    var selectorDiv = document.getElementById('district_selector_options')
+    var color_map = layer_manager.district_layer_color_map
+    for(var i in layer_manager.district_layer_color_map){
+        var optionDiv = createDistrictOption(i, color_map[i])
+        selectorDiv.innerHTML += optionDiv
+        selectorDiv.querySelector('#districtlabel'+i).setStyle("{background-color:color}")
+    }
+}
+
+function enableManualSelect(){
+
+}
