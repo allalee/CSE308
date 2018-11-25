@@ -322,3 +322,47 @@ function sendState(currentStateID, currentStateName){
 
 info.addTo(mymap);
 constInfo.addTo(mymap);
+
+var stateOptionTemplate = "<div class=\"custom-control custom-radio\"> <input type=\"radio\" id=\"[id]\" name=\"state_option\" class=\"custom-control-input\" value=\"[name]\"> <label class=\"custom-control-label\" for=\"[id]\">[name]</label> </div>"
+function createStateOption(id, name){
+    div = stateOptionTemplate.split('[id]').join(id)
+    div = div.split('[name]').join(name)
+    return div
+}
+
+function populateStateSelect(){
+    selectorDiv = document.getElementById('state_selector_options')
+    for(var i in state_fps_hashmap){
+        optionDiv = createStateOption(state_fps_hashmap[i], i)
+        selectorDiv.innerHTML += optionDiv
+    }
+}
+
+function toggleStateSearch(){
+    dropdown = document.getElementById("dropdownStateSearch")
+    text = document.getElementById("textStateSearch")
+
+    dropdown.disabled = !dropdown.disabled
+    text.disabled = !text.disabled
+}
+
+function dropdownStateSearch(){
+    if(mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
+        return;
+    }
+
+    var selected_radio = document.getElementById('state_selector_options').querySelector('input[type=radio]:checked')
+    var id = selected_radio.id
+    var name = selected_radio.value
+
+    currentStateName = name.toLowerCase();
+    currentStateName = currentStateName.charAt(0).toUpperCase(); //Make first letter uppercase
+    targetState = findState(id);
+    mymap.fitBounds(targetState.getBounds());
+    //Retrieve districts data from server and set
+    loadStateJson(currentStateName, id);
+    stateJson.remove();
+    addDistrictsLayer();
+
+}
+populateStateSelect();

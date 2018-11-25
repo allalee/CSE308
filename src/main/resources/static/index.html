@@ -4,7 +4,6 @@
     <title>CSE 308</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
     integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
     crossorigin=""/>
@@ -12,13 +11,13 @@
     integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
     crossorigin=""></script>
 	<script type="text/javascript" src="./geojson/usa_states_500k.js"></script>
-	<script type="text/javascript" src="./geojson/cb_2017_us_cd115_500k.js"></script>
+	<script type="text/javascript" src="./geojson/cb_2017_us_cd115_500k.js"></script><!--
 	<script type="text/javascript" src="./geojson/maryland_districts.js"></script>
 	<script type="text/javascript" src="./geojson/connecticut_districts.js"></script>
 	<script type="text/javascript" src="./geojson/kansas_districts.js"></script>
 	<script type="text/javascript" src="./geojson/precinct_data/kansas_state_voting_precincts_2012.js"></script>
 	<script type="text/javascript" src="./geojson/precinct_data/maryland_precincts_2012.js"></script>
-	<script type="text/javascript" src="./geojson/precinct_data/connecticut_precincts.js"></script>
+	<script type="text/javascript" src="./geojson/precinct_data/connecticut_precincts.js"></script>-->
 	  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -99,6 +98,21 @@
   </div>
   <div id="sidenav">
    <div class="top">
+       <div class="card rounded-0">
+           <div class="card-header">
+               <a data-toggle="collapse" data-parent="#sidenav" href="#state_selector" class="card-link">
+                   Select State
+               </a>
+           </div>
+           <div id="state_selector" class="collapse">
+               <div id="state_selector_options" class="card-body">
+                   <!--dynamically generated in map.js -> populateStateOptions-->
+               </div>
+               <div>
+                   <button id = "dropdownStateSearch" class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="dropdownStateSearch()">Go</button>
+               </div>
+           </div>
+       </div>
 
      <div class="card rounded-0">
        <div class="card-header">
