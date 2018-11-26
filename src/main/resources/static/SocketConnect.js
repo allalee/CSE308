@@ -11,8 +11,8 @@ function makeConnector(){
     con.stomp = null;
     con.message_queue = [];
     con.is_reading = false;
-    con.reading_interval = 0.1;
-    oon.message_pointer = 0;
+    con.reading_interval = 200; //Time is in milliseconds
+    con.message_pointer = 0;
 
     // connect
     con.connect = function(){
@@ -36,14 +36,30 @@ function makeConnector(){
         con.message_queue.push(body)
     }
 
+//    con.process_message = function(){
+//        //var message_body = con.message_queue.shift()
+//        if ( con.message_pointer < con.message_queue.length ){
+//        var message_body = con.message_queue[con.message_pointer++];
+//        if (message_body != undefined)
+//            dynamic_color_changer.color(message_body);
+//            //color_district(message_body.precinct, 'red')
+//            }
+//    }
+
     con.process_message = function(){
-        //var message_body = con.message_queue.shift()
-        if ( con.message_pointer < con.message_queue.length ){
-        var message_body = con.message_queue[con.message_pointer++];
-        if (message_body != undefined)
-            dynamic_color_changer.color(message_body);
-            //color_district(message_body.precinct, 'red')
-            }
+        var console = document.getElementById("console")
+        var message_body = con.message_queue.shift()
+        if(message_body != undefined){
+            console.appendChild(document.createElement("br"))
+            console.append(message_body["console_log"])
+        }
+//        console.log(message_body)
+//        if(con.message_pointer < con.message_queue.length){
+//            var message_body = con.message_queue[con.message_pointer++];
+//            if(message_body != undefined){
+//                console.log(message_body)
+//            }
+//        }
     }
 
     con.start_reading = function(){
@@ -64,6 +80,3 @@ function makeConnector(){
 
     return con;
 }
-connector = makeConnector();
-connector.connect();
-con.start_reading();

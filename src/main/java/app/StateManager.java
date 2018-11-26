@@ -199,4 +199,8 @@ public class StateManager {
         gerrymandering.model.State state = (gerrymandering.model.State) l.get(0);
         return state.getConstitutionText();
     }
+
+    public State getCurrentState(){
+        return this.currentState;
+    }
 }
