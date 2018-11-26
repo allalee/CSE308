@@ -8,11 +8,11 @@ import org.springframework.stereotype.Controller;
  * Socket handler
  *
  * IMPORTANT: Do not instantiate this object.
- * Use "@Autowired SocketHandler handler;" to obtian the object.
+ * Use "@Autowired SocketHandler handler;" to obtain the object.
  *
  */
 @Controller
-public class SocketHandler {
+public class    SocketHandler {
 
     private String room = "/client_socket/algorithm";
 

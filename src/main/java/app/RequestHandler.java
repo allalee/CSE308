@@ -27,15 +27,6 @@ public class RequestHandler {
 
     public RequestHandler() throws Exception {
     }
-
-    // template of ajax handler
-        @RequestMapping(value = "/helloworld", method = RequestMethod.GET)
-        public @ResponseBody
-        String sayhHello() {
-            Test t = new Test();
-            return t.print();
-        }
-
         @RequestMapping(value = "/getState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
         public @ResponseBody
         String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws Throwable {
@@ -51,29 +42,19 @@ public class RequestHandler {
         @RequestMapping(value = "/stateConst", method = RequestMethod.GET)
         public @ResponseBody
         String getStateConst(@RequestParam ("stateName") String state, @RequestParam("stateID") int stateID) throws Throwable {
-            if(state.equals("Kansas")){
-                String stateConst = sm.getStateConstitution(state);
-                return stateConst;
-            }
-            if(state.equals("Maryland")){
-                String stateConst = sm.getStateConstitution(state);
-                return stateConst;
-            }
-            if(state.equals("Connecticut")){
-                String stateConst = sm.getStateConstitution(state);
-                return stateConst;
-            }
-            else{
-                return null;
-            }
+            return sm.getStateConstitution(state);
         }
 
         @Autowired BeanFactory beanFactory;
+        @Autowired SocketHandler handler;
 
-//        @RequestMapping(value = "/startAlgorithm", method = RequestMethod.GET)
-//        public @ResponseBody
-//        String startAlgo(@RequestParam ("state_name") String stateName) throws IOException, ParseException {
-//
+        @RequestMapping(value = "/startAlgorithm", method = RequestMethod.GET)
+        public @ResponseBody
+        String startAlgo(@RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric ) throws IOException, ParseException {
+            handler.send("{\"console_log\":\"Server received connection...\"}");
+            State state = sm.cloneState(sm.getCurrentState().getName()); //Clone the state to keep original data in tact
+            handler.send("{\"console_log\":\"Building precinct neighbors...\"}");
+
 //            sm.setActiveState(stateName);
 //            State state = sm.cloneState(stateName);
 //
@@ -84,7 +65,7 @@ public class RequestHandler {
 //            solver.setState(state);
 //            solver.run();
 //
-//            return "Algo started";
-//        }
+            return "Algo started";
+        }
 
 }

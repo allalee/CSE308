@@ -41,16 +41,18 @@ public class JsonBuilder {
             builder.append("\"" + ethnicity + "\": \"" + population + "\",");
         }
         builder.setCharAt(builder.length()-1, '}');
-        builder.append(",\"population\": \"" + p.getPopulation() + "\",\"voting_data\": {");
+        builder.append(",\"population\": \"" + p.getPopulation() + "\"");
         //PERHAPS MISSING VOTING DATA FOR THAT PRECINCT, RESULTING IN BAD JSON i.e: "population" : "948","voting_data" : }}
-        //STILL MISSING VOTING DATA
         ElectionData ed = p.getElectionData();
-        for(Parties parties : ed.getVoterDistribution().keySet()){
-            String party = parties.toString();
-            int votes = ed.getVoterDistribution().get(parties);
-            builder.append("\"" + party + "\": \"" + votes + "\",");
+        if(!(ed.getVoterDistribution().isEmpty())){
+            builder.append(",\"voting_data\": {");
+            for(Parties parties : ed.getVoterDistribution().keySet()){
+                String party = parties.toString();
+                int votes = ed.getVoterDistribution().get(parties);
+                builder.append("\"" + party + "\": \"" + votes + "\",");
+            }
+            builder.setCharAt(builder.length()-1, '}');
         }
-        builder.setCharAt(builder.length()-1, '}');
         builder.append("}");
         return builder.toString();
     }
