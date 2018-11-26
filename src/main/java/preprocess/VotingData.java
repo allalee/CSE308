@@ -47,8 +47,12 @@ public class VotingData implements Serializable{
             name = "YEAR"
     )
     private int year;
+    @Column(
+            name = "DISTRICT_ID"
+    )
+    private int district_id;
 
-    public VotingData(String county, int vote_count, int precinct_id, String representative, Parties party, ElectionType election_type, int year){
+    public VotingData(String county, int vote_count, int precinct_id, String representative, Parties party, ElectionType election_type, int year, int district_id){
         this.county = county;
         this.vote_count = vote_count;
         this.precinct_id = precinct_id;
@@ -56,6 +60,7 @@ public class VotingData implements Serializable{
         this.party = party;
         this.election_type = election_type;
         this.year = year;
+        this.district_id = district_id;
     }
     public VotingData(){
 
@@ -85,4 +90,5 @@ public class VotingData implements Serializable{
     public int getYear(){
         return this.year;
     }
+    public int getDistrictID() {return this.district_id;}
 }
