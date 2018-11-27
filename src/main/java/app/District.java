@@ -110,10 +110,11 @@ public class District{
     public District clone(app.State state){
         District clonedDistrict = new District(this.ID, state, this.geometry);
         clonedDistrict.setPopulation(this.population);
+        for(Precinct precinct: this.getAllPrecincts()){
+            Precinct clonedPrecinct = precinct.clone(this);
+            clonedDistrict.getPrecinctMap().put(clonedPrecinct.getID(), clonedPrecinct);
+        }
         return clonedDistrict;
-//        District clonedDistrict = new District(ID, newOwnerState, this.geometry);
-//        clonedDistrict.precinctMap = new HashMap<>();   // empty precincts. to be set in state
-//        return clonedDistrict;
     }
     public int getTotalVotes() {
         return democraticVotes+republicanVotes;
@@ -171,5 +172,9 @@ public class District{
     }
     public int getPopulation(){
         return this.population;
+    }
+
+    public HashMap<Integer, Precinct> getPrecinctMap(){
+        return this.precinctMap;
     }
 }

@@ -32,6 +32,13 @@ public class Precinct{
         demographics.put(ethn, pop);
     }
 
+    public Precinct clone(District dist){
+        Precinct clonedPrecinct = new Precinct(this.ID, this.geometry);
+        clonedPrecinct.setDistrict(dist);
+        clonedPrecinct.setPopulation(this.population);
+        return clonedPrecinct;
+    }
+
     public Precinct chainClone(HashMap<Integer, District> districtMap){
         return chainClone(new HashMap<>(), districtMap);
     }

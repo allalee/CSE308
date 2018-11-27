@@ -6,6 +6,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import gerrymandering.HibernateManager;
 import gerrymandering.model.Population;
 import preprocess.Populations;
+import preprocess.VotingData;
 
 
 public class StateManager {
@@ -114,8 +115,32 @@ public class StateManager {
     }
 
     //METHOD IS PURELY FOR CLONED STATES ONLY AS THIS IS FOR THE ALGORITHM TO RUN
-    public void loadElectionData(){
-
+    public void loadElectionData() throws Throwable {
+        for(Integer districtID : clonedState.getDistrictMap().keySet()){
+            Map<String, Object> criteria = new HashMap<>();
+            List<Object> l;
+            criteria.put("district_id", districtID);
+            l = hb.getRecordsBasedOnCriteria(preprocess.VotingData.class, criteria);
+            for(Object o : l){
+                VotingData vd = (VotingData)o;
+                Precinct precinct = clonedState.getDistrictMap().get(districtID).getPrecinct(vd.getPrecinctID());
+                HashMap<Parties, Integer> precinctElectionData = precinct.getElectionData().getVoterDistribution();
+                if(precinctElectionData.containsKey(vd.getParty())){
+                    precinct.getElectionData().addTotalVotes(vd.getVoteCount());
+                    int count = precinctElectionData.get(vd.getParty()) + vd.getVoteCount();
+                    precinctElectionData.replace(vd.getParty(), count);
+                } else {
+                    precinct.getElectionData().addTotalVotes(vd.getVoteCount());
+                    precinctElectionData.put(vd.getParty(), vd.getVoteCount());
+                }
+                Representative rep = new Representative(vd.getRepresentative());
+                if(!(precinct.getElectionData().getReps().contains(rep))){
+                    precinct.getElectionData().addRepresentative(rep);
+                }
+                precinct.getElectionData().setYear(vd.getYear());
+                precinct.getElectionData().setElectionType(vd.getElectionType());
+            }
+        }
     }
 
     private void getDemographics(app.Precinct precinct) throws Throwable{
@@ -156,7 +181,7 @@ public class StateManager {
                     vd.put(p.getParty(), p.getVoteCount());
                 }
                 Representative rep = new Representative(p.getRepresentative());
-                if(ed.getReps().contains(rep)){
+                if(!(ed.getReps().contains(rep))){
                     ed.addRepresentative(rep);
                 }
                 ed.setYear(p.getYear());

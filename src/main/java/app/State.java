@@ -48,23 +48,6 @@ public class State {
             District clonedDistrict = district.clone(this);
             clonedState.getDistrictMap().put(clonedDistrict.getID(), clonedDistrict);
         }
-
-//        // clone districts
-//        District tempDistrict = new District(-1, null, null);
-//        for(District district: this.getAllDistricts()){
-//            clonedState.addDistrict(district.clone(clonedState));
-//            tempDistrict = district; // get the last district
-//        }
-//
-//        // clone precincts & link with district
-//        Precinct startPrecinct = tempDistrict.getAllPrecincts().iterator().next();
-//        startPrecinct.chainClone(clonedState.getDistrictMap());
-
-        // recalculate the boundary
-        for(District district: this.getAllDistricts()){
-            district.recalculateBoundaryPrecincts();
-        }
-
         return clonedState;
     }
 
@@ -77,5 +60,8 @@ public class State {
 
     public void setPopulation(int population){
         this.totalPopulation = population;
+    }
+    public District getDistrict(int key){
+        return this.districtMap.get(key);
     }
 }
