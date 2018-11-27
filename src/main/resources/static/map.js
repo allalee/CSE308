@@ -447,7 +447,6 @@ makeManualMover = function(layerManager){
     var mm = {}
     mm.selected_precinct;
     mm.selected_color = "black"
-    mm.LOG_DIV_ID = 'district_selector_message'
 
     mm.clickFunction = function(e){
         var layer = e.target;
