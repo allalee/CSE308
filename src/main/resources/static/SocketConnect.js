@@ -36,29 +36,21 @@ function makeConnector(){
         con.message_queue.push(body)
     }
 
-//    con.process_message = function(){
-//        //var message_body = con.message_queue.shift()
-//        if ( con.message_pointer < con.message_queue.length ){
-//        var message_body = con.message_queue[con.message_pointer++];
-//        if (message_body != undefined)
-//            dynamic_color_changer.color(message_body);
-//            //color_district(message_body.precinct, 'red')
-//            }
-//    }
+    con.onMessage = function(func){
+        con.process_message = func
+    }
 
-    con.process_message = function(){
-        var console = document.getElementById("console")
+    con.pop_and_read = function(){
         var message_body = con.message_queue.shift()
         if(message_body != undefined){
-            console.appendChild(document.createElement("br"))
-            console.append(message_body["console_log"])
+            con.process_message(message_body)
         }
     }
 
     con.start_reading = function(){
         con.is_reading = true;
         con.timer = setInterval(
-        con.process_message,
+        con.pop_and_read,
         con.reading_interval);
     }
 

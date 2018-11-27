@@ -17,6 +17,20 @@ body {
   transition: 0.5s;
 }
 
+#state_selector_options{
+  max-height:100px;
+  overflow-y: scroll;
+
+  float:left;
+
+}
+
+#dropdownStateSearch{
+    //width:100%
+    float: right;
+    height: 100px;
+}
+
 #main {
     height: 100%;
     transition: margin-left .5s;
