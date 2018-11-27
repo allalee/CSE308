@@ -3,9 +3,6 @@ package app;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 
-/**
- * Created by Yixiu Liu on 11/11/2018.
- */
 public abstract class Algorithm {
     protected State state;
     protected volatile boolean running;
@@ -51,7 +48,13 @@ public abstract class Algorithm {
     }
 
     public double calculateFunctionValue(){
-        return 1;
+        double compactnessSum = 0.0;
+        int numDistricts = state.getAllDistricts().size();
+        for (District d : state.getAllDistricts()) {
+            compactnessSum+=d.computeMetricValue(Metric.COMPACTNESS);
+        }
+        double normalizedCompactness = compactnessSum/numDistricts;
+        return 1.0;
     }
 
     protected boolean isBetter(double newValue, double oldValue){
