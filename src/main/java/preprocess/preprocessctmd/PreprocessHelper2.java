@@ -1,7 +1,5 @@
 package preprocess.preprocessctmd;
 
-import app.ElectionType;
-import app.Parties;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.geojson.GeoJsonReader;
@@ -10,8 +8,7 @@ import gerrymandering.model.State;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import preprocess.Precincts;
-import preprocess.VotingData;
+import preprocess.dbclasses.Precincts;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -90,99 +87,6 @@ public class PreprocessHelper2 {
         buildPrecincts(precinctList, marylandPrecinctJSON, districtMap);
         return precinctList;
     }
-
-    public static ArrayList<VotingData> generateConnVotingData(ArrayList<File> files, HashMap<Integer, Integer> connPrecinctMap) throws Throwable {
-        ArrayList<VotingData> votingDataList = new ArrayList<>();
-        JSONParser parser = new JSONParser();
-        //build voting data for connecticut
-        FileReader reader = new FileReader(files.get(0));
-        JSONArray connVTDJSON = (JSONArray) parser.parse(reader);
-        buildConnVTD(votingDataList,connVTDJSON, connPrecinctMap);
-        return votingDataList;
-    }
-
-    public static ArrayList<VotingData> generateMarylandVotingData(ArrayList<File> files, HashMap<Integer, Integer> marylandPrecinctMap) throws Throwable {
-        ArrayList<VotingData> votingDataList = new ArrayList<>();
-        JSONParser parser = new JSONParser();
-        //build voting data for maryland
-        FileReader reader = new FileReader(files.get(1));
-        JSONArray marylandVTDJSON = (JSONArray) parser.parse(reader);
-        buildMarylandVTD(votingDataList,marylandVTDJSON, marylandPrecinctMap);
-        return votingDataList;
-    }
-
-    private static void buildMarylandVTD(List<VotingData> vtdList, JSONArray json, HashMap<Integer, Integer> marylandPrecinctMap) throws Throwable{
-        for(Object vd : json){
-            JSONObject vdJObject = ((JSONObject)vd);
-            String pID = vdJObject.get("PRECINCT").toString();
-            if(pID == null || pID.equals("UNABLE TO DETERMINE")){
-                continue;
-            }else{
-                String party = vdJObject.get("PARTY").toString();
-                if(party.equalsIgnoreCase("DEMOCRAT") || party.equalsIgnoreCase(Parties.REPUBLICAN.toString()) || party.equalsIgnoreCase(Parties.LIBERTARIAN.toString()) || party.equalsIgnoreCase(Parties.GREEN.toString())) {
-                    String county = vdJObject.get("COUNTY").toString();
-                    Integer voteCnt = Integer.parseInt(vdJObject.get("TOTAL_VOTERS").toString());
-                    Integer precinctId = Integer.parseInt(pID);
-                    Integer districtId = marylandPrecinctMap.get(precinctId);
-                    if(party.equals(""));
-
-                }
-            }
-        }
-
-
-
-    }
-
-    private static void buildConnVTD(List<VotingData> vtdList, JSONArray json, HashMap<Integer, Integer> connPrecinctMap) throws Throwable {
-        for(Object vd : json){
-            JSONObject vdJOBject = ((JSONObject)vd);
-            String pID = vdJOBject.get("GeoID10").toString();
-            if(pID == null){
-                continue;
-            } else{
-                String county = vdJOBject.get("Town").toString();
-                Integer voteCntRep = Integer.parseInt(vdJOBject.get("John McCain (PRES)").toString());
-                Integer voteCntDem = Integer.parseInt(vdJOBject.get("Barack Obama (PRES)").toString());
-                Integer voteCntGreen = Integer.parseInt(vdJOBject.get("Cynthia McKinney (PRES)").toString());
-                Integer voteCntInd = Integer.parseInt(vdJOBject.get("Ralph Nader (PRES)").toString());
-                String representativeRep = "McCain, John";
-                String representativeDem = "Obama, Barack";
-                String representativeGreen = "McKinney, Cynthia";
-                String representativeInd = "Nader, Ralph";
-                String partyRep = "REPUBLICAN";
-                String partyDem = "DEMOCRAT";
-                String partyGreen = "GREEN";
-                String partyInd = "INDEPENDENT";
-
-                //GETTING THE PROPER pID TO PERSIST, AND THE CORRECT DistrictID
-
-                if(pID.equals("ZZZ")){
-                    pID = pID.replace("ZZZ", "999"); //remove chars
-                }
-                else {
-                    pID = pID.substring(3); //take off 090 for connecticut precincts because too large for int.
-                    pID = pID.replace("-", ""); //remove chars
-                }
-                Integer precinctID = Integer.parseInt(pID);
-                Integer districtID = connPrecinctMap.get(precinctID);
-
-                //DISTRICTID FIELD WILL BE ADDED TO THE VOTING DATA MODEL.
-                //DISTRICTID FROM 46 TO 50 INCLUSIVE IS PART OC CONNECTICUT.
-                VotingData dataRep = new VotingData(county, voteCntRep, precinctID, representativeRep, Parties.valueOf(partyRep), ElectionType.PRESIDENTIAL, 2008, districtID);
-                VotingData dataDem = new VotingData(county, voteCntDem, precinctID, representativeDem, Parties.valueOf(partyDem), ElectionType.PRESIDENTIAL, 2008,  districtID);
-                VotingData dataGreen = new VotingData(county, voteCntGreen, precinctID, representativeGreen, Parties.valueOf(partyGreen), ElectionType.PRESIDENTIAL, 2008,  districtID);
-                VotingData dataInd = new VotingData(county, voteCntInd, precinctID, representativeInd, Parties.valueOf(partyInd), ElectionType.PRESIDENTIAL, 2008,  districtID);
-                vtdList.add(dataRep);
-                vtdList.add(dataDem);
-                vtdList.add(dataGreen);
-                vtdList.add(dataInd);
-            }
-        }
-    }
-
-
-
 
 
     private static void buildDistricts(ArrayList<District> districtList, int stateID, JSONArray districtJSONArray) throws Exception {

@@ -3,10 +3,7 @@ package preprocess.preprocessctmd;
 import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
 import gerrymandering.model.State;
-import preprocess.Precincts;
-import preprocess.PreprocessHelper;
-import preprocess.VotingData;
-import preprocess.preprocessctmd.PreprocessHelper2;
+import preprocess.dbclasses.Precincts;
 
 import java.io.File;
 import java.util.*;
@@ -25,12 +22,11 @@ public class Preprocessing {
         districtFileNames[1] = "D:/CSE308/src/main/resources/static/geojson/maryland_districts.json";
         precinctFileNames[0] = "D:/CSE308/src/main/resources/static/geojson/precinct_data/connecticut_precincts.json";
         precinctFileNames[1] = "D:/CSE308/src/main/resources/static/geojson/precinct_data/maryland_precincts_2012.json";
-        votingDataFileNames[0] = "D:/CSE308/voting_data/connvoting.json";
-        votingDataFileNames[1] = "D:/CSE308/voting_data/marylandvoting.json";
+        //votingDataFileNames[0] = "CSE308/voting_data/kansas_2012_president_election.json";
 
         ArrayList<File> districtFiles = PreprocessHelper2.loadFiles(districtFileNames);
         ArrayList<File> precinctFiles = PreprocessHelper2.loadFiles(precinctFileNames);
-        ArrayList<File> votingDataFiles = PreprocessHelper2.loadFiles(votingDataFileNames);
+        //Set<File> votingDataFiles = PreprocessHelper.loadFiles(votingDataFileNames);
 
 //STATES
         Set<State> states = PreprocessHelper2.generateStates();
@@ -45,15 +41,10 @@ public class Preprocessing {
 
 //PRECINCTS
         ArrayList<Precincts> connPrecincts = PreprocessHelper2.generateConnPrecincts(precinctFiles, connDistricts);
-//        persistPrecincts(connPrecincts);
+//        //persistPrecincts(connPrecincts);
         ArrayList<Precincts> marylandPrecincts = PreprocessHelper2.generateMarylandPrecincts(precinctFiles, marylandDistricts);
-//        persistPrecincts(marylandPrecincts);
-
+        //persistPrecincts(marylandPrecincts);
 //VOTING DATA
-        HashMap<Integer, Integer> connPrecinctMap = generatePrecinctHashMap(connPrecincts);
-        ArrayList<VotingData> connVotingData = PreprocessHelper2.generateConnVotingData(votingDataFiles, connPrecinctMap);
-        HashMap<Integer, Integer> marylandPrecinctMap = generatePrecinctHashMap(marylandPrecincts);
-        ArrayList<VotingData> marylandVotingData = PreprocessHelper2.generateMarylandVotingData(votingDataFiles, marylandPrecinctMap);
     }
 
 
@@ -84,7 +75,7 @@ public class Preprocessing {
         }
     }
 
-    private static void persistPrecincts(ArrayList<Precincts> precincts) throws Throwable {
+    private static void persistPrecincts(Set<Precincts> precincts) throws Throwable {
         for (Precincts p : precincts){
             hb.persistToDB(p);
         }
@@ -113,15 +104,6 @@ public class Preprocessing {
         while(itr.hasNext()){
             District d = (District) itr.next();
             hm.put(d, d.getDistrictId());
-        }
-        return hm;
-    }
-
-    //generate hashmap of precinct_id to district_id
-    private static HashMap<Integer, Integer> generatePrecinctHashMap(ArrayList<Precincts> PrecinctsMap) throws Throwable {
-        HashMap<Integer, Integer> hm = new HashMap<>();
-        for(Precincts p : PrecinctsMap){
-            hm.put(p.getPrecinctId(), p.getDistrictId());
         }
         return hm;
     }
