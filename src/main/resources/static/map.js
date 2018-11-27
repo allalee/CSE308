@@ -11,8 +11,8 @@ var stateJson; //State handler added to map
 var districtJson; //District handler added to the map
 var precinctJson;
 
-var currentStateID; //Keeping track of which state the user clicks on
-var currentStateName;
+var currentStateID = null; //Keeping track of which state the user clicks on
+var currentStateName = null;
 
 var statesData;
 var districtData;
@@ -20,6 +20,16 @@ var precinctData;
 
 var currentConstText;
 
+var connector = makeConnector();
+connector.onMessage(consoleLog)
+connector.connect();
+con.start_reading();
+
+function consoleLog(message_body){
+    var console = document.getElementById("console")
+    console.appendChild(document.createElement("br"))
+    console.append(message_body["console_log"])
+}
 
 state_fps_hashmap =
 {
@@ -208,6 +218,23 @@ function onEachPrecinctFeature(feature, layer) {
         click: zoomToFeature
     });
 }
+var MODE = {
+    NORMAL: 0,
+    MANUAL_SELECT: 1
+}
+var mode = MODE.NORMAL
+function precinctClickEvent(e){
+    switch(mode){
+        case MODE.NORMAL:
+            console.log("normal")
+        break;
+        case MODE.MANUAL_SELECT:
+            console.log("manual")
+        break;
+        default: console.log("invalid mode: "+ mode)
+    }
+}
+
 function resetMap(){
 	if(mymap.hasLayer(districtJson)) {
     districtJson.remove();
@@ -240,7 +267,7 @@ info.onAdd = function (mymap) {
     return this._div;
 };
 // method that we will use to update the control based on feature properties passed
-info.update = function (props) {
+info.update = function (props, demo, repub) {
     this._div.innerHTML = '<h4>Precinct Information</h4>' +  (props ?
         '<b>Demographics </b><br>'
         +'Asian/Pacific Islander: ' + props['demographics']['ASIAN'] + '<br>'
@@ -250,8 +277,8 @@ info.update = function (props) {
         + 'Native American: ' + props['demographics']['NATIVE_AMERICAN'] + '<br>'
         + 'Other: ' + props['demographics']['OTHER'] + '<br>'
         + '<br><b>Election</b><br>'
-        + 'Democrat: ' + props['voting_data']['DEMOCRATIC'] + '<br>'
-        + 'Republican: ' + props['voting_data']['REPUBLICAN'] + '<br>'
+        + 'Democrat: ' + demo + '<br>'
+        + 'Republican: ' + repub + '<br>'
         + '<br><b>Population</b><br>'
         + props['population']
         : 'Hover over a precinct');
@@ -299,7 +326,14 @@ function loadPrecinctProperties(layer){
         if(request.status == 200){
             var loadedJson = request.response
             var obj = JSON.parse(loadedJson)
-            info.update(obj)
+            if(obj['voting_data']){
+                var democratic = obj['voting_data']['DEMOCRATIC']
+                var republican = obj['voting_data']['REPUBLICAN']
+            } else {
+                var democratic = "N/A"
+                var republican = "N/A"
+            }
+            info.update(obj, democratic, republican)
             if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
                layer.bringToFront();
             }
@@ -320,5 +354,151 @@ function sendState(currentStateID, currentStateName){
    request.send(null);
 }
 
+document.getElementById("start").onclick = startAlgorithm
+
+function startAlgorithm(){
+    var algorithm_type = $('input[name="algorithm"]:checked').val()
+    if(currentStateID == null){
+        document.getElementById("console").appendChild(document.createElement("br"))
+        document.getElementById("console").append("No state selected for algorithm to run")
+    } else {
+        var console = document.getElementById("console")
+        console.appendChild(document.createElement("br"))
+        console.append("Retrieving slider data for the server...")
+        var populationEquality = document.getElementById("population_equality").value
+        var partisanFairness = document.getElementById("partisan_fairness").value
+        var compactness = document.getElementById("compactness").value
+        console.appendChild(document.createElement("br"))
+        console.append("Forwarding slider data to the server...")
+        var url = "http://localhost:8080/startAlgorithm?popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
+        var request = new XMLHttpRequest()
+        request.open("GET", url, true)
+        request.send(null)
+    }
+}
+
 info.addTo(mymap);
 constInfo.addTo(mymap);
+
+var stateOptionTemplate = "<div class=\"custom-control custom-radio\"> <input type=\"radio\" id=\"[id]\" name=\"state_option\" class=\"custom-control-input\" value=\"[name]\"> <label class=\"custom-control-label\" for=\"[id]\">[name]</label> </div>"
+function createStateOption(id, name){
+    var div = stateOptionTemplate.split('[id]').join(id)
+    div = div.split('[name]').join(name)
+    return div
+}
+
+function populateStateSelect(){
+    selectorDiv = document.getElementById('state_selector_options')
+    for(var i in state_fps_hashmap){
+        optionDiv = createStateOption(state_fps_hashmap[i], i)
+        selectorDiv.innerHTML += optionDiv
+    }
+}
+
+function toggleStateSearch(){
+    var dropdown = document.getElementById("dropdownStateSearch")
+    var text = document.getElementById("textStateSearch")
+
+    dropdown.disabled = !dropdown.disabled
+    text.disabled = !text.disabled
+}
+
+function dropdownStateSearch(){
+    if(mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
+        return;
+    }
+
+    var selected_radio = document.getElementById('state_selector_options').querySelector('input[type=radio]:checked')
+    var id = selected_radio.id
+    var name = selected_radio.value
+
+    currentStateName = name.toLowerCase();
+    currentStateName = currentStateName.charAt(0).toUpperCase(); //Make first letter uppercase
+    targetState = findState(id);
+    mymap.fitBounds(targetState.getBounds());
+    //Retrieve districts data from server and set
+    loadStateJson(currentStateName, id);
+    stateJson.remove();
+    addDistrictsLayer();
+
+}
+populateStateSelect();
+
+// when manual mode toggled
+//  enable pane, init empty, move/lock disabled
+//  precinctlayer's onClick = populateDistrcitSelect, <
+//                              move/lock enable,
+//                              reset mm.selected_district, <
+//                              mm.selected_precinct = e
+//                              mm.selected_precinct
+//  precinctlayer's oneneter = same
+//  precinctlayer's onexit = same + if e == mm.selected_precinct { setStyle("{fillColor: "+mm.selected_color+"}") }
+
+
+ManualMover = function(layerManager){
+
+    var mm = {}
+    mm.selected_precinct;
+    mm.selected_color = "black"
+
+    mm.onClick = function(e){
+        var layer = e.target;
+
+        // clear and set new selection
+        if (mm.selected_precinct){
+            layerManager.reset_precinct_color(layer)
+        }
+        layerManager.color_precinct(mm.selected_color)
+        mm.selected_precinct = layer;
+
+        // repopulate the district options
+        removeDistrictOption()
+        for(var i in layerManager.district_layer_color_map){
+            insertDistrictOption(i, layerManager.district_layer_color_map[i])
+        }
+
+    }
+
+    mm.exit = function(){
+        if (mm.selected_precinct){
+            layerManager.reset_precinct_color(layer)
+        }
+    }
+
+    mm.getSelectedID = function(){
+        return layerManager.get_precinct_id(mm.selected_precinct)
+    }
+
+    mm.resetSelection = function(){
+        mm.selected_precinct = undefined
+        layerManager.reset_precinct_color(mm.selected_precinct)
+    }
+
+    return mm
+}
+
+// move: onclick => ajax('trymove' radio.value+ ,   mm.getSelectedID() ), print out funct value
+// lock: onclick => ajax('actually move it' radio.value+ ,   mm.getSelectedID() ) // move on client+server, clear selection
+//                  layer_manager.move_precinct(mm.getSelectedID(), radio.value)
+//                  mm.resetSelection()
+
+
+
+var districtOptionTemplate = "<div class=\"custom-control custom-radio\"> <input type=\"radio\" id=\"district[id]\" name=\"district_option\" class=\"custom-control-input\" value=\"[id]\"> <label id=\"districtlabel[id]\" class=\"custom-control-label\" for=\"district[id]\">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</label> </div>"
+function insertDistrictOption(id, color){
+    var div = districtOptionTemplate.split('[id]').join(id)
+        var selectorDiv = document.getElementById('district_selector_options')
+        selectorDiv.innerHTML += div
+        var label = document.getElementById('districtlabel'+id)
+        label.setAttribute("style", "background-color:"+color)
+    return div
+}
+
+function removeDistrictOption(){
+    var selectorDiv = document.getElementById('district_selector_options')
+    selectorDiv.innerHTML += ""
+}
+
+function enableManualSelect(){
+
+}

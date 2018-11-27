@@ -4,13 +4,14 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 public class District{
     private int ID;
     private State state;
     private HashMap<Integer, Precinct> precinctMap;
-    private HashMap<Integer, Precinct> borderPrecincts;
+    private Set<Precinct> borderPrecincts;
     protected Geometry geometry; //Set once for finding precinct in district
     private Geometry currentGeometry; //For calculating area and perimeter
     private int population; //Population
@@ -24,20 +25,21 @@ public class District{
         this.geometry = geometry;
         this.currentGeometry = (Geometry) geometry.clone();
         precinctMap = new HashMap<>();
-        borderPrecincts = new HashMap<>();
+        borderPrecincts = new HashSet<>();
     }
 
-    public Collection<Precinct> getBoundaries(){
-        return borderPrecincts.values();
+    public Set<Precinct> getBoundaries(){
+        return borderPrecincts;
     }
-    public void removeBoundary(int id){
-        borderPrecincts.remove(id);
-    }
-    public void removeBoundary(Precinct precinct){
-        removeBoundary(precinct.getID());
-    }
-    public void addBoundary(int id, Precinct precinct){
-        borderPrecincts.put(id, precinct);
+
+    public void recalculateBoundaryPrecincts(){
+        for(Precinct p: precinctMap.values()){
+            for(Precinct neighbor: p.getNeighbors()){
+                if(neighbor.getDistrict().getID() != this.getID()){
+                    this.borderPrecincts.add(p);
+                }
+            }
+        }
     }
     public Precinct getPrecinct(int id){
         return precinctMap.get(id);

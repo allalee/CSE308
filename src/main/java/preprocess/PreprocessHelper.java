@@ -52,13 +52,13 @@ public class PreprocessHelper {
         return districtSet;
     }
 
-    public static Set<Precincts> generatePrecincts(Set<File> files, HashMap<District, Integer> districtMap) throws Exception {
+    public static Set<Precincts> generatePrecincts(Set<File> files, HashMap<District, Integer> districtMap, HashMap<Integer, Integer> pToDID) throws Exception {
         Set<Precincts> precinctSet = new HashSet<>();
         JSONParser parser = new JSONParser();
         Iterator<File> fileIterator = files.iterator();
         FileReader reader = new FileReader(fileIterator.next());
         JSONObject kansasPrecinctJSON = (JSONObject) parser.parse(reader);
-        buildPrecincts(precinctSet, kansasPrecinctJSON, districtMap);
+        buildPrecincts(precinctSet, kansasPrecinctJSON, districtMap, pToDID);
         return precinctSet;
     }
 
@@ -82,13 +82,13 @@ public class PreprocessHelper {
         return demographicsSet;
     }
 
-    public static Set<VotingData> generateVotingData(Set<File> files, HashMap<String, Integer> vtdMap) throws Throwable {
+    public static Set<VotingData> generateVotingData(Set<File> files, HashMap<String, Integer> vtdMap, HashMap<Integer, Integer> pToDID) throws Throwable {
         Set<VotingData> votingDataSet = new HashSet<>();
         JSONParser parser = new JSONParser();
         Iterator<File> fileIterator = files.iterator();
         FileReader reader = new FileReader(fileIterator.next());
         JSONArray kansasVTDJSON = (JSONArray) parser.parse(reader);
-        buildVTD(votingDataSet, kansasVTDJSON, vtdMap);
+        buildVTD(votingDataSet, kansasVTDJSON, vtdMap, pToDID);
         return votingDataSet;
     }
 
@@ -102,7 +102,7 @@ public class PreprocessHelper {
         }
     }
 
-    private static void buildPrecincts(Set<Precincts> precinctSet, JSONObject precinctJSON, HashMap<District, Integer> districtMap) throws Exception {
+    private static void buildPrecincts(Set<Precincts> precinctSet, JSONObject precinctJSON, HashMap<District, Integer> districtMap, HashMap<Integer, Integer> pToDID) throws Exception {
         JSONArray precinctJSONArray = (JSONArray) precinctJSON.get("features");
         for(Object precinct : precinctJSONArray){
             JSONObject properties = (JSONObject) ((JSONObject)precinct).get("properties");
@@ -112,7 +112,9 @@ public class PreprocessHelper {
             Geometry geometry = geoReader.read(precinctGeometry);
             Point centerPoint = geometry.getCentroid();
             String centerString = "{x:" + centerPoint.getX() + ",y:" + centerPoint.getY() + "}";
-            Precincts p = new Precincts(precinctID, findDistrictID(geometry, districtMap), centerString, precinctGeometry);
+            int districtID = findDistrictID(geometry, districtMap);
+            Precincts p = new Precincts(precinctID, districtID, centerString, precinctGeometry);
+            pToDID.put(precinctID, districtID);
             precinctSet.add(p);
         }
     }
@@ -157,7 +159,7 @@ public class PreprocessHelper {
         }
     }
 
-    private static void buildVTD(Set<VotingData> vtdSet, JSONArray json, HashMap<String, Integer> vtdMap) throws Throwable {
+    private static void buildVTD(Set<VotingData> vtdSet, JSONArray json, HashMap<String, Integer> vtdMap, HashMap<Integer, Integer> pToDID) throws Throwable {
         for(Object vd : json){
             JSONObject vdJOBject = ((JSONObject)vd);
             String VTD_S = vdJOBject.get("VTD").toString().replaceAll("\\s","");
@@ -172,7 +174,7 @@ public class PreprocessHelper {
                 Integer voteCount = Integer.parseInt(vdJOBject.get("VOTES").toString());
                 String representative = vdJOBject.get("CANDIDATE").toString();
                 String repParty = vdJOBject.get("PARTY").toString().toUpperCase();
-                VotingData data = new VotingData(county, voteCount, pID, representative, Parties.valueOf(repParty), ElectionType.PRESIDENTIAL, 2012);
+                VotingData data = new VotingData(county, voteCount, pID, representative, Parties.valueOf(repParty), ElectionType.PRESIDENTIAL, 2012, pToDID.get(pID));
                 vtdSet.add(data);
             }
         }

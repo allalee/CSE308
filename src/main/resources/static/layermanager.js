@@ -64,6 +64,20 @@ var layer_manager = (function(){
         manager.precinct_map[precinct_id].setStyle({fillColor: color, fillOpacity: 0.4, color: "grey"})
     }
 
+    manager.color_precinct = function(id, color){
+        manager.precinct_map[id].setStyle({fillColor: color})
+    }
+
+    manager.move_precinct = function(precinct_id, district_id){
+        var precinct_layer = manager.precinct_map[id]
+        precinct_layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME] = district_id
+        manager.color_precinct(precinct_id, manager.district_layer_color_map[district_id])
+    }
+
+    manager.get_precinct_id = function(layer){
+        return layer.feature[ATTR_PROPERTY_NAME][ATTR_PRECINCT_ID_NAME]
+    }
+
     return manager
 })();
 
