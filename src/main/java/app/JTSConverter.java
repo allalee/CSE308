@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -34,16 +35,14 @@ public class JTSConverter {
         district.setGeometry(geometry);
     }
 
-    public void buildNeighbor(List<Precinct> precinctList){
+    public static void buildNeighbor(Collection<Precinct> precinctCollection){
         // find neighbor
-        for(int i = 0; i < precinctList.size(); i++) {
-            Precinct src = precinctList.get(i);
-            for(int z=i; z < precinctList.size(); z++) {
-                Precinct to = precinctList.get(z);
-                if ( src != to ) {
-                    boolean isNeighbor = src.getGeometry().touches(to.getGeometry());
+        for(Precinct p : precinctCollection) {
+            for(Precinct p2 : precinctCollection) {
+                if (p != p2) {
+                    boolean isNeighbor = p.getGeometry().touches(p2.getGeometry());
                     if (isNeighbor) {
-                        src.addNeighbor(to);
+                        p.addNeighbor(p2);
                     }
                 }
             }

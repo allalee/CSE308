@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -50,17 +51,17 @@ public class RequestHandler {
 
         @RequestMapping(value = "/startAlgorithm", method = RequestMethod.GET)
         public @ResponseBody
-        String startAlgo(@RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric ) throws IOException, ParseException {
+        String startAlgo(@RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric ) throws Throwable {
             handler.send("{\"console_log\":\"Server received connection...\"}");
-            State state = sm.cloneState(sm.getCurrentState().getName()); //Clone the state to keep original data in tact
+            sm.cloneState(sm.getCurrentState().getName());
             handler.send("{\"console_log\":\"Building precinct neighbors...\"}");
-
-//            sm.setActiveState(stateName);
-//            State state = sm.cloneState(stateName);
-//
-//            System.out.println("Districts: "+state.getAllDistricts().size());
-//            System.out.println("Precincts: "+ state.getAllPrecincts().size());
-//
+            HashMap<Integer, District> districtMap = sm.getClonedState().getDistrictMap();
+            for(District d : districtMap.values()){
+                JTSConverter.buildNeighbor(d.getAllPrecincts());
+            }
+            handler.send("{\"console_log\":\"Retrieving election data...\"}");
+            sm.loadElectionData();
+            handler.send("{\"console_log\":\"Setting up algorithm...\"}");
 //            solver.addAlgoirhtm(beanFactory.getBean(RegionGrow.class));
 //            solver.setState(state);
 //            solver.run();
