@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * Created by Yixiu Liu on 11/11/2018.
- */
 public class Solver {
     private ArrayList<Algorithm> algorithmList = new ArrayList<>();
     private Algorithm currentAlgorithm;
@@ -30,7 +27,7 @@ public class Solver {
         currentAlgorithm.setMetricWeights(partisanFairness, compactness, populationEquality);
     }
 
-    public double calculateFunctionValue(){
+    public double calculateFunctionValue() {
         return currentAlgorithm.calculateFunctionValue();
     }
 }
