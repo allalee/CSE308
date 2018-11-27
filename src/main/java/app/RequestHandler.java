@@ -51,7 +51,7 @@ public class RequestHandler {
 
         @RequestMapping(value = "/startAlgorithm", method = RequestMethod.GET)
         public @ResponseBody
-        String startAlgo(@RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric ) throws Throwable {
+        String startAlgo(@RequestParam("algorithmType") String algorithmType, @RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric ) throws Throwable {
             handler.send("{\"console_log\":\"Server received connection...\"}");
             sm.cloneState(sm.getCurrentState().getName());
             handler.send("{\"console_log\":\"Building precinct neighbors...\"}");
@@ -62,10 +62,17 @@ public class RequestHandler {
             handler.send("{\"console_log\":\"Retrieving election data...\"}");
             sm.loadElectionData();
             handler.send("{\"console_log\":\"Setting up algorithm...\"}");
-//            solver.addAlgoirhtm(beanFactory.getBean(RegionGrow.class));
-//            solver.setState(state);
-//            solver.run();
-//
+            switch(algorithmType){
+                case "Simulated Annealing":
+                    solver.addAlgorithm(beanFactory.getBean(Annealing.class));
+                    break;
+                case "Region Growing":
+                    solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
+                    break;
+            }
+            solver.setState(sm.getClonedState());
+            solver.setFunctionWeights(partFairnessMetric, compactnessMetric, popEqualityMetric);
+        //            solver.run();
             return "Algo started";
         }
 
