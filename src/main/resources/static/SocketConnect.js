@@ -36,21 +36,21 @@ function makeConnector(){
         con.message_queue.push(body)
     }
 
-    con.process_message = function(){
-        var a = console
-        var console = document.getElementById("console")
+    con.onMessage = function(func){
+        con.process_message = func
+    }
+
+    con.pop_and_read = function(){
         var message_body = con.message_queue.shift()
         if(message_body != undefined){
-            console.appendChild(document.createElement("br"))
-            console.append(message_body["console_log"])
-            a.log("read")
+            con.process_message(message_body)
         }
     }
 
     con.start_reading = function(){
         con.is_reading = true;
         con.timer = setInterval(
-        con.process_message,
+        con.pop_and_read,
         con.reading_interval);
     }
 
