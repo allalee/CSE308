@@ -28,14 +28,15 @@ public class Preprocessing {
         Set<District> districts = PreprocessHelper.generateDistricts(districtFiles, stateHashMap);
 //        persistDistricts(districts);
         HashMap<District, Integer> kansasDistricts = generateDistrictHashMap(stateHashMap.get("Kansas"));
-        Set<Precincts> precincts = PreprocessHelper.generatePrecincts(precinctFiles, kansasDistricts);
+        HashMap<Integer, Integer> precinctToDistrictID = new HashMap<>();
+        Set<Precincts> precincts = PreprocessHelper.generatePrecincts(precinctFiles, kansasDistricts, precinctToDistrictID);
 //        persistPrecincts(precincts);
         Set<Populations> populations = PreprocessHelper.generatePopulations(precinctFiles);
 //        persistPopulation(populations);
         HashMap<String, Integer> precinctVTD = new HashMap<>();
         Set<Demographics> demographics = PreprocessHelper.generateDemographics(precinctFiles, precinctVTD);
 //        persistDemographics(demographics);
-        Set<VotingData> votingData = PreprocessHelper.generateVotingData(votingDataFiles, precinctVTD);
+        Set<VotingData> votingData = PreprocessHelper.generateVotingData(votingDataFiles, precinctVTD, precinctToDistrictID);
         persistVotingData(votingData);
     }
 

@@ -11,14 +11,18 @@ var stateJson; //State handler added to map
 var districtJson; //District handler added to the map
 var precinctJson;
 
-var currentStateID; //Keeping track of which state the user clicks on
-var currentStateName;
+var currentStateID = null; //Keeping track of which state the user clicks on
+var currentStateName = null;
 
 var statesData;
 var districtData;
 var precinctData;
 
 var currentConstText;
+
+var connector = makeConnector();
+connector.connect();
+con.start_reading();
 
 
 state_fps_hashmap =
@@ -257,7 +261,7 @@ info.onAdd = function (mymap) {
     return this._div;
 };
 // method that we will use to update the control based on feature properties passed
-info.update = function (props) {
+info.update = function (props, demo, repub) {
     this._div.innerHTML = '<h4>Precinct Information</h4>' +  (props ?
         '<b>Demographics </b><br>'
         +'Asian/Pacific Islander: ' + props['demographics']['ASIAN'] + '<br>'
@@ -267,8 +271,8 @@ info.update = function (props) {
         + 'Native American: ' + props['demographics']['NATIVE_AMERICAN'] + '<br>'
         + 'Other: ' + props['demographics']['OTHER'] + '<br>'
         + '<br><b>Election</b><br>'
-        + 'Democrat: ' + props['voting_data']['DEMOCRATIC'] + '<br>'
-        + 'Republican: ' + props['voting_data']['REPUBLICAN'] + '<br>'
+        + 'Democrat: ' + demo + '<br>'
+        + 'Republican: ' + repub + '<br>'
         + '<br><b>Population</b><br>'
         + props['population']
         : 'Hover over a precinct');
@@ -316,7 +320,14 @@ function loadPrecinctProperties(layer){
         if(request.status == 200){
             var loadedJson = request.response
             var obj = JSON.parse(loadedJson)
-            info.update(obj)
+            if(obj['voting_data']){
+                var democratic = obj['voting_data']['DEMOCRATIC']
+                var republican = obj['voting_data']['REPUBLICAN']
+            } else {
+                var democratic = "N/A"
+                var republican = "N/A"
+            }
+            info.update(obj, democratic, republican)
             if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
                layer.bringToFront();
             }
@@ -335,6 +346,29 @@ function sendState(currentStateID, currentStateName){
        }
    }
    request.send(null);
+}
+
+document.getElementById("start").onclick = startAlgorithm
+
+function startAlgorithm(){
+    var algorithm_type = $('input[name="algorithm"]:checked').val()
+    if(currentStateID == null){
+        document.getElementById("console").appendChild(document.createElement("br"))
+        document.getElementById("console").append("No state selected for algorithm to run")
+    } else {
+        var console = document.getElementById("console")
+        console.appendChild(document.createElement("br"))
+        console.append("Retrieving slider data for the server...")
+        var populationEquality = document.getElementById("population_equality").value
+        var partisanFairness = document.getElementById("partisan_fairness").value
+        var compactness = document.getElementById("compactness").value
+        console.appendChild(document.createElement("br"))
+        console.append("Forwarding slider data to the server...")
+        var url = "http://localhost:8080/startAlgorithm?popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
+        var request = new XMLHttpRequest()
+        request.open("GET", url, true)
+        request.send(null)
+    }
 }
 
 info.addTo(mymap);

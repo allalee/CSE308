@@ -122,12 +122,12 @@
        </div>
        <div id="measures" class="collapse">
          <div class="card-body">
-           <label for="customRange1">Population Equality</label>
-           <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange1">
-           <label for="customRange2">Partisan Fairness</label>
-           <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange2">
-           <label for="customRange3">Compactness</label>
-           <input type="range" class="custom-range" min="0" max="100" step="5" id="customRange3">
+           <label for="population_equality">Population Equality</label>
+           <input type="range" class="custom-range" min="0" max="100" step="1" id="population_equality">
+           <label for="partisan_fairness">Partisan Fairness</label>
+           <input type="range" class="custom-range" min="0" max="100" step="1" id="partisan_fairness">
+           <label for="compactness">Compactness</label>
+           <input type="range" class="custom-range" min="0" max="100" step="1" id="compactness">
          </div>
        </div>
      </div>
@@ -149,12 +149,12 @@
              <label class="custom-control-label" for="algorithm2">Simulated Annealing</label>
            </div>
            <div class="custom-control custom-radio">
-             <input type="radio" id="algorithm3" name="algorithm" class="custom-control-input" value="Region Growing Modified">
-             <label class="custom-control-label" for="algorithm3">Region Growing Modified</label>
+             <input type="radio" id="algorithm3" name="algorithm" class="custom-control-input" checked="checked" value="Region Growing Variant">
+             <label class="custom-control-label" for="algorithm3">Region Growing Variant</label>
            </div>
            <div class="custom-control custom-radio">
-             <input type="radio" id="algorithm4" name="algorithm" class="custom-control-input" value="Simulated Annealing Modified">
-             <label class="custom-control-label" for="algorithm4">Simulated Annealing Modified</label>
+             <input type="radio" id="algorithm4" name="algorithm" class="custom-control-input" value="Simulated Annealing Variant">
+             <label class="custom-control-label" for="algorithm4">Simulated Annealing Variant</label>
            </div>
          </div>
        </div>
@@ -198,9 +198,8 @@
   <footer>
     <script src="custom.js"></script>
       <script src='layermanager.js'></script>
+      <script src='SocketConnect.js'></script>
     <script src="map.js"></script>
-    <script src='SocketConnect.js'></script>
-	  <script type="text/javascript" src="sendRequest.js"></script>
   </footer>
 
 
