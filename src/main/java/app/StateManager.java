@@ -11,6 +11,7 @@ import preprocess.Populations;
 public class StateManager {
     private HashMap<String, app.State> stateMap;
     private app.State currentState;
+    private app.State clonedState;
     private HibernateManager hb;
 
     public StateManager() throws Exception {
@@ -28,6 +29,9 @@ public class StateManager {
             getPrecincts(state.getDistrictMap());
             getPrecinctNeighbors(state);
             getPopulation(state);
+            for(District d : state.getDistrictMap().values()){
+                state.addPopulation(d.getPopulation());
+            }
             stateMap.put(stateName, state);
             currentState = state;
         }
@@ -95,6 +99,7 @@ public class StateManager {
             for(Object o : l){
                 Populations pop = (Populations)o;
                 d.getPrecinct(pop.getPrecinctId()).setPopulation(pop.getPopulation());
+                d.addPopulation(pop.getPopulation());
             }
         }
 
@@ -107,6 +112,12 @@ public class StateManager {
         JsonBuilder builder = new JsonBuilder();
         return builder.buildPrecinctDataJson(precinct);
     }
+
+    //METHOD IS PURELY FOR CLONED STATES ONLY AS THIS IS FOR THE ALGORITHM TO RUN
+    public void loadElectionData(){
+
+    }
+
     private void getDemographics(app.Precinct precinct) throws Throwable{
         if(precinct.getDemographics().isEmpty()){
             Map<String, Object> criteria = new HashMap<>();
@@ -164,8 +175,8 @@ public class StateManager {
         converter.buildNeighbor(precinctList);
     }
 
-    public State cloneState(String name){
-        return stateMap.get(name).clone();
+    public void cloneState(String name){
+        this.clonedState =  stateMap.get(name).clone();
     }
 
     public void addState(State state){
@@ -202,5 +213,9 @@ public class StateManager {
 
     public State getCurrentState(){
         return this.currentState;
+    }
+
+    public State getClonedState(){
+        return this.clonedState;
     }
 }

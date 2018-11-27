@@ -53,13 +53,6 @@ function makeConnector(){
             console.appendChild(document.createElement("br"))
             console.append(message_body["console_log"])
         }
-//        console.log(message_body)
-//        if(con.message_pointer < con.message_queue.length){
-//            var message_body = con.message_queue[con.message_pointer++];
-//            if(message_body != undefined){
-//                console.log(message_body)
-//            }
-//        }
     }
 
     con.start_reading = function(){

@@ -52,15 +52,12 @@ public class RequestHandler {
         public @ResponseBody
         String startAlgo(@RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric ) throws IOException, ParseException {
             handler.send("{\"console_log\":\"Server received connection...\"}");
-            State state = sm.cloneState(sm.getCurrentState().getName()); //Clone the state to keep original data in tact
+            sm.cloneState(sm.getCurrentState().getName()); //Clone the state to keep original data in tact, currently not working
             handler.send("{\"console_log\":\"Building precinct neighbors...\"}");
+            //INSERT CODE HERE TO BUILD NEIGHBORS OF EACH PRECINCT
+            handler.send("{\"console_log\":\"Retrieving election data...\"}");
+            //sm.loadElectionData();
 
-//            sm.setActiveState(stateName);
-//            State state = sm.cloneState(stateName);
-//
-//            System.out.println("Districts: "+state.getAllDistricts().size());
-//            System.out.println("Precincts: "+ state.getAllPrecincts().size());
-//
 //            solver.addAlgoirhtm(beanFactory.getBean(RegionGrow.class));
 //            solver.setState(state);
 //            solver.run();
