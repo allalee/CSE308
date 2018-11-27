@@ -4,7 +4,6 @@
     <title>CSE 308</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
     integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
     crossorigin=""/>
@@ -99,6 +98,21 @@
   </div>
   <div id="sidenav">
    <div class="top">
+       <div class="card rounded-0">
+           <div class="card-header">
+               <a data-toggle="collapse" data-parent="#sidenav" href="#state_selector" class="card-link">
+                   Select State
+               </a>
+           </div>
+           <div id="state_selector" class="collapse">
+               <div id="state_selector_options" class="card-body">
+                   <!--dynamically generated in map.js -> populateStateOptions-->
+               </div>
+               <div>
+                   <button id = "dropdownStateSearch" class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="dropdownStateSearch()">Go</button>
+               </div>
+           </div>
+       </div>
 
      <div class="card rounded-0">
        <div class="card-header">
@@ -146,6 +160,23 @@
        </div>
      </div>
 
+       <div class="card rounded-0">
+           <div class="card-header">
+               <a data-toggle="collapse" data-parent="#sidenav" href="#district_selector" class="card-link">
+                   Manual Move
+               </a>
+           </div>
+           <div id="district_selector" class="collapse">
+               <div id="district_selector_options" class="card-body">
+                   <!--dynamically generated in map.js -> populateDistrictOptions-->
+               </div>
+               <div>
+                   <button id = "move_temporary" class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="precinctMoveTemporary()">Move</button>
+                   <button id = "move_lock" class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="precinctMoveLock()">Lock</button>
+
+               </div>
+           </div>
+       </div>
 
 	</div>
 

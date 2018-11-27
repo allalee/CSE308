@@ -55,6 +55,11 @@ public class State {
         Precinct startPrecinct = tempDistrict.getAllPrecincts().iterator().next();
         startPrecinct.chainClone(clonedState.getDistrictMap());
 
+        // recalculate the boundary
+        for(District district: this.getAllDistricts()){
+            district.recalculateBoundaryPrecincts();
+        }
+
         return clonedState;
     }
     public double getIdealPopulation() {
