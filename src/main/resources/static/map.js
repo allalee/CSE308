@@ -386,25 +386,62 @@ populateStateSelect();
 
 // when manual mode toggled
 //  enable pane, init empty, move/lock disabled
-//  precinctlayer's onClick = populateDistrcitSelect,
+//  precinctlayer's onClick = populateDistrcitSelect, <
 //                              move/lock enable,
-//                              reset mm.selected_district,
-//                              mm.selected_district = e
-//                              mm.selected_district
+//                              reset mm.selected_district, <
+//                              mm.selected_precinct = e
+//                              mm.selected_precinct
 //  precinctlayer's oneneter = same
-//  precinctlayer's onexit = same + if e == mm.selected_district { setStyle("{fillColor: "+mm.selected_color+"}") }
+//  precinctlayer's onexit = same + if e == mm.selected_precinct { setStyle("{fillColor: "+mm.selected_color+"}") }
 
 
-manualMover = (function(){
+ManualMover = function(layerManager){
 
     var mm = {}
-    mm.selected_district;
+    mm.selected_precinct;
     mm.selected_color = "black"
 
+    mm.onClick = function(e){
+        var layer = e.target;
 
+        // clear and set new selection
+        if (mm.selected_precinct){
+            layerManager.reset_precinct_color(layer)
+        }
+        layerManager.color_precinct(mm.selected_color)
+        mm.selected_precinct = layer;
+
+        // repopulate the district options
+        removeDistrictOption()
+        for(var i in layerManager.district_layer_color_map){
+            insertDistrictOption(i, layerManager.district_layer_color_map[i])
+        }
+
+    }
+
+    mm.exit = function(){
+        if (mm.selected_precinct){
+            layerManager.reset_precinct_color(layer)
+        }
+    }
+
+    mm.getSelectedID = function(){
+        return layerManager.get_precinct_id(mm.selected_precinct)
+    }
+
+    mm.resetSelection = function(){
+        mm.selected_precinct = undefined
+        layerManager.reset_precinct_color(mm.selected_precinct)
+    }
 
     return mm
-})()
+}
+
+// move: onclick => ajax('trymove' radio.value+ ,   mm.getSelectedID() ), print out funct value
+// lock: onclick => ajax('actually move it' radio.value+ ,   mm.getSelectedID() ) // move on client+server, clear selection
+//                  layer_manager.move_precinct(mm.getSelectedID(), radio.value)
+//                  mm.resetSelection()
+
 
 
 var districtOptionTemplate = "<div class=\"custom-control custom-radio\"> <input type=\"radio\" id=\"district[id]\" name=\"district_option\" class=\"custom-control-input\" value=\"[id]\"> <label id=\"districtlabel[id]\" class=\"custom-control-label\" for=\"district[id]\">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</label> </div>"
@@ -417,14 +454,9 @@ function insertDistrictOption(id, color){
     return div
 }
 
-function populateDistrictSelect(){
+function removeDistrictOption(){
     var selectorDiv = document.getElementById('district_selector_options')
-    var color_map = layer_manager.district_layer_color_map
-    for(var i in layer_manager.district_layer_color_map){
-        var optionDiv = createDistrictOption(i, color_map[i])
-        selectorDiv.innerHTML += optionDiv
-        selectorDiv.querySelector('#districtlabel'+i).setStyle("{background-color:color}")
-    }
+    selectorDiv.innerHTML += ""
 }
 
 function enableManualSelect(){

@@ -74,6 +74,10 @@ var layer_manager = (function(){
         manager.color_precinct(precinct_id, manager.district_layer_color_map[district_id])
     }
 
+    manager.get_precinct_id = function(layer){
+        return layer.feature[ATTR_PROPERTY_NAME][ATTR_PRECINCT_ID_NAME]
+    }
+
     return manager
 })();
 

@@ -36,20 +36,29 @@ function makeConnector(){
         con.message_queue.push(body)
     }
 
-    con.process_message = function(){
+    con.process_message = function(message_body){
+        // empty
+    }
+
+    con.onMessage = function(process_function){
+        con.process_message = process_function
+    }
+
+    con.pop_and_read = function(){
         //var message_body = con.message_queue.shift()
         if ( con.message_pointer < con.message_queue.length ){
-        var message_body = con.message_queue[con.message_pointer++];
-        if (message_body != undefined)
-            dynamic_color_changer.color(message_body);
-            //color_district(message_body.precinct, 'red')
-            }
+            var message_body = con.message_queue[con.message_pointer++];
+            if (message_body != undefined)
+                con.process_message(message_body);
+                //dynamic_color_changer.color(message_body);
+                //color_district(message_body.precinct, 'red')
+        }
     }
 
     con.start_reading = function(){
         con.is_reading = true;
         con.timer = setInterval(
-        con.process_message,
+        con.pop_and_read,
         con.reading_interval);
     }
 
