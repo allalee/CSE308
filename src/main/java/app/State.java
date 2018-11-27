@@ -42,27 +42,26 @@ public class State {
     }
 
     public State clone(){
-        State clonedState = new State(getName(), getID());
-
-        // clone districts
-        District tempDistrict = new District(-1, null, null);
-        for(District district: this.getAllDistricts()){
-            clonedState.addDistrict(district.clone(clonedState));
-            tempDistrict = district; // get the last district
+        State clonedState = new State(this.name, this.ID);
+        clonedState.setPopulation(this.totalPopulation);
+        for(District district: this.districtMap.values()){
+            District clonedDistrict = district.clone(this);
+            clonedState.getDistrictMap().put(clonedDistrict.getID(), clonedDistrict);
         }
-
-        // clone precincts & link with district
-        Precinct startPrecinct = tempDistrict.getAllPrecincts().iterator().next();
-        startPrecinct.chainClone(clonedState.getDistrictMap());
-
-        // recalculate the boundary
-        for(District district: this.getAllDistricts()){
-            district.recalculateBoundaryPrecincts();
-        }
-
         return clonedState;
+    }
+
+    public void addPopulation(int population){
+        this.totalPopulation += population;
     }
     public double getIdealPopulation() {
         return this.totalPopulation/this.districtMap.size();
+    }
+
+    public void setPopulation(int population){
+        this.totalPopulation = population;
+    }
+    public District getDistrict(int key){
+        return this.districtMap.get(key);
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -45,26 +46,78 @@ public class RequestHandler {
             return sm.getStateConstitution(state);
         }
 
+        @RequestMapping(value = "/manualMove", method = RequestMethod.GET)
+        public @ResponseBody
+        String tempMove(@RequestParam ("src") Integer src, @RequestParam("dest") Integer dest, @RequestParam("precinct") Integer precinct, @RequestParam("lock") Boolean lock) throws Throwable {
+            System.out.println("inputs are: " + src+" "+ dest+" "+ precinct);
+
+            State currentState = sm.getCurrentState();
+            Precinct p = null;
+            for(District d : currentState.getAllDistricts()){
+                p = d.getPrecinct(precinct);
+                if(p!=null)
+                    break;
+            }
+
+            // error checks
+            if(p == null){
+               return "{ \"value\" : \"-1\", " +
+                       "\"valid\" : false, " +
+                       "\"message\" : \"invalid precinct\" }";
+            }
+            boolean destIsNeighbor = false;
+            for(Precinct neighbor : p.getNeighbors()){
+                if(neighbor.getDistrict().getID() == dest)
+                    destIsNeighbor = true;
+            }
+            if(!destIsNeighbor){
+                return "{ \"value\" : \"-1\", " +
+                        "\"valid\" : false, " +
+                        "\"message\" : \"precinct not adjacent to the district\" }";
+            }
+
+            // move
+            Move move = new Move(currentState.getDistrict(src), currentState.getDistrict(dest), p);
+            move.execute();
+            double functionValue = solver.calculateFunctionValue();
+
+            // undo if it is not a locking move
+            if(!lock)
+                move.undo();
+
+            return  "{ \"value\" : \""+functionValue+"\", " +
+                    "\"valid\" : true, " +
+                    "\"message\" : \"move value is: "+functionValue+"\" }";
+        }
+
+
         @Autowired BeanFactory beanFactory;
         @Autowired SocketHandler handler;
 
         @RequestMapping(value = "/startAlgorithm", method = RequestMethod.GET)
         public @ResponseBody
-        String startAlgo(@RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric ) throws IOException, ParseException {
+        String startAlgo(@RequestParam("algorithmType") String algorithmType, @RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric ) throws Throwable {
             handler.send("{\"console_log\":\"Server received connection...\"}");
-            State state = sm.cloneState(sm.getCurrentState().getName()); //Clone the state to keep original data in tact
+            sm.cloneState(sm.getCurrentState().getName());
             handler.send("{\"console_log\":\"Building precinct neighbors...\"}");
-
-//            sm.setActiveState(stateName);
-//            State state = sm.cloneState(stateName);
-//
-//            System.out.println("Districts: "+state.getAllDistricts().size());
-//            System.out.println("Precincts: "+ state.getAllPrecincts().size());
-//
-//            solver.addAlgoirhtm(beanFactory.getBean(RegionGrow.class));
-//            solver.setState(state);
-//            solver.run();
-//
+            HashMap<Integer, District> districtMap = sm.getClonedState().getDistrictMap();
+            for(District d : districtMap.values()){
+                JTSConverter.buildNeighbor(d.getAllPrecincts());
+            }
+            handler.send("{\"console_log\":\"Retrieving election data...\"}");
+            sm.loadElectionData();
+            handler.send("{\"console_log\":\"Setting up algorithm...\"}");
+            switch(algorithmType){
+                case "Simulated Annealing":
+                    solver.addAlgorithm(beanFactory.getBean(Annealing.class));
+                    break;
+                case "Region Growing":
+                    solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
+                    break;
+            }
+            solver.setState(sm.getClonedState());
+            solver.setFunctionWeights(partFairnessMetric, compactnessMetric, popEqualityMetric);
+        //            solver.run();
             return "Algo started";
         }
 
