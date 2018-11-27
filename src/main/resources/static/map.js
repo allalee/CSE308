@@ -354,7 +354,7 @@ function startAlgorithm(){
         var compactness = document.getElementById("compactness").value
         console.appendChild(document.createElement("br"))
         console.append("Forwarding slider data to the server...")
-        var url = "http://localhost:8080/startAlgorithm?popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
+        var url = "http://localhost:8080/startAlgorithm?algorithmType=" + algorithm_type + "&popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
         var request = new XMLHttpRequest()
         request.open("GET", url, true)
         request.send(null)

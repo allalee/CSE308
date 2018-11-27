@@ -107,9 +107,13 @@ public class District{
 
     public int getID(){ return ID; }
 
-    public District clone(State newOwnerState){
-        District clonedDistrict = new District(ID, newOwnerState, this.geometry);
-        clonedDistrict.precinctMap = new HashMap<>();   // empty precincts. to be set in state
+    public District clone(app.State state){
+        District clonedDistrict = new District(this.ID, state, this.geometry);
+        clonedDistrict.setPopulation(this.population);
+        for(Precinct precinct: this.getAllPrecincts()){
+            Precinct clonedPrecinct = precinct.clone(this);
+            clonedDistrict.getPrecinctMap().put(clonedPrecinct.getID(), clonedPrecinct);
+        }
         return clonedDistrict;
     }
     public int getTotalVotes() {
@@ -161,5 +165,16 @@ public class District{
     }
     private double calculatePopulationRatio(int population, double idealPopulation) {
         return population/idealPopulation;
+    }
+
+    public void setPopulation(int population){
+        this.population = population;
+    }
+    public int getPopulation(){
+        return this.population;
+    }
+
+    public HashMap<Integer, Precinct> getPrecinctMap(){
+        return this.precinctMap;
     }
 }

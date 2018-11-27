@@ -6,11 +6,13 @@ import com.vividsolutions.jts.geom.Geometry;
 import gerrymandering.HibernateManager;
 import gerrymandering.model.Population;
 import preprocess.Populations;
+import preprocess.VotingData;
 
 
 public class StateManager {
     private HashMap<String, app.State> stateMap;
     private app.State currentState;
+    private app.State clonedState;
     private HibernateManager hb;
 
     public StateManager() throws Exception {
@@ -28,6 +30,9 @@ public class StateManager {
             getPrecincts(state.getDistrictMap());
             getPrecinctNeighbors(state);
             getPopulation(state);
+            for(District d : state.getDistrictMap().values()){
+                state.addPopulation(d.getPopulation());
+            }
             stateMap.put(stateName, state);
             currentState = state;
         }
@@ -95,6 +100,7 @@ public class StateManager {
             for(Object o : l){
                 Populations pop = (Populations)o;
                 d.getPrecinct(pop.getPrecinctId()).setPopulation(pop.getPopulation());
+                d.addPopulation(pop.getPopulation());
             }
         }
 
@@ -107,6 +113,36 @@ public class StateManager {
         JsonBuilder builder = new JsonBuilder();
         return builder.buildPrecinctDataJson(precinct);
     }
+
+    //METHOD IS PURELY FOR CLONED STATES ONLY AS THIS IS FOR THE ALGORITHM TO RUN
+    public void loadElectionData() throws Throwable {
+        for(Integer districtID : clonedState.getDistrictMap().keySet()){
+            Map<String, Object> criteria = new HashMap<>();
+            List<Object> l;
+            criteria.put("district_id", districtID);
+            l = hb.getRecordsBasedOnCriteria(preprocess.VotingData.class, criteria);
+            for(Object o : l){
+                VotingData vd = (VotingData)o;
+                Precinct precinct = clonedState.getDistrictMap().get(districtID).getPrecinct(vd.getPrecinctID());
+                HashMap<Parties, Integer> precinctElectionData = precinct.getElectionData().getVoterDistribution();
+                if(precinctElectionData.containsKey(vd.getParty())){
+                    precinct.getElectionData().addTotalVotes(vd.getVoteCount());
+                    int count = precinctElectionData.get(vd.getParty()) + vd.getVoteCount();
+                    precinctElectionData.replace(vd.getParty(), count);
+                } else {
+                    precinct.getElectionData().addTotalVotes(vd.getVoteCount());
+                    precinctElectionData.put(vd.getParty(), vd.getVoteCount());
+                }
+                Representative rep = new Representative(vd.getRepresentative());
+                if(!(precinct.getElectionData().getReps().contains(rep))){
+                    precinct.getElectionData().addRepresentative(rep);
+                }
+                precinct.getElectionData().setYear(vd.getYear());
+                precinct.getElectionData().setElectionType(vd.getElectionType());
+            }
+        }
+    }
+
     private void getDemographics(app.Precinct precinct) throws Throwable{
         if(precinct.getDemographics().isEmpty()){
             Map<String, Object> criteria = new HashMap<>();
@@ -145,7 +181,7 @@ public class StateManager {
                     vd.put(p.getParty(), p.getVoteCount());
                 }
                 Representative rep = new Representative(p.getRepresentative());
-                if(ed.getReps().contains(rep)){
+                if(!(ed.getReps().contains(rep))){
                     ed.addRepresentative(rep);
                 }
                 ed.setYear(p.getYear());
@@ -164,8 +200,8 @@ public class StateManager {
         converter.buildNeighbor(precinctList);
     }
 
-    public State cloneState(String name){
-        return stateMap.get(name).clone();
+    public void cloneState(String name){
+        this.clonedState =  stateMap.get(name).clone();
     }
 
     public void addState(State state){
@@ -202,5 +238,9 @@ public class StateManager {
 
     public State getCurrentState(){
         return this.currentState;
+    }
+
+    public State getClonedState(){
+        return this.clonedState;
     }
 }

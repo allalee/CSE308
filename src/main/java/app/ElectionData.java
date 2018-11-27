@@ -16,6 +16,7 @@ public class ElectionData {
     public ElectionData(){
         this.voterDistribution = new HashMap<>();
         this.reps = new ArrayList<>();
+        this.totalVotes = 0;
     }
     public void addRepresentative(Representative rep){
         reps.add(rep);
@@ -43,6 +44,10 @@ public class ElectionData {
     }
     public Parties getWinner() {
         return winner;
+    }
+
+    public void addTotalVotes(int votes){
+        this.totalVotes += votes;
     }
 
     public void setVoterDistribution(HashMap<Parties, Integer> voterDistribution) {
