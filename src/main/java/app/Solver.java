@@ -1,6 +1,7 @@
 package app;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -12,7 +13,7 @@ public class Solver {
     private State state;
 
 
-    public void addAlgoirhtm(Algorithm algo){
+    public void addAlgorithm(Algorithm algo){
         algorithmList.add(algo);
         currentAlgorithm = algo;
     }
@@ -22,8 +23,11 @@ public class Solver {
     }
 
     public void run(){
-        currentAlgorithm.setState(state);
         currentAlgorithm.start();
+    }
+
+    public void setFunctionWeights(double partisanFairness, double compactness, double populationEquality){
+        currentAlgorithm.setMetricWeights(partisanFairness, compactness, populationEquality);
     }
 
     public double calculateFunctionValue(){
