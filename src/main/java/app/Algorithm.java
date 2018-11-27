@@ -49,7 +49,7 @@ public abstract class Algorithm {
     }
 
     public double calculateFunctionValue(){
-        return 1;
+        return weights.get(Metric.POPULATION_EQUALITY) * 
     }
 
     protected boolean isBetter(double newValue, double oldValue){

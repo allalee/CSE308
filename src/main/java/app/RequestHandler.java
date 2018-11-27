@@ -71,7 +71,7 @@ public class RequestHandler {
                     break;
             }
             solver.setState(sm.getClonedState());
-            solver.setFunctionWeights(partFairnessMetric, compactnessMetric, popEqualityMetric);
+            solver.setFunctionWeights(partFairnessMetric/100, compactnessMetric/100, popEqualityMetric/100);
         //            solver.run();
             return "Algo started";
         }

@@ -298,7 +298,7 @@ constInfo.onAdd = function (mymap) {
 };
 
 
-
+//use async
 function loadStateJson(state, currentState){
     var request = new XMLHttpRequest();
     var url = "http://localhost:8080/getState?stateName=" + state + "&stateID=" + currentState
@@ -313,6 +313,9 @@ function loadStateJson(state, currentState){
             addDistrictsLayer();
         }
     }
+//    success: function(){
+//        var loadedJson = request.response
+//    }
     request.send(null);
 }
 
