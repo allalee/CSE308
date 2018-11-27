@@ -22,13 +22,14 @@ var currentConstText;
 
 var connector = makeConnector();
 connector.onMessage(consoleLog)
-//connector.connect();
-//con.start_reading();
+connector.connect();
+con.start_reading();
 
 function consoleLog(message_body){
     var console = document.getElementById("console")
     console.appendChild(document.createElement("br"))
     console.append(message_body["console_log"])
+    console.scrollTop = console.scrollHeight
 }
 
 state_fps_hashmap =

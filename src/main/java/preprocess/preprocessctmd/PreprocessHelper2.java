@@ -8,7 +8,7 @@ import gerrymandering.model.State;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import preprocess.Precincts;
+import preprocess.dbclasses.Precincts;
 
 import java.io.BufferedReader;
 import java.io.File;

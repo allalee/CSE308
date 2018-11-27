@@ -1,0 +1,5 @@
+package app.enums;
+
+public enum Ethnicity {
+    ASIAN, PACIFIC_ISLANDER, CAUCASIAN, HISPANIC, AFRICAN_AMERICAN, NATIVE_AMERICAN,  OTHER
+}
