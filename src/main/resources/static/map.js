@@ -22,13 +22,14 @@ var currentConstText;
 
 var connector = makeConnector();
 connector.onMessage(consoleLog)
-//connector.connect();
-//con.start_reading();
+connector.connect();
+con.start_reading();
 
 function consoleLog(message_body){
     var console = document.getElementById("console")
     console.appendChild(document.createElement("br"))
     console.append(message_body["console_log"])
+    console.scrollTop = console.scrollHeight
 }
 
 state_fps_hashmap =
@@ -288,7 +289,7 @@ constInfo.onAdd = function (mymap) {
 };
 
 
-
+//use async
 function loadStateJson(state, currentState){
     var request = new XMLHttpRequest();
     var url = "http://localhost:8080/getState?stateName=" + state + "&stateID=" + currentState
@@ -303,6 +304,9 @@ function loadStateJson(state, currentState){
             addDistrictsLayer();
         }
     }
+//    success: function(){
+//        var loadedJson = request.response
+//    }
     request.send(null);
 }
 

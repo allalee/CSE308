@@ -3,9 +3,7 @@ package preprocess.preprocessctmd;
 import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
 import gerrymandering.model.State;
-import preprocess.Precincts;
-import preprocess.PreprocessHelper;
-import preprocess.preprocessctmd.PreprocessHelper2;
+import preprocess.dbclasses.Precincts;
 
 import java.io.File;
 import java.util.*;
