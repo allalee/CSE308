@@ -22,8 +22,8 @@ var currentConstText;
 
 var connector = makeConnector();
 connector.onMessage(consoleLog)
-connector.connect();
-con.start_reading();
+//connector.connect();
+//con.start_reading();
 
 function consoleLog(message_body){
     var console = document.getElementById("console")
@@ -175,6 +175,9 @@ function loadPrecincts(e) {
     if (!mymap.hasLayer(precinctJson)) {
       addPrecinctsLayer();
     }
+
+    // enable manual redistrict
+    enableManualMoveOption(true)
 }
 
 function addPrecinctsLayer() {
@@ -213,26 +216,10 @@ function onEachDistrictFeature(feature, layer) {
 }
 function onEachPrecinctFeature(feature, layer) {
     layer.on({
-        mouseover: highlightPrecinctFeature,
-        mouseout: resetPrecinctHighlight,
-        click: zoomToFeature
+        mouseover: precinctOverEvent,
+        mouseout: precinctOutEvent,
+        click: precinctClickEvent
     });
-}
-var MODE = {
-    NORMAL: 0,
-    MANUAL_SELECT: 1
-}
-var mode = MODE.NORMAL
-function precinctClickEvent(e){
-    switch(mode){
-        case MODE.NORMAL:
-            console.log("normal")
-        break;
-        case MODE.MANUAL_SELECT:
-            console.log("manual")
-        break;
-        default: console.log("invalid mode: "+ mode)
-    }
 }
 
 function resetMap(){
@@ -245,6 +232,9 @@ function resetMap(){
     currentConstText = null;
   addStateLayer();
   mymap.setView([37.0902, -95.7129], 4);
+
+  //disable manual redistrict
+  enableManualMoveOption(false)
 }
 
 
@@ -435,21 +425,40 @@ populateStateSelect();
 //  precinctlayer's onexit = same + if e == mm.selected_precinct { setStyle("{fillColor: "+mm.selected_color+"}") }
 
 
-ManualMover = function(layerManager){
+makeFadeOutWriter = function(){
+    fow = {}
+    fow.timer
+    fow.write = function(element, message, color, millisecond){
+        if(fow.timer){
+            clearTimeout(fow.timer)
+        }
+        element.innerHTML = message
+        element.style.color = color
+        fow.timer = setTimeout(function(){
+            element.innerHTML = "&nbsp"
+            fow.timer = undefined
+        }, millisecond)
+    }
+    return fow
+}
+
+makeManualMover = function(layerManager){
 
     var mm = {}
     mm.selected_precinct;
     mm.selected_color = "black"
 
-    mm.onClick = function(e){
+    mm.clickFunction = function(e){
         var layer = e.target;
+        if (mm.selected_precinct == layer)
+            return
 
         // clear and set new selection
         if (mm.selected_precinct){
-            layerManager.reset_precinct_color(layer)
+            mm.resetSelection()
         }
-        layerManager.color_precinct(mm.selected_color)
         mm.selected_precinct = layer;
+        layerManager.color_precinct(mm.getSelectedID(), mm.selected_color)
 
         // repopulate the district options
         removeDistrictOption()
@@ -459,31 +468,81 @@ ManualMover = function(layerManager){
 
     }
 
+    mm.mouseoutFunction = function(e){
+        var layer = e.target;
+        if (mm.selected_precinct == layer)  // reset to custom color for selected
+            layerManager.color_precinct(mm.getSelectedID(), mm.selected_color)
+        else
+            manager.reset_precinct_color(layer)
+        info.update();
+    }
+
+    mm.mouseoverFunction = function(e){
+        var layer = e.target;
+
+        if (mm.selected_precinct != layer){
+            layer.setStyle({
+                weight: 5,
+                color: '#666',
+                dashArray: '',
+                fillOpacity: 0.7
+            });
+        }
+        loadPrecinctProperties(layer)
+    }
+
     mm.exit = function(){
         if (mm.selected_precinct){
-            layerManager.reset_precinct_color(layer)
+            mm.resetSelection()
         }
+        removeDistrictOption()
     }
 
     mm.getSelectedID = function(){
         return layerManager.get_precinct_id(mm.selected_precinct)
     }
 
+    // reset when a move lock is done
     mm.resetSelection = function(){
-        mm.selected_precinct = undefined
         layerManager.reset_precinct_color(mm.selected_precinct)
+        mm.selected_precinct = undefined
+    }
+
+    mm.sendManualMove = function (isLock, dest_id, message_log_div, writer){
+        var url = "manualMove"
+        var isLock = isLock;
+        var src_id = layerManager.get_district_id_by_precinct_layer(mm.selected_precinct)
+        var precinct_id = mm.getSelectedID()
+
+        var request = new XMLHttpRequest();
+        var url = "http://localhost:8080/" + url + "?src=" + src_id + "&dest=" + dest_id +"&precinct=" + precinct_id + "&lock=" + isLock
+        request.open("GET", url, true)
+        request.onreadystatechange = function(){
+            if(request.readyState == 4 && request.status == 200){
+                var json = JSON.parse(request.response);
+                value = json.value;
+                console.log("The move is worth: "+value)
+                if(!json.valid){    // invalid move
+                    console.log(json.message)
+                    writer.write(message_log_div, json.message, "red", 5000)
+                }
+                else{               // valid
+                    console.log(json.value)
+                    var message_div = document.getElementById(mm.LOG_DIV_ID)
+                    writer.write(message_log_div, json.message, "green", 5000)
+                    //if LOCK
+                    if(isLock){
+                        layerManager.move_precinct(precinct_id, dest_id)
+                        mm.resetSelection()
+                    }
+                }
+            }
+        }
+        request.send(null);
     }
 
     return mm
 }
-
-// move: onclick => ajax('trymove' radio.value+ ,   mm.getSelectedID() ), print out funct value
-// lock: onclick => ajax('actually move it' radio.value+ ,   mm.getSelectedID() ) // move on client+server, clear selection
-//                  layer_manager.move_precinct(mm.getSelectedID(), radio.value)
-//                  mm.resetSelection()
-
-
-
 var districtOptionTemplate = "<div class=\"custom-control custom-radio\"> <input type=\"radio\" id=\"district[id]\" name=\"district_option\" class=\"custom-control-input\" value=\"[id]\"> <label id=\"districtlabel[id]\" class=\"custom-control-label\" for=\"district[id]\">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</label> </div>"
 function insertDistrictOption(id, color){
     var div = districtOptionTemplate.split('[id]').join(id)
@@ -493,12 +552,93 @@ function insertDistrictOption(id, color){
         label.setAttribute("style", "background-color:"+color)
     return div
 }
-
 function removeDistrictOption(){
     var selectorDiv = document.getElementById('district_selector_options')
-    selectorDiv.innerHTML += ""
+    selectorDiv.innerHTML = ""
 }
 
-function enableManualSelect(){
+var fadeWriter = makeFadeOutWriter()
+var mover = makeManualMover(layer_manager)
+var manualMoveToggle = document.getElementById("district_selector_toggle")
+var tempMoveBtn = document.getElementById("move_temporary")
+var lockMoveBtn = document.getElementById("move_lock")
 
+tempMoveBtn.onclick = function(e){
+    var destID = document.getElementById('district_selector_options').querySelector('input[type=radio]:checked').value
+    var messageDiv = document.getElementById('district_selector_message')
+    mover.sendManualMove(false, destID, messageDiv, fadeWriter)
 }
+lockMoveBtn.onclick = function(e){
+    var destID = document.getElementById('district_selector_options').querySelector('input[type=radio]:checked').value
+    var messageDiv = document.getElementById('district_selector_message')
+    mover.sendManualMove(true, destID, messageDiv, fadeWriter)
+}
+manualMoveToggle.onclick = function(e){
+    if(mode == MODE.NORMAL){    // switch to manual if normal
+        tempMoveBtn.disabled = false
+        lockMoveBtn.disabled = false
+        mode = MODE.MANUAL_SELECT
+    }
+    else{
+        tempMoveBtn.disabled = true
+        lockMoveBtn.disabled = true
+        mover.exit()
+        mode = MODE.NORMAL
+    }
+}
+
+var MODE = {
+    NORMAL: 0,
+    MANUAL_SELECT: 1
+}
+var mode = MODE.NORMAL
+function precinctOverEvent(e){
+     switch(mode){
+         case MODE.NORMAL:
+             highlightPrecinctFeature(e)
+         break;
+         case MODE.MANUAL_SELECT:
+             mover.mouseoverFunction(e)
+             console.log("manual")
+         break;
+         default: console.log("invalid mode: "+ mode)
+     }
+ }
+function precinctOutEvent(e){
+     switch(mode){
+         case MODE.NORMAL:
+             resetPrecinctHighlight(e)
+         break;
+         case MODE.MANUAL_SELECT:
+             mover.mouseoutFunction(e)
+             console.log("manual")
+         break;
+         default: console.log("invalid mode: "+ mode)
+     }
+ }
+function precinctClickEvent(e){
+    switch(mode){
+        case MODE.NORMAL:
+            zoomToFeature(e)
+        break;
+        case MODE.MANUAL_SELECT:
+             mover.clickFunction(e)
+            console.log("manual")
+        break;
+        default: console.log("invalid mode: "+ mode)
+    }
+}
+
+
+// 1. when precinct is loaded
+function enableManualMoveOption(enable){
+    manualMoveToggle.disabled = !enable
+
+    if(manualMoveToggle.disabled){
+        tempMoveBtn.disabled = true
+        lockMoveBtn.disabled = true
+        mover.exit()
+        mode = MODE.NORMAL
+    }
+}
+enableManualMoveOption(false)
