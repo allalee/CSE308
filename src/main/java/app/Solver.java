@@ -27,6 +27,12 @@ public class Solver {
     }
 
     public double calculateFunctionValue(){
-        return currentAlgorithm.calculateFunctionValue();
+        double compactnessSum = 0.0;
+        int numDistricts = state.getAllDistricts().size();
+        for (District d : state.getAllDistricts()) {
+            compactnessSum+=d.computeMetricValue(Metric.COMPACTNESS);
+        }
+        double normalizedCompactness = compactnessSum/numDistricts;
+        return 1;
     }
 }

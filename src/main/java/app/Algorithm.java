@@ -11,7 +11,6 @@ public abstract class Algorithm {
     private ArrayDeque<Move> listOfMoves;
     private Thread algoThread;
     protected double functionValue;
-
     public Algorithm(){
         running = false;
         listOfMoves = new ArrayDeque<>();
