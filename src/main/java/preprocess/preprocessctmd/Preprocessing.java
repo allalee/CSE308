@@ -20,12 +20,13 @@ public class Preprocessing {
         hb = HibernateManager.getInstance();
         String[] districtFileNames = new String[2];
         String[] precinctFileNames = new String[2];
-        String[] votingDataFileNames = new String[1];
+        String[] votingDataFileNames = new String[2];
         districtFileNames[0] = "D:/CSE308/src/main/resources/static/geojson/connecticut_districts.json";
         districtFileNames[1] = "D:/CSE308/src/main/resources/static/geojson/maryland_districts.json";
         precinctFileNames[0] = "D:/CSE308/src/main/resources/static/geojson/precinct_data/connecticut_precincts.json";
         precinctFileNames[1] = "D:/CSE308/src/main/resources/static/geojson/precinct_data/maryland_precincts_2012.json";
         votingDataFileNames[0] = "D:/CSE308/voting_data/connvoting.json";
+        votingDataFileNames[1] = "D:/CSE308/voting_data/marylandvoting.json";
 
         ArrayList<File> districtFiles = PreprocessHelper2.loadFiles(districtFileNames);
         ArrayList<File> precinctFiles = PreprocessHelper2.loadFiles(precinctFileNames);
@@ -49,8 +50,10 @@ public class Preprocessing {
 //        persistPrecincts(marylandPrecincts);
 
 //VOTING DATA
-        HashMap<Integer, Integer> connPrecinctMap = generateConnPrecinctHashMap(connPrecincts);
+        HashMap<Integer, Integer> connPrecinctMap = generatePrecinctHashMap(connPrecincts);
         ArrayList<VotingData> connVotingData = PreprocessHelper2.generateConnVotingData(votingDataFiles, connPrecinctMap);
+        HashMap<Integer, Integer> marylandPrecinctMap = generatePrecinctHashMap(marylandPrecincts);
+        ArrayList<VotingData> marylandVotingData = PreprocessHelper2.generateMarylandVotingData(votingDataFiles, marylandPrecinctMap);
     }
 
 
@@ -115,9 +118,9 @@ public class Preprocessing {
     }
 
     //generate hashmap of precinct_id to district_id
-    private static HashMap<Integer, Integer> generateConnPrecinctHashMap(ArrayList<Precincts> connPrecincts) throws Throwable {
+    private static HashMap<Integer, Integer> generatePrecinctHashMap(ArrayList<Precincts> PrecinctsMap) throws Throwable {
         HashMap<Integer, Integer> hm = new HashMap<>();
-        for(Precincts p : connPrecincts){
+        for(Precincts p : PrecinctsMap){
             hm.put(p.getPrecinctId(), p.getDistrictId());
         }
         return hm;
