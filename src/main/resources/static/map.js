@@ -175,6 +175,9 @@ function loadPrecincts(e) {
     if (!mymap.hasLayer(precinctJson)) {
       addPrecinctsLayer();
     }
+
+    // enable manual redistrict
+    enableManualMoveOption(true)
 }
 
 function addPrecinctsLayer() {
@@ -229,6 +232,9 @@ function resetMap(){
     currentConstText = null;
   addStateLayer();
   mymap.setView([37.0902, -95.7129], 4);
+
+  //disable manual redistrict
+  enableManualMoveOption(false)
 }
 
 
@@ -419,11 +425,29 @@ populateStateSelect();
 //  precinctlayer's onexit = same + if e == mm.selected_precinct { setStyle("{fillColor: "+mm.selected_color+"}") }
 
 
-ManualMover = function(layerManager){
+makeFadeOutWriter = function(){
+    fow = {}
+    fow.timer
+    fow.write = function(element, message, color, millisecond){
+        if(fow.timer){
+            clearTimeout(fow.timer)
+        }
+        element.innerHTML = message
+        element.style.color = color
+        fow.timer = setTimeout(function(){
+            element.innerHTML = "&nbsp"
+            fow.timer = undefined
+        }, millisecond)
+    }
+    return fow
+}
+
+makeManualMover = function(layerManager){
 
     var mm = {}
     mm.selected_precinct;
     mm.selected_color = "black"
+    mm.LOG_DIV_ID = 'district_selector_message'
 
     mm.clickFunction = function(e){
         var layer = e.target;
@@ -468,10 +492,6 @@ ManualMover = function(layerManager){
         loadPrecinctProperties(layer)
     }
 
-    mm.start = function(){
-
-    }
-
     mm.exit = function(){
         if (mm.selected_precinct){
             mm.resetSelection()
@@ -489,16 +509,41 @@ ManualMover = function(layerManager){
         mm.selected_precinct = undefined
     }
 
+    mm.sendManualMove = function (isLock, dest_id, message_log_div, writer){
+        var url = "manualMove"
+        var isLock = isLock;
+        var src_id = layerManager.get_district_id_by_precinct_layer(mm.selected_precinct)
+        var precinct_id = mm.getSelectedID()
+
+        var request = new XMLHttpRequest();
+        var url = "http://localhost:8080/" + url + "?src=" + src_id + "&dest=" + dest_id +"&precinct=" + precinct_id + "&lock=" + isLock
+        request.open("GET", url, true)
+        request.onreadystatechange = function(){
+            if(request.readyState == 4 && request.status == 200){
+                var json = JSON.parse(request.response);
+                value = json.value;
+                console.log("The move is worth: "+value)
+                if(!json.valid){    // invalid move
+                    console.log(json.message)
+                    writer.write(message_log_div, json.message, "red", 5000)
+                }
+                else{               // valid
+                    console.log(json.value)
+                    var message_div = document.getElementById(mm.LOG_DIV_ID)
+                    writer.write(message_log_div, json.message, "green", 5000)
+                    //if LOCK
+                    if(isLock){
+                        layerManager.move_precinct(precinct_id, dest_id)
+                        mm.resetSelection()
+                    }
+                }
+            }
+        }
+        request.send(null);
+    }
+
     return mm
 }
-
-// move: onclick => ajax('trymove' radio.value+ ,   mm.getSelectedID() ), print out funct value
-// lock: onclick => ajax('actually move it' radio.value+ ,   mm.getSelectedID() ) // move on client+server, clear selection
-//                  layer_manager.move_precinct(mm.getSelectedID(), radio.value)
-//                  mm.resetSelection()
-
-
-
 var districtOptionTemplate = "<div class=\"custom-control custom-radio\"> <input type=\"radio\" id=\"district[id]\" name=\"district_option\" class=\"custom-control-input\" value=\"[id]\"> <label id=\"districtlabel[id]\" class=\"custom-control-label\" for=\"district[id]\">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</label> </div>"
 function insertDistrictOption(id, color){
     var div = districtOptionTemplate.split('[id]').join(id)
@@ -508,37 +553,39 @@ function insertDistrictOption(id, color){
         label.setAttribute("style", "background-color:"+color)
     return div
 }
-
 function removeDistrictOption(){
     var selectorDiv = document.getElementById('district_selector_options')
     selectorDiv.innerHTML = ""
 }
 
-var mover = ManualMover(layer_manager)
-var toggle = document.getElementById("district_selector_toggle")
-var temp_move_btn = document.getElementById("move_temporary")
-var lock_move_btn = document.getElementById("move_lock")
+var fadeWriter = makeFadeOutWriter()
+var mover = makeManualMover(layer_manager)
+var manualMoveToggle = document.getElementById("district_selector_toggle")
+var tempMoveBtn = document.getElementById("move_temporary")
+var lockMoveBtn = document.getElementById("move_lock")
 
-toggle.onclick = function(e){
-    console.log("HELLO")
+tempMoveBtn.onclick = function(e){
+    var destID = document.getElementById('district_selector_options').querySelector('input[type=radio]:checked').value
+    var messageDiv = document.getElementById('district_selector_message')
+    mover.sendManualMove(false, destID, messageDiv, fadeWriter)
+}
+lockMoveBtn.onclick = function(e){
+    var destID = document.getElementById('district_selector_options').querySelector('input[type=radio]:checked').value
+    var messageDiv = document.getElementById('district_selector_message')
+    mover.sendManualMove(true, destID, messageDiv, fadeWriter)
+}
+manualMoveToggle.onclick = function(e){
     if(mode == MODE.NORMAL){    // switch to manual if normal
-        temp_move_btn.disabled = false
-        lock_move_btn.disabled = false
-        console.log("MANUAL DISTRICT")
+        tempMoveBtn.disabled = false
+        lockMoveBtn.disabled = false
         mode = MODE.MANUAL_SELECT
     }
     else{
-        temp_move_btn.disabled = true
-        lock_move_btn.disabled = true
+        tempMoveBtn.disabled = true
+        lockMoveBtn.disabled = true
         mover.exit()
         mode = MODE.NORMAL
     }
-}
-temp_move_btn = function(e){
-    console.log("Temp move")
-    var src_id = layer_manager.get_district_id_by_precinct_layer(mover.selected_precinct)
-    var dest_id = document.getElementById('district_selector_options').querySelector('input[type=radio]:checked').value
-    var precinct_id = mover.getSelectedID()
 }
 
 var MODE = {
@@ -586,5 +633,13 @@ function precinctClickEvent(e){
 
 // 1. when precinct is loaded
 function enableManualMoveOption(enable){
-    toggle.disabled = !enable
+    manualMoveToggle.disabled = !enable
+
+    if(manualMoveToggle.disabled){
+        tempMoveBtn.disabled = true
+        lockMoveBtn.disabled = true
+        mover.exit()
+        mode = MODE.NORMAL
+    }
 }
+enableManualMoveOption(false)

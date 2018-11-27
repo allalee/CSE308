@@ -28,6 +28,7 @@ public class Solver {
     }
 
     public double calculateFunctionValue() {
-        return currentAlgorithm.calculateFunctionValue();
+        return 1;
+        //return currentAlgorithm.calculateFunctionValue();
     }
 }
