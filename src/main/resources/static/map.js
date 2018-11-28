@@ -78,14 +78,15 @@ function stateSearch() {
   stateNameUpper = stateName.toUpperCase();
   if(id = state_fps_hashmap[stateNameUpper]) {
     currentStateID= id;
-    currentStateName = stateNameUpper.value.toLowerCase();
-    currentStateName = currentStateName.charAt(0).toUpperCase(); //Make first letter uppercase
+    currentStateName = stateNameUpper.toLowerCase();
+    currentStateName = currentStateName.charAt(0).toUpperCase() + currentStateName.slice(1); //Make first letter uppercase
     targetState = findState(currentStateID);
     mymap.fitBounds(targetState.getBounds());
     //Retrieve districts data from server and set
-    loadStateJson(currentStateName, currentStateID);
     stateJson.remove();
-    addDistrictsLayer();
+    loadStateJson(currentStateName, currentStateID);
+
+    //addDistrictsLayer();
   }
 }
 
@@ -231,8 +232,13 @@ function resetMap(){
   }
     currentStateID = null;
     currentConstText = null;
-  addStateLayer();
-  mymap.setView([37.0902, -95.7129], 4);
+  if(mymap.hasLayer(stateJson)) {
+    return;
+  } else {
+    addStateLayer();
+    mymap.setView([37.0902, -95.7129], 4);
+  }
+
 
   //disable manual redistrict
   enableManualMoveOption(false)
@@ -356,6 +362,8 @@ function startAlgorithm(){
         document.getElementById("console").appendChild(document.createElement("br"))
         document.getElementById("console").append("No state selected for algorithm to run")
     } else {
+        enableManualMoveOption(false); //MAKE SURE TO ENABLE THIS button
+        document.getElementById("reset").disabled = true;
         var console = document.getElementById("console")
         console.appendChild(document.createElement("br"))
         console.append("Retrieving slider data for the server...")
@@ -367,6 +375,7 @@ function startAlgorithm(){
         var url = "http://localhost:8080/startAlgorithm?algorithmType=" + algorithm_type + "&popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
         var request = new XMLHttpRequest()
         request.open("GET", url, true)
+
         request.send(null)
     }
 }
@@ -403,17 +412,16 @@ function dropdownStateSearch(){
     }
 
     var selected_radio = document.getElementById('state_selector_options').querySelector('input[type=radio]:checked')
-    var id = selected_radio.id
     var name = selected_radio.value
-
+    var id = state_fps_hashmap[name];
     currentStateName = name.toLowerCase();
-    currentStateName = currentStateName.charAt(0).toUpperCase(); //Make first letter uppercase
+    currentStateName = currentStateName.charAt(0).toUpperCase() + currentStateName.slice(1);
     targetState = findState(id);
     mymap.fitBounds(targetState.getBounds());
     //Retrieve districts data from server and set
-    loadStateJson(currentStateName, id);
     stateJson.remove();
-    addDistrictsLayer();
+    loadStateJson(currentStateName, id);
+
 
 }
 populateStateSelect();
