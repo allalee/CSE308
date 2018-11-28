@@ -1,6 +1,6 @@
-package app.algorithm;
+package app.controllers;
 
-import app.state.District;
+import app.algorithm.Move;
 import app.enums.Metric;
 import app.state.State;
 
@@ -13,14 +13,12 @@ public abstract class Algorithm {
     private ArrayDeque<Move> listOfMoves;
     private Thread algoThread;
     protected double functionValue;
-
     private HashMap<Metric, Double> weights;
 
 
     public Algorithm(){
         running = false;
         listOfMoves = new ArrayDeque<>();
-        functionValue = 0;
         weights = new HashMap<>();
     }
 
@@ -29,7 +27,6 @@ public abstract class Algorithm {
             stop();
         }
         algoThread = new Thread(()->{
-            functionValue = 0;
             running = true;
             run();
         });
@@ -44,25 +41,13 @@ public abstract class Algorithm {
     public void addToMoveStack(Move move){
         listOfMoves.push(move);
     }
+
     public void setState(State state){
         this.state = state;
     }
+
     public boolean isRunning(){
         return running;
-    }
-
-    public double calculateFunctionValue(){
-        double compactnessSum = 0.0;
-        int numDistricts = state.getAllDistricts().size();
-        for (District d : state.getAllDistricts()) {
-            compactnessSum+=d.computeMetricValue(Metric.COMPACTNESS);
-        }
-        double normalizedCompactness = compactnessSum/numDistricts;
-        return 1.0;
-    }
-
-    protected boolean isBetter(double newValue, double oldValue){
-        return newValue >= oldValue;
     }
 
     public void setMetricWeights(double partisanFairness, double compactness, double populationEquality){
@@ -75,5 +60,18 @@ public abstract class Algorithm {
         return weights;
     }
 
+    public boolean isBetter(double newValue, double oldValue){
+        return true;
+    }
+
+    public double calculateFunctionValue(){
+        return 1;
+    }
+
+    public void setInitialObjFunctionValue(double value){
+        functionValue = value;
+    }
+
     abstract void run();
+
 }

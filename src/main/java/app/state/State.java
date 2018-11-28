@@ -53,7 +53,7 @@ public class State {
     public void addPopulation(int population){
         this.totalPopulation += population;
     }
-    public double getIdealPopulation() {
+    public int getIdealPopulation() {
         return this.totalPopulation/this.districtMap.size();
     }
 

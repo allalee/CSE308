@@ -1,8 +1,8 @@
-package app.algorithm;
+package app.controllers;
 
+import app.algorithm.Move;
 import app.state.District;
 import app.state.Precinct;
-import app.controllers.SocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;

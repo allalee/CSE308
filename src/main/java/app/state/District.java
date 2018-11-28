@@ -46,9 +46,11 @@ public class District{
     public Precinct getPrecinct(int id){
         return precinctMap.get(id);
     }
+
     public void addPrecinct(int ID, Precinct precinct){
         precinctMap.put(ID, precinct);
     }
+
     public void removePrecinct(Precinct precinct){
         removePrecinct(precinct.getID());
     }
@@ -93,16 +95,6 @@ public class District{
                 break;
             case REPUBLICAN:
                 republicanVotes+=votes;
-                break;
-        }
-    }
-    public void removeVotes(Parties p,int votes) {
-        switch(p){
-            case DEMOCRATIC:
-                democraticVotes-=votes;
-                break;
-            case REPUBLICAN:
-                republicanVotes-=votes;
                 break;
         }
     }
@@ -178,5 +170,13 @@ public class District{
 
     public HashMap<Integer, Precinct> getPrecinctMap(){
         return this.precinctMap;
+    }
+
+    public int getDemocraticVotes(){
+        return this.democraticVotes;
+    }
+
+    public int getRepublicanVotes(){
+        return this.republicanVotes;
     }
 }
