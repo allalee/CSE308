@@ -37,15 +37,21 @@ public class JsonBuilder {
     }
 
     public String buildPrecinctDataJson(Precinct p){
-        StringBuilder builder = new StringBuilder("{\"demographics\": {");
+        StringBuilder builder = new StringBuilder("{");
         HashMap<Ethnicity, Integer> demoMap = p.getDemographics();
-        for(Ethnicity e : demoMap.keySet()){
-            String ethnicity = e.toString();
-            int population = demoMap.get(e);
-            builder.append("\"" + ethnicity + "\": \"" + population + "\",");
+        if(!demoMap.isEmpty()) {
+            builder.append("\"demographics\": {");
+            for (Ethnicity e : demoMap.keySet()) {
+                String ethnicity = e.toString();
+                int population = demoMap.get(e);
+                builder.append("\"" + ethnicity + "\": \"" + population + "\",");
+            }
+            builder.setCharAt(builder.length() - 1, '}');
         }
-        builder.setCharAt(builder.length()-1, '}');
-        builder.append(",\"population\": \"" + p.getPopulation() + "\"");
+        if(!demoMap.isEmpty()){
+            builder.append(",");
+        }
+        builder.append("\"population\": \"" + p.getPopulation() + "\"");
         //PERHAPS MISSING VOTING DATA FOR THAT PRECINCT, RESULTING IN BAD JSON i.e: "population" : "948","voting_data" : }}
         ElectionData ed = p.getElectionData();
         if(!(ed.getVoterDistribution().isEmpty())){
