@@ -38,7 +38,7 @@ public class Move {
 
         int precinctPopulation = precinct.getPopulation();
         dest.addPopulation(precinctPopulation);
-        src.removePopulation(precinctPopulation);
+        src.addPopulation(-(precinctPopulation));
 
         ElectionData precinctVotes = precinct.getElectionData();
         int demVotes = precinctVotes.getNumVotesForDem();
@@ -61,7 +61,7 @@ public class Move {
 
         int precinctPopulation = precinct.getPopulation();
         src.addPopulation(precinctPopulation);
-        dest.removePopulation(precinctPopulation);
+        dest.addPopulation(-(precinctPopulation));
 
         ElectionData precinctVotes = precinct.getElectionData();
         int demVotes = precinctVotes.getNumVotesForDem();

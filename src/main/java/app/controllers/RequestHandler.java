@@ -119,6 +119,7 @@ public class RequestHandler {
             solver.setState(sm.getClonedState());
             solver.setFunctionWeights(partFairnessMetric/100, compactnessMetric/100, popEqualityMetric/100);
             solver.initAlgorithm();
+            solver.run();
             return "Algo started";
         }
 

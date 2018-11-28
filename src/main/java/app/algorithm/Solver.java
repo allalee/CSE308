@@ -43,9 +43,13 @@ public class Solver {
     public void initAlgorithm(){
         double populationEqualityValue = 1 - computeAveragePercentError();
         calculateVoteTotal();
-        double partisanFairnessValue = 1 - computeAveragePartisanFairness();
-        objectiveFunctionValue = currentAlgorithm.getWeights().get(Metric.POPULATION_EQUALITY)*populationEqualityValue;
+        double partisanFairnessValue = 1 - computePartisanFairness();
+        double compactnessValue = computeCompactness();
+        objectiveFunctionValue = currentAlgorithm.getWeights().get(Metric.POPULATION_EQUALITY) * populationEqualityValue +
+                currentAlgorithm.getWeights().get(Metric.PARTISAN_FAIRNESS) * partisanFairnessValue + currentAlgorithm.getWeights().get(Metric.COMPACTNESS) *
+                compactnessValue;
         currentAlgorithm.setInitialObjFunctionValue(objectiveFunctionValue);
+        System.out.println(objectiveFunctionValue);
     }
 
     private double computeAveragePercentError(){
@@ -57,8 +61,25 @@ public class Solver {
         return percentError/state.getDistrictMap().size();
     }
 
-    private double computeAveragePartisanFairness(){
-        return 0;
+    private double computePartisanFairness(){
+        int totalVotes = 0;
+        int democraticWastedVotes = 0;
+        int republicanWastedVotes = 0;
+        for(District district : state.getAllDistricts()){
+            totalVotes += district.getTotalVotes();
+            HashMap<Parties, Integer> map = district.retrieveWastedVotes();
+            democraticWastedVotes += map.get(Parties.DEMOCRATIC);
+            republicanWastedVotes += map.get(Parties.REPUBLICAN);
+        }
+        return Math.abs(((double)(democraticWastedVotes - republicanWastedVotes)/totalVotes));
+    }
+
+    private double computeCompactness(){
+        double totalCompactness = 0;
+        for(District district : state.getAllDistricts()){
+            totalCompactness += district.computePolsby();
+        }
+        return totalCompactness/state.getDistrictMap().size();
     }
 
     private void calculateVoteTotal(){
