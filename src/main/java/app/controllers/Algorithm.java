@@ -33,6 +33,7 @@ public abstract class Algorithm{
         if( running ){
             stop();
         }
+        systemStartTime = System.currentTimeMillis();
         algoThread = new Thread(()->{
             functionValue = 0;
             running = true;
