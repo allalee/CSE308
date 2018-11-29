@@ -1,5 +1,6 @@
-package app.user;
+package app.controllers;
 
+import app.user.UsersModel;
 import gerrymandering.HibernateManager;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;

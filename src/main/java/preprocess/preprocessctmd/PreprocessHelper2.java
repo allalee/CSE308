@@ -1,5 +1,7 @@
 package preprocess.preprocessctmd;
 
+import app.enums.ElectionType;
+import app.enums.Parties;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.io.geojson.GeoJsonReader;
@@ -9,6 +11,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import preprocess.dbclasses.Precincts;
+import preprocess.dbclasses.VotingData;
+import utils.PartyName;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -88,6 +92,123 @@ public class PreprocessHelper2 {
         return precinctList;
     }
 
+    public static ArrayList<VotingData> generateConnVotingData(ArrayList<File> files, HashMap<Integer, Integer> connPrecinctMap) throws Throwable {
+        ArrayList<VotingData> votingDataList = new ArrayList<>();
+        JSONParser parser = new JSONParser();
+        //build voting data for connecticut
+        FileReader reader = new FileReader(files.get(0));
+        JSONArray connVTDJSON = (JSONArray) parser.parse(reader);
+        buildConnVTD(votingDataList,connVTDJSON, connPrecinctMap);
+        return votingDataList;
+    }
+
+    public static ArrayList<VotingData> generateMarylandVotingData(ArrayList<File> files, HashMap<Integer, Integer> marylandPrecinctMap, HashMap<String, String> marylandVotingMap) throws Throwable {
+        ArrayList<VotingData> votingDataList = new ArrayList<>();
+        JSONParser parser = new JSONParser();
+        //build voting data for maryland
+        FileReader reader = new FileReader(files.get(1));
+        JSONArray marylandVTDJSON = (JSONArray) parser.parse(reader);
+        buildMarylandVTD(votingDataList,marylandVTDJSON, marylandPrecinctMap, marylandVotingMap);
+        return votingDataList;
+    }
+
+    private static void buildMarylandVTD(List<VotingData> vtdList, JSONArray json, HashMap<Integer, Integer> marylandPrecinctMap, HashMap<String,String> marylandVotingMap) throws Throwable{
+        ArrayList<String> keysNotExist = new ArrayList<>();
+        for(Object vd : json){
+            JSONObject vdJObject = ((JSONObject)vd);
+            String pID = vdJObject.get("PRECINCT").toString();
+            if(pID == null || pID.equals("UNABLE TO DETERMINE")){
+                continue;
+            }else{
+                String party = vdJObject.get("PARTY").toString();
+                String representative = "";
+                if(party.equalsIgnoreCase("DEMOCRAT") || party.equalsIgnoreCase(Parties.REPUBLICAN.toString()) || party.equalsIgnoreCase(Parties.LIBERTARIAN.toString()) || party.equalsIgnoreCase(Parties.GREEN.toString())) {
+                    String county = vdJObject.get("COUNTY").toString();
+                    Integer voteCnt = Integer.parseInt(vdJObject.get("TOTAL_VOTERS").toString());
+
+                    //get the proper districtid associated with the name10 precinctids.
+                    String name10 = county + " " + pID.substring(1);
+                    if(marylandVotingMap.containsKey(name10)) {
+                        String precinctId = marylandVotingMap.get(name10);
+                        precinctId = precinctId.replace("-", ""); //remove chars
+                        Integer precinctIdint = Integer.parseInt(precinctId);
+                        Integer districtId = marylandPrecinctMap.get(precinctIdint);
+
+                        if (party.equals("DEMOCRAT")) {
+                            party = Parties.DEMOCRATIC.toString();
+                            representative = "Obama, Barack";
+                        }
+                        if (party.equalsIgnoreCase(Parties.REPUBLICAN.toString())) {
+                            representative = "Romney, Mitt";
+                        }
+                        if (party.equalsIgnoreCase(Parties.LIBERTARIAN.toString())) {
+                            representative = "Johnson, Gary";
+                        }
+                        if (party.equalsIgnoreCase(Parties.GREEN.toString())) {
+                            representative = "Stein, Jill";
+                        }
+                        VotingData data = new VotingData(county, voteCnt, precinctIdint, representative, Parties.valueOf(party), ElectionType.PRESIDENTIAL, 2012, districtId);
+                        vtdList.add(data);
+                    }
+                    else{
+                        keysNotExist.add(name10);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void buildConnVTD(List<VotingData> vtdList, JSONArray json, HashMap<Integer, Integer> connPrecinctMap) throws Throwable {
+        for(Object vd : json){
+            JSONObject vdJOBject = ((JSONObject)vd);
+            String pID = vdJOBject.get("GeoID10").toString();
+            if(pID == null){
+                continue;
+            } else{
+                String county = vdJOBject.get("Town").toString();
+                Integer voteCntRep = Integer.parseInt(vdJOBject.get("John McCain (PRES)").toString());
+                Integer voteCntDem = Integer.parseInt(vdJOBject.get("Barack Obama (PRES)").toString());
+                Integer voteCntGreen = Integer.parseInt(vdJOBject.get("Cynthia McKinney (PRES)").toString());
+                Integer voteCntInd = Integer.parseInt(vdJOBject.get("Ralph Nader (PRES)").toString());
+                String representativeRep = "McCain, John";
+                String representativeDem = "Obama, Barack";
+                String representativeGreen = "McKinney, Cynthia";
+                String representativeInd = "Nader, Ralph";
+                String partyRep = "REPUBLICAN";
+                String partyDem = "DEMOCRATIC";
+                String partyGreen = "GREEN";
+                String partyInd = "INDEPENDENT";
+
+                //GETTING THE PROPER pID TO PERSIST, AND THE CORRECT DistrictID
+
+                if(pID.equals("ZZZ")){
+                    pID = pID.replace("ZZZ", "999"); //remove chars
+                }
+                else {
+                    pID = pID.substring(3); //take off 090 for connecticut precincts because too large for int.
+                                            //090 are the first 3 numbers of EVERY geoid10.
+                    pID = pID.replace("-", ""); //remove chars
+                }
+                Integer precinctID = Integer.parseInt(pID);
+                Integer districtID = connPrecinctMap.get(precinctID);
+
+                //DISTRICTID FIELD WILL BE ADDED TO THE VOTING DATA MODEL.
+                //DISTRICTID FROM 46 TO 50 INCLUSIVE IS PART OC CONNECTICUT.
+                if (districtID != null) {
+                    VotingData dataRep = new VotingData(county, voteCntRep, precinctID, representativeRep, Parties.valueOf(partyRep), ElectionType.PRESIDENTIAL, 2008, districtID);
+                    VotingData dataDem = new VotingData(county, voteCntDem, precinctID, representativeDem, Parties.valueOf(partyDem), ElectionType.PRESIDENTIAL, 2008, districtID);
+                    VotingData dataGreen = new VotingData(county, voteCntGreen, precinctID, representativeGreen, Parties.valueOf(partyGreen), ElectionType.PRESIDENTIAL, 2008, districtID);
+                    VotingData dataInd = new VotingData(county, voteCntInd, precinctID, representativeInd, Parties.valueOf(partyInd), ElectionType.PRESIDENTIAL, 2008, districtID);
+                    vtdList.add(dataRep);
+                    vtdList.add(dataDem);
+                    vtdList.add(dataGreen);
+                    vtdList.add(dataInd);
+                }
+            }
+        }
+    }
+
+
 
     private static void buildDistricts(ArrayList<District> districtList, int stateID, JSONArray districtJSONArray) throws Exception {
         for(Object district : districtJSONArray){
@@ -104,9 +225,13 @@ public class PreprocessHelper2 {
         for(Object precinct : precinctJSONArray){
             JSONObject properties = (JSONObject) ((JSONObject)precinct).get("properties");
             String geo10ID = properties.get("GEOID10").toString();
-            geo10ID = geo10ID.substring(3); //take off 090 for connecticut precincts because too large for int.
-                                            //take off 240 for maryland precincts as well.
-                                            //both 090 and 240 are the first 3 numbers of EVERY geoid10.
+            if(geo10ID.startsWith("24")){
+                geo10ID = geo10ID.substring(2);
+            }
+            else if(geo10ID.startsWith("090")){
+                geo10ID = geo10ID.substring(3);
+            }
+
             if(geo10ID.contains("ZZZZZZ")){
                 geo10ID = geo10ID.replace("ZZZZZZ", "009999"); //remove chars
             }

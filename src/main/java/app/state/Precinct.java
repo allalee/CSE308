@@ -106,5 +106,4 @@ public class Precinct{
         return electionData;
     }
 
-
 }

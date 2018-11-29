@@ -264,15 +264,15 @@ info.onAdd = function (mymap) {
     return this._div;
 };
 // method that we will use to update the control based on feature properties passed
-info.update = function (props, demo, repub) {
+info.update = function (props, asian, caucasian, hispanic, african, native, other, demo, repub) {
     this._div.innerHTML = '<h4>Precinct Information</h4>' +  (props ?
         '<b>Demographics </b><br>'
-        +'Asian/Pacific Islander: ' + props['demographics']['ASIAN'] + '<br>'
-        + 'Caucasian: ' + props['demographics']['CAUCASIAN'] + '<br>'
-        + 'Hispanic: ' + props['demographics']['HISPANIC'] + '<br>'
-        + 'African-American: ' + props['demographics']['AFRICAN_AMERICAN'] + '<br>'
-        + 'Native American: ' + props['demographics']['NATIVE_AMERICAN'] + '<br>'
-        + 'Other: ' + props['demographics']['OTHER'] + '<br>'
+        +'Asian/Pacific Islander: ' + asian + '<br>'
+        + 'Caucasian: ' + caucasian + '<br>'
+        + 'Hispanic: ' + hispanic + '<br>'
+        + 'African-American: ' + african + '<br>'
+        + 'Native American: ' + native + '<br>'
+        + 'Other: ' + other + '<br>'
         + '<br><b>Election</b><br>'
         + 'Democrat: ' + demo + '<br>'
         + 'Republican: ' + repub + '<br>'
@@ -333,7 +333,23 @@ function loadPrecinctProperties(layer){
                 var democratic = "N/A"
                 var republican = "N/A"
             }
-            info.update(obj, democratic, republican)
+            if(obj['demographics']){
+                var asian = obj['demographics']['ASIAN']
+                var caucasian = obj['demographics']['CAUCASIAN']
+                var hispanic = obj['demographics']['HISPANIC']
+                var african = obj['demographics']['AFRICAN_AMERICAN']
+                var native = obj['demographics']['NATIVE_AMERICAN']
+                var other = obj['demographics']['OTHER']
+            }
+            else{
+                var asian = "N/A"
+                var caucasian = "N/A"
+                var hispanic = "N/A"
+                var african = "N/A"
+                var native = "N/A"
+                var other = "N/A"
+            }
+            info.update(obj, asian, caucasian, hispanic, african, native, other, democratic, republican)
             if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
                layer.bringToFront();
             }
