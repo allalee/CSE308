@@ -10,14 +10,14 @@ import gerrymandering.model.State;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import preprocess.dbclasses.Demographics;
+import preprocess.dbclasses.Populations;
 import preprocess.dbclasses.Precincts;
 import preprocess.dbclasses.VotingData;
 import utils.PartyName;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -110,6 +110,62 @@ public class PreprocessHelper2 {
         JSONArray marylandVTDJSON = (JSONArray) parser.parse(reader);
         buildMarylandVTD(votingDataList,marylandVTDJSON, marylandPrecinctMap, marylandVotingMap);
         return votingDataList;
+    }
+
+    public static ArrayList<Demographics> generateMarylandDemographicData(ArrayList<File> files, HashMap<Integer, Integer> marylandPrecinctMap) throws IOException, ParseException {
+        ArrayList<Demographics> demographicsList = new ArrayList<>();
+        JSONParser parser = new JSONParser();
+        //build voting data for maryland
+        FileReader reader = new FileReader(files.get(0));
+        JSONArray marylandDemographicsJSON = (JSONArray) parser.parse(reader);
+        buildMarylandDemographics(demographicsList,marylandDemographicsJSON, marylandPrecinctMap);
+        return demographicsList;
+    }
+
+    public static ArrayList<Populations> generateMarylandPopulationData(ArrayList<File> files, HashMap<Integer, Integer> marylandPrecinctMap) throws IOException, ParseException {
+        ArrayList<Populations> populationsList = new ArrayList<>();
+        JSONParser parser = new JSONParser();
+        //build voting data for maryland
+        FileReader reader = new FileReader(files.get(0));
+        JSONArray marylandPopulationsJSON = (JSONArray) parser.parse(reader);
+        buildMarylandPopulations(populationsList, marylandPopulationsJSON, marylandPrecinctMap);
+        return populationsList;
+    }
+
+    private static void buildMarylandPopulations(ArrayList<Populations> populationsList, JSONArray populationsJSON, HashMap<Integer, Integer> marylandPrecinctMap){
+        for(Object pop : populationsJSON){
+            JSONObject popObj = (JSONObject)pop;
+            if(!popObj.get("Voting District").toString().equals("TOTALS")) {
+                String pIDString = popObj.get("GEOID").toString();
+                pIDString = pIDString.substring(2);
+                Integer pID = Integer.parseInt(pIDString);
+                Integer populationCnt = Integer.parseInt(popObj.get("Adjusted Total Population").toString());
+                Integer districtId = marylandPrecinctMap.get(pID);
+                Populations data = new Populations(populationCnt, pID, districtId);
+                populationsList.add(data);
+            }
+        }
+    }
+
+    private static void buildMarylandDemographics(ArrayList<Demographics> demographicsList, JSONArray demographicsJSON, HashMap<Integer, Integer> marylandPrecinctMap){
+        for(Object demo : demographicsJSON){
+            JSONObject demoObj = (JSONObject)demo;
+            if(!demoObj.get("Voting District").toString().equals("TOTALS")) {
+                String pIDString = demoObj.get("GEOID").toString();
+                pIDString = pIDString.substring(2);
+                Integer pID = Integer.parseInt(pIDString);
+                Integer caucasianCnt = Integer.parseInt(demoObj.get("Caucasian").toString());
+                Integer africanCnt = Integer.parseInt(demoObj.get("African American").toString());
+                Integer nativeCnt = Integer.parseInt(demoObj.get("Native American").toString());
+                Integer hispCnt = Integer.parseInt(demoObj.get("Hispanic of Any Race").toString());
+                Integer asianCnt = Integer.parseInt(demoObj.get("SUM Asian-Pacific Islander").toString());
+                Integer otherCnt = Integer.parseInt(demoObj.get("SUM other").toString());
+                Integer districtId = marylandPrecinctMap.get(pID);
+
+                Demographics data = new Demographics(pID, asianCnt, caucasianCnt, hispCnt, africanCnt, nativeCnt, otherCnt, districtId);
+                demographicsList.add(data);
+            }
+        }
     }
 
     private static void buildMarylandVTD(List<VotingData> vtdList, JSONArray json, HashMap<Integer, Integer> marylandPrecinctMap, HashMap<String,String> marylandVotingMap) throws Throwable{

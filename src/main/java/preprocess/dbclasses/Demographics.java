@@ -47,8 +47,12 @@ public class Demographics implements Serializable{
             name = "OTHER"
     )
     private int other;
+    @Column(
+            name="DISTRICT_ID"
+    )
+    private int district_id;
 
-    public Demographics(int precinctID, int asian, int caucasian, int hispanic, int african_american, int native_american, int other){
+    public Demographics(int precinctID, int asian, int caucasian, int hispanic, int african_american, int native_american, int other, int district_id){
         this.precinctID = precinctID;
         this.asian = asian;
         this.caucasian = caucasian;
@@ -56,6 +60,7 @@ public class Demographics implements Serializable{
         this.african_american = african_american;
         this.native_american = native_american;
         this.other = other;
+        this.district_id = district_id;
     }
 
     public Demographics(){
