@@ -30,6 +30,10 @@ function consoleLog(message_body){
     console.appendChild(document.createElement("br"))
     console.append(message_body["console_log"])
     console.scrollTop = console.scrollHeight
+    if(message_body["src"] && message_body["dest"] && message_body["precinct"]){
+        layer_manager.set_new_precinct_district(message_body["precinct"], message_body["dest"])
+        layer_manager.color_precincts()
+    }
 }
 
 state_fps_hashmap =
@@ -269,7 +273,7 @@ info.update = function (props, asian, caucasian, hispanic, african, native, othe
         '<b>Demographics </b><br>'
         +'Asian/Pacific Islander: ' + asian + '<br>'
         + 'Caucasian: ' + caucasian + '<br>'
-        + 'Hispanic: ' + hispanic + '<br>'
+        + 'Hispanic (of Any Race): ' + hispanic + '<br>'
         + 'African-American: ' + african + '<br>'
         + 'Native American: ' + native + '<br>'
         + 'Other: ' + other + '<br>'

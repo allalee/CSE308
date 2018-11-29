@@ -38,12 +38,12 @@ public class District{
         for(Precinct p: precinctMap.values()){
             for(Precinct neighbor: p.getNeighbors()){
                 if(neighbor.getDistrict().getID() != this.getID()){
-                    System.out.println("Passes the test");
                     this.borderPrecincts.add(p);
                 }
             }
         }
     }
+
     public Precinct getPrecinct(int id){
         return precinctMap.get(id);
     }
@@ -105,6 +105,7 @@ public class District{
         clonedDistrict.setPopulation(this.population);
         for(Precinct precinct: this.getAllPrecincts()){
             Precinct clonedPrecinct = precinct.clone(this);
+            clonedPrecinct.setDistrict(clonedDistrict);
             clonedDistrict.getPrecinctMap().put(clonedPrecinct.getID(), clonedPrecinct);
         }
         return clonedDistrict;
@@ -155,5 +156,9 @@ public class District{
 
     public Set<Precinct> getBorderPrecincts(){
         return this.borderPrecincts;
+    }
+
+    public void setState(State state){
+        this.state = state;
     }
 }

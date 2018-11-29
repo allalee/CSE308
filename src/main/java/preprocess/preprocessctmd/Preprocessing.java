@@ -2,11 +2,14 @@ package preprocess.preprocessctmd;
 
 import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
+import gerrymandering.model.Population;
 import gerrymandering.model.State;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import preprocess.dbclasses.Demographics;
+import preprocess.dbclasses.Populations;
 import preprocess.dbclasses.Precincts;
 import preprocess.dbclasses.VotingData;
 
@@ -26,16 +29,21 @@ public class Preprocessing {
         String[] districtFileNames = new String[2];
         String[] precinctFileNames = new String[2];
         String[] votingDataFileNames = new String[2];
+        String[] demographicDataFileNames = new String[1];
+
         districtFileNames[0] = "D:/CSE308/src/main/resources/static/geojson/connecticut_districts.json";
         districtFileNames[1] = "D:/CSE308/src/main/resources/static/geojson/maryland_districts.json";
         precinctFileNames[0] = "D:/CSE308/src/main/resources/static/geojson/precinct_data/connecticut_precincts.json";
         precinctFileNames[1] = "D:/CSE308/src/main/resources/static/geojson/precinct_data/maryland_precincts_2012.json";
         votingDataFileNames[0] = "D:/CSE308/voting_data/connvoting.json";
         votingDataFileNames[1] = "D:/CSE308/voting_data/marylandvoting.json";
+        demographicDataFileNames[0] = "D:/CSE308/voting_data/population/marylanddemographics.json";
+
 
         ArrayList<File> districtFiles = PreprocessHelper2.loadFiles(districtFileNames);
         ArrayList<File> precinctFiles = PreprocessHelper2.loadFiles(precinctFileNames);
         ArrayList<File> votingDataFiles = PreprocessHelper2.loadFiles(votingDataFileNames);
+        ArrayList<File> demographicDataFiles = PreprocessHelper2.loadFiles(demographicDataFileNames);
 
 //STATES
         Set<State> states = PreprocessHelper2.generateStates();
@@ -61,6 +69,17 @@ public class Preprocessing {
         HashMap<String, String> marylandVotingMap = generateMarylandVoteHashMap(precinctFiles, marylandPrecincts);
         ArrayList<VotingData> marylandVotingData = PreprocessHelper2.generateMarylandVotingData(votingDataFiles, marylandPrecinctMap, marylandVotingMap);
 //        persistVoting(marylandVotingData);
+//DEMOGRAPHICS
+        ArrayList<Demographics> marylandDemographicdata = PreprocessHelper2.generateMarylandDemographicData(demographicDataFiles, marylandPrecinctMap);
+//        persistDemographics(marylandDemographicdata);
+
+
+
+//POPULATION DATA
+        ArrayList<Populations> marylandPopulationData = PreprocessHelper2.generateMarylandPopulationData(demographicDataFiles, marylandPrecinctMap);
+//        persistPopulations(marylandPopulationData);
+
+
     }
 
 
@@ -85,6 +104,18 @@ public class Preprocessing {
     private static void persistVoting(ArrayList<VotingData> votingData) throws Throwable {
         for (VotingData v : votingData){
             hb.persistToDB(v);
+        }
+    }
+
+    private static void persistDemographics(ArrayList<Demographics> demographicsData) throws Throwable {
+        for (Demographics d : demographicsData){
+            hb.persistToDB(d);
+        }
+    }
+
+    private static void persistPopulations(ArrayList<Populations> populationsData) throws Throwable {
+        for (Populations p : populationsData){
+            hb.persistToDB(p);
         }
     }
 
