@@ -31,7 +31,7 @@ public class PreprocessHelper {
 
     public static Set<State> generateStates() throws IOException {
         Set<State> stateSet = new HashSet<>();
-        File stateTxt = new File("CSE308/src/main/java/preprocess/CreateState");
+        File stateTxt = new File("D:/CSE308/src/main/java/preprocess/preprocessky/CreateState");
         BufferedReader br = new BufferedReader(new FileReader(stateTxt));
         String line;
         while((line = br.readLine()) != null){
@@ -76,13 +76,13 @@ public class PreprocessHelper {
         return populationSet;
     }
 
-    public static Set<Demographics> generateDemographics(Set<File> files, HashMap<String, Integer> map) throws Throwable {
+    public static Set<Demographics> generateDemographics(Set<File> files, HashMap<String, Integer> map, HashMap<Integer, Integer> precinctToDistrictID) throws Throwable {
         Set<Demographics> demographicsSet = new HashSet<>();
         JSONParser parser = new JSONParser();
         Iterator<File> fileIterator = files.iterator();
         FileReader reader = new FileReader(fileIterator.next());
         JSONObject kansasJSON = (JSONObject) parser.parse(reader);
-        buildDemographics(demographicsSet, kansasJSON, map, "VTD_S", "VTDNAME");
+        buildDemographics(demographicsSet, kansasJSON, map, "VTD_S", "VTDNAME", precinctToDistrictID);
         return demographicsSet;
     }
 
@@ -141,7 +141,7 @@ public class PreprocessHelper {
         }
     }
 
-    private static void buildDemographics(Set<Demographics> demographicsSet, JSONObject json, HashMap<String, Integer> map, String key1, String key2) throws Throwable {
+    private static void buildDemographics(Set<Demographics> demographicsSet, JSONObject json, HashMap<String, Integer> map, String key1, String key2, HashMap<Integer, Integer> precinctToDistrictID) throws Throwable {
         JSONArray precinctJSONArray = (JSONArray) json.get("features");
         for(Object precinct : precinctJSONArray){
             JSONObject properties = (JSONObject)((JSONObject)precinct).get("properties");
@@ -158,7 +158,8 @@ public class PreprocessHelper {
             String VTDNAME = properties.get(key2).toString().replaceAll("\\s", "");
             String key = VTD_S + " " + VTDNAME;
             map.put(key, precinctID);
-            Demographics d = new Demographics(precinctID, asian, caucasian, hispanic, african_american, native_american, other);
+            int district_id = precinctToDistrictID.get(precinctID);
+            Demographics d = new Demographics(precinctID, asian, caucasian, hispanic, african_american, native_american, other, district_id);
             demographicsSet.add(d);
         }
     }
