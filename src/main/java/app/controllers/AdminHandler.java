@@ -28,7 +28,7 @@ public class AdminHandler {
         model.addAttribute("numberOfUsers", numberOfUsers);
         model.addAttribute("listOfUsers", users);
 
-        return "../static/admin.html";
+        return "../static/templates/admin.html";
     }
 
     @RequestMapping(value="/adminCurEmail", method = RequestMethod.GET)

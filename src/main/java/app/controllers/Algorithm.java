@@ -19,7 +19,8 @@ public abstract class Algorithm{
     protected double functionValue;
     private HashMap<Metric, Double> weights;
     protected long systemStartTime;
-    protected boolean suspend;
+    private final int ONE = 1;
+    private final int ZERO = 0;
 
 
     public Algorithm(){
@@ -28,48 +29,21 @@ public abstract class Algorithm{
         weights = new HashMap<>();
     }
 
-
     public void start(){
         if( running ){
             stop();
         }
         systemStartTime = System.currentTimeMillis();
         algoThread = new Thread(()->{
-            functionValue = 0;
             running = true;
             run();
         });
         algoThread.start();
     }
 
-    public void pause(){
-        suspend = true;
-    }
-
-    public void unpause(){
-        suspend = false;
-    }
-
     public void stop(){
-        suspend = false;
         running = false;
         algoThread.interrupt();
-
-        try {
-            algoThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    protected void sleepIfSuspended(){
-        while(suspend){
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
     public void addToMoveStack(Move move){
@@ -99,9 +73,9 @@ public abstract class Algorithm{
     }
 
     public double calculateFunctionValue(){
-        double populationEqualityValue = 1 - computeAveragePercentError();
+        double populationEqualityValue = ONE - computeAveragePercentError();
         calculateVoteTotal();
-        double partisanFairnessValue = 1 - computePartisanFairness();
+        double partisanFairnessValue = ONE - computePartisanFairness();
         double compactnessValue = computeCompactness();
         return weights.get(Metric.POPULATION_EQUALITY) * populationEqualityValue +
                 weights.get(Metric.PARTISAN_FAIRNESS) * partisanFairnessValue + weights.get(Metric.COMPACTNESS) *
@@ -114,7 +88,7 @@ public abstract class Algorithm{
 
     public double computeAveragePercentError(){
         int idealPopulation = state.getIdealPopulation();
-        double percentError = 0;
+        double percentError = ZERO;
         for(app.state.District district : state.getAllDistricts()){
             percentError += Math.abs((double)(district.getPopulation() - idealPopulation)/idealPopulation);
         }
@@ -122,7 +96,7 @@ public abstract class Algorithm{
     }
 
     public double computeCompactness(){
-        double totalCompactness = 0;
+        double totalCompactness = ZERO;
         for(District district : state.getAllDistricts()){
             totalCompactness += district.computePolsby();
         }
@@ -130,9 +104,9 @@ public abstract class Algorithm{
     }
 
     public double computePartisanFairness(){
-        int totalVotes = 0;
-        int democraticWastedVotes = 0;
-        int republicanWastedVotes = 0;
+        int totalVotes = ZERO;
+        int democraticWastedVotes = ZERO;
+        int republicanWastedVotes = ZERO;
         for(District district : state.getAllDistricts()){
             totalVotes += district.getTotalVotes();
             HashMap<Parties, Integer> map = district.retrieveWastedVotes();

@@ -1,8 +1,6 @@
 package app.controllers;
 
 import app.algorithm.Move;
-import app.enums.Property;
-import app.json.PropertiesManager;
 import app.state.District;
 import app.state.Precinct;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +19,8 @@ public class Annealing extends Algorithm {
         Collection<Precinct> allPrecincts = state.getAllPrecincts();
         Collection<District> allDistricts = state.getAllDistricts();
         int stagnant_iterations = 0;
-        int max_stagnant = Integer.parseInt(PropertiesManager.get(Property.STAGNANT_ITERATION));
-        long programEndTime = systemStartTime + Integer.parseInt(PropertiesManager.get(Property.MAX_RUNTIME));
+        int max_stagnant = 20;
+        long programEndTime = systemStartTime + 300000;
         for(District district : allDistricts){
             district.calculateBoundaryPrecincts();
         }
