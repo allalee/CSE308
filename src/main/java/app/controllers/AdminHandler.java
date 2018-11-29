@@ -27,7 +27,6 @@ public class AdminHandler {
         numberOfUsers = users.size();
         model.addAttribute("numberOfUsers", numberOfUsers);
         model.addAttribute("listOfUsers", users);
-
         return "../static/admin.html";
     }
 
@@ -54,7 +53,6 @@ public class AdminHandler {
                 }
             }
         }
-
         if(!username.equals("") && !password.equals("")) {
             UsersModel usersModel = new UsersModel(currentUsername, currentPassword, currentEmail, "user");
             boolean persisted = hm.removeFromDB(usersModel);
@@ -78,7 +76,6 @@ public class AdminHandler {
         return "redirect:http://localhost:8080/admin";
     }
 
-
     @RequestMapping(value="/adminDelete", method = RequestMethod.POST)
     public String adminDelete(@RequestParam("email") String email, Model model) throws Throwable {
         HibernateManager hm = HibernateManager.getInstance();
@@ -86,7 +83,6 @@ public class AdminHandler {
         String password = "";
         List<Object> users = hm.getAllRecords(UsersModel.class);
         Iterator<Object> itr = users.iterator();
-
         while(itr.hasNext()) {
             UsersModel user = (UsersModel) itr.next();
             if (user.getEmail().equals(email)) {
@@ -94,14 +90,12 @@ public class AdminHandler {
                 password = user.getPassword();
             }
         }
-
         //only if the account exists we remove it.
         if(!username.equals("") && !password.equals("")) {
             UsersModel usersModel = new UsersModel(username, password, email, "user");
             boolean persisted = hm.removeFromDB(usersModel);
             System.out.println(persisted);
         }
-
         return "redirect:http://localhost:8080/admin";
     }
 }

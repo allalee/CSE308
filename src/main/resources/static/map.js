@@ -434,6 +434,7 @@ function dropdownStateSearch(){
     var selected_radio = document.getElementById('state_selector_options').querySelector('input[type=radio]:checked')
     var name = selected_radio.value
     var id = state_fps_hashmap[name];
+    currentStateID = id;
     currentStateName = name.toLowerCase();
     currentStateName = currentStateName.charAt(0).toUpperCase() + currentStateName.slice(1);
     targetState = findState(id);
