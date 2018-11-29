@@ -20,47 +20,52 @@ public class RegionGrow extends Algorithm {
 
     @Override
     void run() {
-
         Collection<Precinct> allPrecincts = state.getAllPrecincts();
         Collection<District> allDistricts = state.getAllDistricts();
-        District dummyDistrict = new District(-1, null, null);
-        for(Precinct pre: allPrecincts){
-            pre.setDistrict(dummyDistrict);
-        }
 
-        // main algo loop
-        ArrayDeque<Precinct> precinctsToGrow = generateSeeds(allDistricts, IterationType.Random);
-        Collection<Precinct> leftOvers = allPrecincts;
-        leftOvers.removeAll(precinctsToGrow);
+        ArrayList<District> regions = generateRegions(allDistricts);
+        //Make a call to the layer_manager to color all precincts the same color
+        //Generate seeds and place it into a region we created, color the map again
+        //Start the while loop with the condition until all precincts are done growing
 
-        while(!precinctsToGrow.isEmpty() && running){
-            // pop head
-            Precinct currentPrecinct = nextPrecinct(precinctsToGrow);
 
-            // remove already claimed neighbors
-            ArrayDeque<Precinct> availableNeighbors = new ArrayDeque<>();
-            for(Precinct pre: currentPrecinct.getNeighbors()){
-                if( pre.getDistrict() == dummyDistrict )
-                    availableNeighbors.add(pre);
-            }
-
-            //try claiming one or all (depend on algo) of the neighbors
-            for(Precinct neighbor: availableNeighbors){
-                Move move = new Move(neighbor.getDistrict(), currentPrecinct.getDistrict(), neighbor);
-                move.execute();
-                double newFunctionValue = calculateFunctionValue();
-                if ( isBetter(newFunctionValue, functionValue) ){
-                    functionValue = newFunctionValue;
-                    addToMoveStack(move);
-                    precinctsToGrow.addLast(neighbor);
-                    leftOvers.remove(neighbor);
-                    updateClient(move);
-                }
-                else {
-                    move.undo();
-                }
-            }
-        }
+//        District dummyDistrict = new District(-1, null, null);
+//        for(Precinct pre: allPrecincts){
+//            pre.setDistrict(dummyDistrict);
+//        }
+//
+//        //Initial set up
+//        ArrayDeque<Precinct> precinctsToGrow = generateSeeds(allDistricts, IterationType.Random);
+//        Collection<Precinct> leftOvers = allPrecincts;
+//        leftOvers.removeAll(precinctsToGrow);
+//
+//        while(!precinctsToGrow.isEmpty() && running){
+//            Precinct currentPrecinct = nextPrecinct(precinctsToGrow);
+//
+//            // remove already claimed neighbors
+//            ArrayDeque<Precinct> availableNeighbors = new ArrayDeque<>();
+//            for(Precinct pre: currentPrecinct.getNeighbors()){
+//                if( pre.getDistrict() == dummyDistrict )
+//                    availableNeighbors.add(pre);
+//            }
+//
+//            //try claiming one or all (depend on algo) of the neighbors
+//            for(Precinct neighbor: availableNeighbors){
+//                Move move = new Move(neighbor.getDistrict(), currentPrecinct.getDistrict(), neighbor);
+//                move.execute();
+//                double newFunctionValue = calculateFunctionValue();
+//                if ( isBetter(newFunctionValue, functionValue) ){
+//                    functionValue = newFunctionValue;
+//                    addToMoveStack(move);
+//                    precinctsToGrow.addLast(neighbor);
+//                    leftOvers.remove(neighbor);
+//                    updateClient(move);
+//                }
+//                else {
+//                    move.undo();
+//                }
+//            }
+//        }
 
         running = false;
         System.out.println("Algo done");
@@ -99,6 +104,14 @@ public class RegionGrow extends Algorithm {
         return availablePrecincts.pollFirst();
     }
 
+    private ArrayList<District> generateRegions(Collection<District> allDistricts){
+        ArrayList<District> regions = new ArrayList<>();
+        for(District d : allDistricts){
+            District newDistrict = new District(d.getID(), d.getState(), null);
+            regions.add(newDistrict);
+        }
+        return regions;
+    }
 
     private void updateClient(Move move){
         // make JSON
