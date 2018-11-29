@@ -48,14 +48,8 @@ public class LoginLogoutHandler {
             }
         }
 
-        return "../static/index.html";
+        return "../static/templates/index.html";
     }
-
-//    @RequestMapping(value = "/stateConst", method = RequestMethod.GET)
-//    public String stateConst(HttpServletRequest req, Model model) throws Throwable {
-//
-//        return "redirect:http://localhost:8080/";
-//    }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String login(@RequestParam("password") String password,

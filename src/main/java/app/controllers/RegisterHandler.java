@@ -32,7 +32,7 @@ public class RegisterHandler {
         System.out.println(persisted);
 
 
-        resp.sendRedirect("./login.html");
+        resp.sendRedirect("../static/templates/login.html");
     }
 
 }
