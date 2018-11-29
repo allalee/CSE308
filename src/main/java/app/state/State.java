@@ -45,6 +45,7 @@ public class State {
         clonedState.setPopulation(this.totalPopulation);
         for(District district: this.districtMap.values()){
             District clonedDistrict = district.clone(this);
+            clonedDistrict.setState(clonedState);
             clonedState.getDistrictMap().put(clonedDistrict.getID(), clonedDistrict);
         }
         return clonedState;

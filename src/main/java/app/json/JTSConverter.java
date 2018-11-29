@@ -38,7 +38,6 @@ public class JTSConverter {
     }
 
     public static void buildNeighbor(Collection<Precinct> precinctCollection){
-        // find neighbor
         for(Precinct p : precinctCollection) {
             for(Precinct p2 : precinctCollection) {
                 if (p != p2) {

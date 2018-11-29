@@ -102,9 +102,7 @@ public class RequestHandler {
             sm.cloneState(sm.getCurrentState().getName());
             handler.send("{\"console_log\":\"Building precinct neighbors...\"}");
             HashMap<Integer, District> districtMap = sm.getClonedState().getDistrictMap();
-            for(District d : districtMap.values()){
-                JTSConverter.buildNeighbor(d.getAllPrecincts());
-            }
+            JTSConverter.buildNeighbor(sm.getClonedState().getAllPrecincts());
             handler.send("{\"console_log\":\"Retrieving election data...\"}");
             sm.loadElectionData();
             handler.send("{\"console_log\":\"Setting up algorithm...\"}");
