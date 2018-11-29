@@ -34,6 +34,9 @@ function consoleLog(message_body){
         layer_manager.set_new_precinct_district(message_body["precinct"], message_body["dest"])
         layer_manager.color_precincts()
     }
+    if(message_body["enable_reset"]){
+        document.getElementById("reset").disabled = false;
+    }
 }
 
 state_fps_hashmap =
@@ -297,9 +300,6 @@ constInfo.onAdd = function (mymap) {
     };
     return this._button;
 };
-
-
-//use async
 function loadStateJson(state, currentState){
     var request = new XMLHttpRequest();
     var url = "http://localhost:8080/getState?stateName=" + state + "&stateID=" + currentState
@@ -314,9 +314,6 @@ function loadStateJson(state, currentState){
             addDistrictsLayer();
         }
     }
-//    success: function(){
-//        var loadedJson = request.response
-//    }
     request.send(null);
 }
 
@@ -445,17 +442,6 @@ function dropdownStateSearch(){
 
 }
 populateStateSelect();
-
-// when manual mode toggled
-//  enable pane, init empty, move/lock disabled
-//  precinctlayer's onClick = populateDistrcitSelect, <
-//                              move/lock enable,
-//                              reset mm.selected_district, <
-//                              mm.selected_precinct = e
-//                              mm.selected_precinct
-//  precinctlayer's oneneter = same
-//  precinctlayer's onexit = same + if e == mm.selected_precinct { setStyle("{fillColor: "+mm.selected_color+"}") }
-
 
 makeFadeOutWriter = function(){
     fow = {}
