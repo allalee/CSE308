@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
-    <STAGNANT_ITERATION value="10"></STAGNANT_ITERATION>
+    <STAGNANT_ITERATION value="20"></STAGNANT_ITERATION>
     <MAX_RUNTIME value="300000"></MAX_RUNTIME>
 
 
