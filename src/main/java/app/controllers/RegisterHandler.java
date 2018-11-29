@@ -25,11 +25,14 @@ public class RegisterHandler {
     void registration(@RequestParam("username") String username,
                       @RequestParam("password") String password,
                       @RequestParam("email") String email, HttpServletResponse resp) throws Throwable {
+
         HibernateManager hm = HibernateManager.getInstance();
         UsersModel usersModel = new UsersModel(username, password, email, "user");
         boolean persisted = hm.persistToDB(usersModel);
         System.out.println(persisted);
-        resp.sendRedirect("./login.html");
+
+
+        resp.sendRedirect("../static/templates/login.html");
     }
 
 }
