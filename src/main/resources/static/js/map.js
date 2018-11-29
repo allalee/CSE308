@@ -76,7 +76,7 @@ state_fps_hashmap =
 	'MISSOURI':	29,	'WEST VIRGINIA': 54,
  	'WYOMING': 56
 };
-//Only allow to search on state layer
+
 function stateSearch() {
   if(mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
     return;
@@ -86,14 +86,11 @@ function stateSearch() {
   if(id = state_fps_hashmap[stateNameUpper]) {
     currentStateID= id;
     currentStateName = stateNameUpper.toLowerCase();
-    currentStateName = currentStateName.charAt(0).toUpperCase() + currentStateName.slice(1); //Make first letter uppercase
+    currentStateName = currentStateName.charAt(0).toUpperCase() + currentStateName.slice(1);
     targetState = findState(currentStateID);
     mymap.fitBounds(targetState.getBounds());
-    //Retrieve districts data from server and set
     stateJson.remove();
     loadStateJson(currentStateName, currentStateID);
-
-    //addDistrictsLayer();
   }
 }
 

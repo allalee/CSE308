@@ -11,10 +11,9 @@ function makeConnector(){
     con.stomp = null;
     con.message_queue = [];
     con.is_reading = false;
-    con.reading_interval = 200; //Time is in milliseconds
+    con.reading_interval = 200;
     con.message_pointer = 0;
 
-    // connect
     con.connect = function(){
         con.socket = new SockJS(con.server)
         stomp = Stomp.over(con.socket)
