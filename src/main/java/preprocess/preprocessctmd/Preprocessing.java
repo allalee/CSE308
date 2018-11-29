@@ -61,6 +61,8 @@ public class Preprocessing {
         HashMap<String, String> marylandVotingMap = generateMarylandVoteHashMap(precinctFiles, marylandPrecincts);
         ArrayList<VotingData> marylandVotingData = PreprocessHelper2.generateMarylandVotingData(votingDataFiles, marylandPrecinctMap, marylandVotingMap);
 //        persistVoting(marylandVotingData);
+//POPULATION DATA
+
     }
 
 

@@ -269,7 +269,7 @@ info.update = function (props, asian, caucasian, hispanic, african, native, othe
         '<b>Demographics </b><br>'
         +'Asian/Pacific Islander: ' + asian + '<br>'
         + 'Caucasian: ' + caucasian + '<br>'
-        + 'Hispanic: ' + hispanic + '<br>'
+        + 'Hispanic (of Any Race): ' + hispanic + '<br>'
         + 'African-American: ' + african + '<br>'
         + 'Native American: ' + native + '<br>'
         + 'Other: ' + other + '<br>'
