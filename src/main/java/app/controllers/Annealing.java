@@ -19,7 +19,7 @@ public class Annealing extends Algorithm {
         Collection<Precinct> allPrecincts = state.getAllPrecincts();
         Collection<District> allDistricts = state.getAllDistricts();
         int stagnant_iterations = 0;
-        int max_stagnant = 10;
+        int max_stagnant = 20;
         long programEndTime = systemStartTime + 300000;
         for(District district : allDistricts){
             district.calculateBoundaryPrecincts();
