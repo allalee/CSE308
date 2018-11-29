@@ -30,6 +30,10 @@ function consoleLog(message_body){
     console.appendChild(document.createElement("br"))
     console.append(message_body["console_log"])
     console.scrollTop = console.scrollHeight
+    if(message_body["src"] && message_body["dest"] && message_body["precinct"]){
+        layer_manager.set_new_precinct_district(message_body["precinct"], message_body["dest"])
+        layer_manager.color_precincts()
+    }
 }
 
 state_fps_hashmap =

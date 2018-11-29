@@ -71,7 +71,13 @@ public abstract class Algorithm{
     }
 
     public double calculateFunctionValue(){
-        return 1;
+        double populationEqualityValue = 1 - computeAveragePercentError();
+        calculateVoteTotal();
+        double partisanFairnessValue = 1 - computePartisanFairness();
+        double compactnessValue = computeCompactness();
+        return weights.get(Metric.POPULATION_EQUALITY) * populationEqualityValue +
+                weights.get(Metric.PARTISAN_FAIRNESS) * partisanFairnessValue + weights.get(Metric.COMPACTNESS) *
+                compactnessValue;
     }
 
     public void setInitialObjFunctionValue(double value){
