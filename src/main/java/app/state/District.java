@@ -34,10 +34,11 @@ public class District{
         return borderPrecincts;
     }
 
-    public void recalculateBoundaryPrecincts(){
+    public void calculateBoundaryPrecincts(){
         for(Precinct p: precinctMap.values()){
             for(Precinct neighbor: p.getNeighbors()){
                 if(neighbor.getDistrict().getID() != this.getID()){
+                    System.out.println("Passes the test");
                     this.borderPrecincts.add(p);
                 }
             }
@@ -150,5 +151,9 @@ public class District{
 
     public int getRepublicanVotes(){
         return this.republicanVotes;
+    }
+
+    public Set<Precinct> getBorderPrecincts(){
+        return this.borderPrecincts;
     }
 }

@@ -80,7 +80,7 @@ public class RequestHandler {
             // move
             Move move = new Move(currentState.getDistrict(src), currentState.getDistrict(dest), p);
             move.execute();
-            double functionValue = solver.calculateFunctionValue();
+            double functionValue = 0;
 
             // undo if it is not a locking move
             if(!lock)

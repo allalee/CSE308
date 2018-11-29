@@ -13,7 +13,6 @@ public class Move {
     private int precinctID;
     private int srcDistrict;
     private int destDistrict;
-    private int objectiveValue;
 
     private District src;
     private District dest;
