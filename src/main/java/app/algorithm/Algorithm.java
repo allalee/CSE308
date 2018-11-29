@@ -13,12 +13,14 @@ public abstract class Algorithm {
     private ArrayDeque<Move> listOfMoves;
     private Thread algoThread;
     protected double functionValue;
+    protected boolean suspend;
 
     private HashMap<Metric, Double> weights;
 
 
     public Algorithm(){
         running = false;
+        suspend = false;
         listOfMoves = new ArrayDeque<>();
         functionValue = 0;
         weights = new HashMap<>();
@@ -36,9 +38,34 @@ public abstract class Algorithm {
         algoThread.start();
     }
 
+    public void pause(){
+        suspend = true;
+    }
+
+    public void unpause(){
+        suspend = false;
+    }
+
     public void stop(){
+        suspend = false;
         running = false;
         algoThread.interrupt();
+
+        try {
+            algoThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected void sleepIfSuspended(){
+        while(suspend){
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void addToMoveStack(Move move){

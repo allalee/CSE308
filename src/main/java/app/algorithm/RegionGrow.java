@@ -34,6 +34,8 @@ public class RegionGrow extends Algorithm {
         leftOvers.removeAll(precinctsToGrow);
 
         while(!precinctsToGrow.isEmpty() && running){
+            super.sleepIfSuspended();
+
             // pop head
             Precinct currentPrecinct = nextPrecinct(precinctsToGrow);
 

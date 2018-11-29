@@ -31,4 +31,16 @@ public class Solver {
         return 1;
         //return currentAlgorithm.calculateFunctionValue();
     }
+
+    public void pause(){
+        currentAlgorithm.pause();
+    }
+
+    public void unpause(){
+        currentAlgorithm.unpause();
+    }
+
+    public void stop(){
+        currentAlgorithm.stop();
+    }
 }
