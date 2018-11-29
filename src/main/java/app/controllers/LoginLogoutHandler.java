@@ -84,7 +84,7 @@ public class LoginLogoutHandler {
         else{
             //redirect to login page stating invalid login
             model.addAttribute("invalid","");
-            return "redirect:http://localhost:8080/";
+            return "../static/login.html";
         }
 
     }
