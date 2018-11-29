@@ -48,4 +48,16 @@ public class Solver {
         System.out.println(objectiveFunctionValue);
         currentAlgorithm.setInitialObjFunctionValue(objectiveFunctionValue);
     }
+
+    public void pause(){
+        currentAlgorithm.pause();
+    }
+
+    public void unpause(){
+        currentAlgorithm.unpause();
+    }
+
+    public void stop(){
+        currentAlgorithm.stop();
+    }
 }

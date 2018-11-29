@@ -121,4 +121,30 @@ public class RequestHandler {
             return "Algo started";
         }
 
+        @RequestMapping(value = "/pauseAlgorithm", method = RequestMethod.GET)
+        public @ResponseBody
+        String pauseAlgorithm() {
+            if(solver!=null)
+                solver.pause();
+
+            return "";
+        }
+
+        @RequestMapping(value = "/unpauseAlgorithm", method = RequestMethod.GET)
+        public @ResponseBody
+        String unpauseAlgorithm() {
+            if(solver!=null)
+                solver.unpause();
+
+            return "";
+        }
+
+        @RequestMapping(value = "/stopAlgoritm", method = RequestMethod.GET)
+        public @ResponseBody
+        String stopAlgorithm(){
+            if(solver!=null)
+                solver.stop();
+
+            return "";
+        }
 }

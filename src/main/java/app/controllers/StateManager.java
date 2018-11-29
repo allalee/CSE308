@@ -6,9 +6,11 @@ import app.election.ElectionData;
 import app.election.Representative;
 import app.enums.Ethnicity;
 import app.enums.Parties;
+import app.enums.Property;
 import app.json.GeoJsonReader;
 import app.json.JTSConverter;
 import app.json.JsonBuilder;
+import app.json.PropertiesManager;
 import app.state.District;
 import app.state.Precinct;
 import app.state.State;
@@ -61,7 +63,7 @@ public class StateManager {
     private State getState(String stateName) throws Throwable {
         List<Object> l;
         Map<String, Object> criteria = new HashMap<>();
-        criteria.put("name", stateName);
+        criteria.put(PropertiesManager.get(Property.GETSTATE_NAME), stateName);
         l = hb.getRecordsBasedOnCriteria(gerrymandering.model.State.class, criteria);
         gerrymandering.model.State s = (gerrymandering.model.State) l.iterator().next();
         State state = new State(s.getName(), s.getStateId());
@@ -72,7 +74,7 @@ public class StateManager {
         int stateID = state.getID();
         List<Object> l;
         Map<String, Object> criteria = new HashMap<>();
-        criteria.put("stateId", stateID);
+        criteria.put(PropertiesManager.get(Property.GETDISTRICT_STATEID), stateID);
         l = hb.getRecordsBasedOnCriteria(gerrymandering.model.District.class, criteria);
         GeoJsonReader reader = new GeoJsonReader();
         for(Object o : l){
@@ -89,7 +91,7 @@ public class StateManager {
         for(Integer key : map.keySet()){
             District d = map.get(key);
             criteria = new HashMap<>();
-            criteria.put("districtId", d.getID());
+            criteria.put(PropertiesManager.get(Property.GETPRECINCT_DISTRICTID), d.getID());
             l = hb.getRecordsBasedOnCriteria(Precincts.class, criteria);
             for(Object o : l){
                 Precincts p = (Precincts) o;
@@ -132,7 +134,7 @@ public class StateManager {
         for(Integer districtID : clonedState.getDistrictMap().keySet()){
             Map<String, Object> criteria = new HashMap<>();
             List<Object> l;
-            criteria.put("district_id", districtID);
+            criteria.put(PropertiesManager.get(Property.LOADELECTIONDATA_DISTRICTID), districtID);
             l = hb.getRecordsBasedOnCriteria(VotingData.class, criteria);
             for(Object o : l){
                 VotingData vd = (VotingData)o;
@@ -160,7 +162,7 @@ public class StateManager {
         if(precinct.getDemographics().isEmpty()){
             Map<String, Object> criteria = new HashMap<>();
             List<Object> l;
-            criteria.put("precinctID", precinct.getID());
+            criteria.put(PropertiesManager.get(Property.GETDEMOGRAPHICS_PRECINCTID), precinct.getID());
             l = hb.getRecordsBasedOnCriteria(Demographics.class, criteria);
             if(l.size() != 0) {
                 Demographics d = (Demographics) l.get(0);
@@ -181,7 +183,7 @@ public class StateManager {
             ElectionData ed = precinct.getElectionData();
             Map<String, Object> criteria = new HashMap<>();
             List<Object> l;
-            criteria.put("precinct_id", precinct.getID());
+            criteria.put(PropertiesManager.get(Property.GETELECTIONDATA_PRECINCTID), precinct.getID());
             l = hb.getRecordsBasedOnCriteria(VotingData.class, criteria);
             Iterator itr = l.iterator();
             while(itr.hasNext()){
@@ -245,7 +247,7 @@ public class StateManager {
     public String getStateConstitution(String stateName) throws Throwable {
         Map<String, Object> criteria = new HashMap<>();
         List<Object> l;
-        criteria.put("name", stateName);
+        criteria.put(PropertiesManager.get(Property.GETSTATECONSTITUTION_NAME), stateName);
         l = hb.getRecordsBasedOnCriteria(gerrymandering.model.State.class, criteria);
         gerrymandering.model.State state = (gerrymandering.model.State) l.get(0);
         return state.getConstitutionText();

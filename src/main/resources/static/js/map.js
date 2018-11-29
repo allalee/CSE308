@@ -397,6 +397,33 @@ function startAlgorithm(){
     }
 }
 
+function togglePauseAlgorithm(pause){
+
+    if(pause){
+        connector.stop_reading()    // stop updating
+        var url = 'http://localhost:8080/pauseAlgorithm'    // send to pause
+    }
+    else{
+        connector.start_reading()    // start updating
+        var url = 'http://localhost:8080/unpauseAlgorithm'    // send to unpause
+    }
+    var request = new XMLHttpRequest()
+    request.open("GET", url, true)
+    request.send(null)
+}
+
+function stopAlgorithm(){
+    // terminate updating, clear messages
+    connector.stop_reading()
+    connector.clear_message()
+
+    // send
+    var url = 'http://localhost:8080/stopAlgorithm'
+    var request = new XMLHttpRequest()
+    request.open("GET", url, true)
+    request.send(null)
+}
+
 info.addTo(mymap);
 constInfo.addTo(mymap);
 
