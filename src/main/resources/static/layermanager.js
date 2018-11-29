@@ -82,6 +82,11 @@ var layer_manager = (function(){
         return layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME]
     }
 
+    manager.set_new_precinct_district = function(precinct, district){
+        layer = manager.precinct_map[precinct]
+        layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME] = district
+    }
+
     return manager
 })();
 

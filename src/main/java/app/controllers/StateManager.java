@@ -118,10 +118,13 @@ public class StateManager {
 
     public String loadPrecinctData(Integer districtID, Integer precinctID) throws Throwable {
         Precinct precinct = currentState.getDistrictMap().get(districtID).getPrecinct(precinctID);
-        getDemographics(precinct);
-        getElectionData(precinct);
-        JsonBuilder builder = new JsonBuilder();
-        return builder.buildPrecinctDataJson(precinct);
+        if(precinct != null){
+            getDemographics(precinct);
+            getElectionData(precinct);
+            JsonBuilder builder = new JsonBuilder();
+            return builder.buildPrecinctDataJson(precinct);
+        }
+        return "{}";
     }
 
     //METHOD IS PURELY FOR CLONED STATES ONLY AS THIS IS FOR THE ALGORITHM TO RUN
