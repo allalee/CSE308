@@ -33,47 +33,17 @@ public class Annealing extends Algorithm {
                 precinctToMove = getPrecinctToMove(allDistricts);
             } while (previouslyMovedPrecinct == precinctToMove);
             District destDistrict = selectDestinationDistrict(precinctToMove);
-            Move currentMove = new Move(precinctToMove.getDistrict(), destDistrict, precinctToMove);
-
-            //Check to see if the move is good or not
-            //If good then execute the move and update the state's data and send json back to client for updates, if bad then check threshold and revert change
-            //Reconfigure the bordering precincts of a district based on the precinct that was moved
-            //Recalculate objective function
-            //Check if stagnant
-
-//            for(District dis: allDistricts){    // loop thru districts and anneal neighbor districts
-//                //get other district precinct AND move to this district
-//                //get boundary
-//                //get boundary's neighbors that has diff district
-//                Collection<Precinct> boundaries = dis.getBoundaries();
-//                Set<Precinct> annealTarget = new HashSet<>();
-//                // get all foreign precincts touching the border
-//                for(Precinct pre: boundaries){
-//                    for(Precinct neighor: pre.getNeighbors()){
-//                        if( neighor.getDistrict() != pre.getDistrict() ){
-//                            annealTarget.add(neighor);
-//                        }
-//                    }
-//                }
-//                // anneal the foreign precincts
-//                for(Precinct foreign: annealTarget){
-//                    Move move = new Move(foreign.getDistrict(), dis, foreign);
-//                    move.execute();
-//                    double newFunctionValue = calculateFunctionValue();
-//                    // if good, save the data
-//                    if ( isBetter(newFunctionValue, functionValue) ){
-//                        functionValue = newFunctionValue;
-//                        addToMoveStack(move);
-//                        updateClient(move);
-//                    }
-//                    else {  // if bad, undo the move
-//                        move.undo();
-//                    }
-//                }
-//            }
-//
-            double endFunctionValue = functionValue;
-            if(isStagnant(startFunctionValue,endFunctionValue)){
+            District srcDistrict = precinctToMove.getDistrict();
+            Move currentMove = new Move(srcDistrict, destDistrict, precinctToMove);
+            functionValue = calculateFunctionValue();
+            if(checkThreshold(startFunctionValue, functionValue)){
+                reconfigureBoundaries(precinctToMove, srcDistrict);
+                updateClient(currentMove);
+                System.out.println(functionValue);
+            } else {
+                currentMove.undo();
+            }
+            if(isStagnant(startFunctionValue, functionValue)){
                 stagnant_iterations++;
             } else{
                 stagnant_iterations = 0;
@@ -84,12 +54,20 @@ public class Annealing extends Algorithm {
     }
 
     private boolean isStagnant(double oldValue, double newValue){
-        double threshold = 0.01;
+        double threshold = 0.00000001;
         return (Math.abs(oldValue - newValue) < threshold);
     }
 
+    private boolean checkThreshold(double oldValue, double newValue){
+        double threshold = 0.005;
+        if(newValue > oldValue){
+            return true;
+        } else {
+            return (Math.abs(oldValue-newValue) < threshold);
+        }
+    }
+
     private void updateClient(Move move){
-        System.out.println("SEND");
         handler.send(move.toString());
     }
 
@@ -97,7 +75,6 @@ public class Annealing extends Algorithm {
         Random random = new Random();
         int index = random.nextInt(dCollection.size());
         District selectedDistrict = (District)dCollection.toArray()[index];
-        System.out.println(selectedDistrict.getBorderPrecincts().size()); //There are no bordering percincts. Error
         int precinctIndex = random.nextInt(selectedDistrict.getBorderPrecincts().size());
         return (Precinct)selectedDistrict.getBorderPrecincts().toArray()[precinctIndex];
     }
@@ -114,6 +91,25 @@ public class Annealing extends Algorithm {
         Random random = new Random();
         int index = random.nextInt(possiblePrecincts.size());
         return possiblePrecincts.get(index).getDistrict();
+    }
+
+    private void reconfigureBoundaries(Precinct precinct, District oldDistrict){
+        //Remove the precinct from the boundary set of old district
+        oldDistrict.getBorderPrecincts().remove(precinct);
+        //Add the precinct to the boundary set of new district
+        precinct.getDistrict().getBorderPrecincts().add(precinct);
+        //Check the neighbors of the moved precinct to see if they are a boundary
+        Set<Precinct> pNeighbors = precinct.getNeighbors();
+        for(Precinct neighbor : pNeighbors){
+            for(Precinct neighborsNeighbor : neighbor.getNeighbors()){
+                if(neighbor.getDistrict().getID() != neighborsNeighbor.getDistrict().getID()){ //If the neighbor is now a boundary precinct, add it to the set in district
+                    neighbor.getDistrict().getBorderPrecincts().add(neighbor);
+                    break;
+                } else {
+                    neighbor.getDistrict().getBorderPrecincts().remove(neighbor); //If the neighbor is not a boundary precinct, remove it from the set in the district
+                }
+            }
+        }
     }
 
 }
