@@ -30,6 +30,10 @@ function consoleLog(message_body){
     console.appendChild(document.createElement("br"))
     console.append(message_body["console_log"])
     console.scrollTop = console.scrollHeight
+    if(message_body["src"] && message_body["dest"] && message_body["precinct"]){
+        layer_manager.set_new_precinct_district(message_body["precinct"], message_body["dest"])
+        layer_manager.color_precincts()
+    }
 }
 
 state_fps_hashmap =
@@ -78,14 +82,15 @@ function stateSearch() {
   stateNameUpper = stateName.toUpperCase();
   if(id = state_fps_hashmap[stateNameUpper]) {
     currentStateID= id;
-    currentStateName = stateNameUpper.value.toLowerCase();
-    currentStateName = currentStateName.charAt(0).toUpperCase(); //Make first letter uppercase
+    currentStateName = stateNameUpper.toLowerCase();
+    currentStateName = currentStateName.charAt(0).toUpperCase() + currentStateName.slice(1); //Make first letter uppercase
     targetState = findState(currentStateID);
     mymap.fitBounds(targetState.getBounds());
     //Retrieve districts data from server and set
-    loadStateJson(currentStateName, currentStateID);
     stateJson.remove();
-    addDistrictsLayer();
+    loadStateJson(currentStateName, currentStateID);
+
+    //addDistrictsLayer();
   }
 }
 
@@ -231,8 +236,13 @@ function resetMap(){
   }
     currentStateID = null;
     currentConstText = null;
-  addStateLayer();
-  mymap.setView([37.0902, -95.7129], 4);
+  if(mymap.hasLayer(stateJson)) {
+    return;
+  } else {
+    addStateLayer();
+    mymap.setView([37.0902, -95.7129], 4);
+  }
+
 
   //disable manual redistrict
   enableManualMoveOption(false)
@@ -258,15 +268,15 @@ info.onAdd = function (mymap) {
     return this._div;
 };
 // method that we will use to update the control based on feature properties passed
-info.update = function (props, demo, repub) {
+info.update = function (props, asian, caucasian, hispanic, african, native, other, demo, repub) {
     this._div.innerHTML = '<h4>Precinct Information</h4>' +  (props ?
         '<b>Demographics </b><br>'
-        +'Asian/Pacific Islander: ' + props['demographics']['ASIAN'] + '<br>'
-        + 'Caucasian: ' + props['demographics']['CAUCASIAN'] + '<br>'
-        + 'Hispanic: ' + props['demographics']['HISPANIC'] + '<br>'
-        + 'African-American: ' + props['demographics']['AFRICAN_AMERICAN'] + '<br>'
-        + 'Native American: ' + props['demographics']['NATIVE_AMERICAN'] + '<br>'
-        + 'Other: ' + props['demographics']['OTHER'] + '<br>'
+        +'Asian/Pacific Islander: ' + asian + '<br>'
+        + 'Caucasian: ' + caucasian + '<br>'
+        + 'Hispanic (of Any Race): ' + hispanic + '<br>'
+        + 'African-American: ' + african + '<br>'
+        + 'Native American: ' + native + '<br>'
+        + 'Other: ' + other + '<br>'
         + '<br><b>Election</b><br>'
         + 'Democrat: ' + demo + '<br>'
         + 'Republican: ' + repub + '<br>'
@@ -327,7 +337,23 @@ function loadPrecinctProperties(layer){
                 var democratic = "N/A"
                 var republican = "N/A"
             }
-            info.update(obj, democratic, republican)
+            if(obj['demographics']){
+                var asian = obj['demographics']['ASIAN']
+                var caucasian = obj['demographics']['CAUCASIAN']
+                var hispanic = obj['demographics']['HISPANIC']
+                var african = obj['demographics']['AFRICAN_AMERICAN']
+                var native = obj['demographics']['NATIVE_AMERICAN']
+                var other = obj['demographics']['OTHER']
+            }
+            else{
+                var asian = "N/A"
+                var caucasian = "N/A"
+                var hispanic = "N/A"
+                var african = "N/A"
+                var native = "N/A"
+                var other = "N/A"
+            }
+            info.update(obj, asian, caucasian, hispanic, african, native, other, democratic, republican)
             if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
                layer.bringToFront();
             }
@@ -356,6 +382,8 @@ function startAlgorithm(){
         document.getElementById("console").appendChild(document.createElement("br"))
         document.getElementById("console").append("No state selected for algorithm to run")
     } else {
+        enableManualMoveOption(false); //MAKE SURE TO ENABLE THIS button
+        document.getElementById("reset").disabled = true;
         var console = document.getElementById("console")
         console.appendChild(document.createElement("br"))
         console.append("Retrieving slider data for the server...")
@@ -367,6 +395,7 @@ function startAlgorithm(){
         var url = "http://localhost:8080/startAlgorithm?algorithmType=" + algorithm_type + "&popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
         var request = new XMLHttpRequest()
         request.open("GET", url, true)
+
         request.send(null)
     }
 }
@@ -430,17 +459,16 @@ function dropdownStateSearch(){
     }
 
     var selected_radio = document.getElementById('state_selector_options').querySelector('input[type=radio]:checked')
-    var id = selected_radio.id
     var name = selected_radio.value
-
+    var id = state_fps_hashmap[name];
     currentStateName = name.toLowerCase();
-    currentStateName = currentStateName.charAt(0).toUpperCase(); //Make first letter uppercase
+    currentStateName = currentStateName.charAt(0).toUpperCase() + currentStateName.slice(1);
     targetState = findState(id);
     mymap.fitBounds(targetState.getBounds());
     //Retrieve districts data from server and set
-    loadStateJson(currentStateName, id);
     stateJson.remove();
-    addDistrictsLayer();
+    loadStateJson(currentStateName, id);
+
 
 }
 populateStateSelect();

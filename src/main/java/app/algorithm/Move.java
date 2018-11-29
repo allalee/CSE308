@@ -6,6 +6,8 @@ import app.state.Precinct;
 import app.enums.Parties;
 import com.vividsolutions.jts.geom.Geometry;
 
+import java.util.HashMap;
+
 /**
  * Created by Yixiu Liu on 11/11/2018.
  */
@@ -13,7 +15,6 @@ public class Move {
     private int precinctID;
     private int srcDistrict;
     private int destDistrict;
-    private int objectiveValue;
 
     private District src;
     private District dest;
@@ -38,15 +39,18 @@ public class Move {
 
         int precinctPopulation = precinct.getPopulation();
         dest.addPopulation(precinctPopulation);
-        src.removePopulation(precinctPopulation);
+        src.addPopulation(-(precinctPopulation));
 
         ElectionData precinctVotes = precinct.getElectionData();
-        int demVotes = precinctVotes.getNumVotesForDem();
-        int repVotes = precinctVotes.getNumVotesForRep();
-        dest.addVotes(Parties.DEMOCRATIC, demVotes);
-        dest.addVotes(Parties.REPUBLICAN, repVotes);
-        src.removeVotes(Parties.DEMOCRATIC, demVotes);
-        src.removeVotes(Parties.REPUBLICAN, repVotes);
+        HashMap<Parties, Integer> voterDistribution = precinctVotes.getVoterDistribution();
+        if(voterDistribution.containsKey(Parties.DEMOCRATIC)){
+            dest.addVotes(Parties.DEMOCRATIC, voterDistribution.get(Parties.DEMOCRATIC));
+            src.addVotes(Parties.DEMOCRATIC, -(voterDistribution.get(Parties.DEMOCRATIC)));
+        }
+        if(voterDistribution.containsKey(Parties.REPUBLICAN)){
+            dest.addVotes(Parties.REPUBLICAN, voterDistribution.get(Parties.REPUBLICAN));
+            src.addVotes(Parties.REPUBLICAN, -(voterDistribution.get(Parties.REPUBLICAN)));
+        }
 
     }
 
@@ -61,24 +65,28 @@ public class Move {
 
         int precinctPopulation = precinct.getPopulation();
         src.addPopulation(precinctPopulation);
-        dest.removePopulation(precinctPopulation);
+        dest.addPopulation(-(precinctPopulation));
 
         ElectionData precinctVotes = precinct.getElectionData();
-        int demVotes = precinctVotes.getNumVotesForDem();
-        int repVotes = precinctVotes.getNumVotesForRep();
-        src.addVotes(Parties.DEMOCRATIC, demVotes);
-        src.addVotes(Parties.REPUBLICAN, repVotes);
-        dest.removeVotes(Parties.DEMOCRATIC, demVotes);
-        dest.removeVotes(Parties.REPUBLICAN, repVotes);
+        HashMap<Parties, Integer> voterDistribution = precinctVotes.getVoterDistribution();
+        if(voterDistribution.containsKey(Parties.DEMOCRATIC)){
+            dest.addVotes(Parties.DEMOCRATIC, -voterDistribution.get(Parties.DEMOCRATIC));
+            src.addVotes(Parties.DEMOCRATIC, (voterDistribution.get(Parties.DEMOCRATIC)));
+        }
+        if(voterDistribution.containsKey(Parties.REPUBLICAN)){
+            dest.addVotes(Parties.REPUBLICAN, -voterDistribution.get(Parties.REPUBLICAN));
+            src.addVotes(Parties.REPUBLICAN, (voterDistribution.get(Parties.REPUBLICAN)));
+        }
 
     }
 
     public String toString(){
-        String json = "{";
-        json += "\"src\":\""+getSrcDistrict();
+        String json = "{\"console_log\": \"Precinct with ID: " + getPrecinctID() + ", moved to district with ID: " + getDestDistrict() + "\"";
+        json += ",\"src\":\""+getSrcDistrict();
         json += "\",\"dest\":\""+getDestDistrict();
         json += "\",\"precinct\":\""+getPrecinctID();
         json += "\"}";
+        System.out.println(json);
         return json;
     }
 

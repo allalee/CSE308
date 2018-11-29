@@ -36,7 +36,6 @@ public class Precinct{
 
     public Precinct clone(District dist){
         Precinct clonedPrecinct = new Precinct(this.ID, this.geometry);
-        clonedPrecinct.setDistrict(dist);
         clonedPrecinct.setPopulation(this.population);
         return clonedPrecinct;
     }
@@ -105,6 +104,5 @@ public class Precinct{
     public ElectionData getElectionData() {
         return electionData;
     }
-
 
 }

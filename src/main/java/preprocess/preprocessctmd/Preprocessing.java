@@ -2,11 +2,21 @@ package preprocess.preprocessctmd;
 
 import gerrymandering.HibernateManager;
 import gerrymandering.model.District;
+import gerrymandering.model.Population;
 import gerrymandering.model.State;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import preprocess.dbclasses.Demographics;
+import preprocess.dbclasses.Populations;
 import preprocess.dbclasses.Precincts;
 import preprocess.dbclasses.VotingData;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -19,16 +29,21 @@ public class Preprocessing {
         String[] districtFileNames = new String[2];
         String[] precinctFileNames = new String[2];
         String[] votingDataFileNames = new String[2];
+        String[] demographicDataFileNames = new String[1];
+
         districtFileNames[0] = "D:/CSE308/src/main/resources/static/geojson/connecticut_districts.json";
         districtFileNames[1] = "D:/CSE308/src/main/resources/static/geojson/maryland_districts.json";
         precinctFileNames[0] = "D:/CSE308/src/main/resources/static/geojson/precinct_data/connecticut_precincts.json";
         precinctFileNames[1] = "D:/CSE308/src/main/resources/static/geojson/precinct_data/maryland_precincts_2012.json";
         votingDataFileNames[0] = "D:/CSE308/voting_data/connvoting.json";
         votingDataFileNames[1] = "D:/CSE308/voting_data/marylandvoting.json";
+        demographicDataFileNames[0] = "D:/CSE308/voting_data/population/marylanddemographics.json";
+
 
         ArrayList<File> districtFiles = PreprocessHelper2.loadFiles(districtFileNames);
         ArrayList<File> precinctFiles = PreprocessHelper2.loadFiles(precinctFileNames);
         ArrayList<File> votingDataFiles = PreprocessHelper2.loadFiles(votingDataFileNames);
+        ArrayList<File> demographicDataFiles = PreprocessHelper2.loadFiles(demographicDataFileNames);
 
 //STATES
         Set<State> states = PreprocessHelper2.generateStates();
@@ -49,24 +64,23 @@ public class Preprocessing {
 //VOTING DATA
         HashMap<Integer, Integer> connPrecinctMap = generatePrecinctHashMap(connPrecincts);
         ArrayList<VotingData> connVotingData = PreprocessHelper2.generateConnVotingData(votingDataFiles, connPrecinctMap);
+//        persistVoting(connVotingData);
         HashMap<Integer, Integer> marylandPrecinctMap = generatePrecinctHashMap(marylandPrecincts);
-        ArrayList<VotingData> marylandVotingData = PreprocessHelper2.generateMarylandVotingData(votingDataFiles, marylandPrecinctMap);
+        HashMap<String, String> marylandVotingMap = generateMarylandVoteHashMap(precinctFiles, marylandPrecincts);
+        ArrayList<VotingData> marylandVotingData = PreprocessHelper2.generateMarylandVotingData(votingDataFiles, marylandPrecinctMap, marylandVotingMap);
+//        persistVoting(marylandVotingData);
+//DEMOGRAPHICS
+        ArrayList<Demographics> marylandDemographicdata = PreprocessHelper2.generateMarylandDemographicData(demographicDataFiles, marylandPrecinctMap);
+//        persistDemographics(marylandDemographicdata);
+
+
+
+//POPULATION DATA
+        ArrayList<Populations> marylandPopulationData = PreprocessHelper2.generateMarylandPopulationData(demographicDataFiles, marylandPrecinctMap);
+//        persistPopulations(marylandPopulationData);
+
+
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     private static void persistStates(Set<State> states) throws Throwable {
@@ -81,8 +95,26 @@ public class Preprocessing {
         }
     }
 
-    private static void persistPrecincts(Set<Precincts> precincts) throws Throwable {
+    private static void persistPrecincts(ArrayList<Precincts> precincts) throws Throwable {
         for (Precincts p : precincts){
+            hb.persistToDB(p);
+        }
+    }
+
+    private static void persistVoting(ArrayList<VotingData> votingData) throws Throwable {
+        for (VotingData v : votingData){
+            hb.persistToDB(v);
+        }
+    }
+
+    private static void persistDemographics(ArrayList<Demographics> demographicsData) throws Throwable {
+        for (Demographics d : demographicsData){
+            hb.persistToDB(d);
+        }
+    }
+
+    private static void persistPopulations(ArrayList<Populations> populationsData) throws Throwable {
+        for (Populations p : populationsData){
             hb.persistToDB(p);
         }
     }
@@ -121,6 +153,26 @@ public class Preprocessing {
             hm.put(p.getPrecinctId(), p.getDistrictId());
         }
         return hm;
+    }
+
+    private static HashMap<String, String> generateMarylandVoteHashMap(ArrayList<File> files, ArrayList<Precincts> marylandPrecincts) throws IOException, ParseException {
+        HashMap<String, String> countyToID = new HashMap<>();
+        JSONParser parser = new JSONParser();
+        FileReader reader = new FileReader(files.get(1));
+        JSONObject marylandPrecinctJSON = (JSONObject) parser.parse(reader);
+        JSONArray precinctJSONArray = (JSONArray) marylandPrecinctJSON.get("features");
+        for(Object precinct : precinctJSONArray) {
+            JSONObject properties = (JSONObject) ((JSONObject) precinct).get("properties");
+            String name10 = properties.get("NAME10").toString();
+            name10 = name10.replace("Precinct ", "");
+            String precinctId = properties.get("GEOID10").toString();
+            precinctId = precinctId.substring(2);
+            if(precinctId.contains("ZZZZZZ")){
+                precinctId = precinctId.replace("ZZZZZZ", "009999"); //remove chars
+            }
+            countyToID.put(name10, precinctId);
+        }
+        return countyToID; //count 1850. there are 10 where NAME10s are "Voting Districts not defined", resulting in 9 values missing
     }
 
 }

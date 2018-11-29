@@ -18,9 +18,9 @@ public class Preprocessing {
         String[] districtFileNames = new String[1];
         String[] precinctFileNames = new String[1];
         String[] votingDataFileNames = new String[1];
-        districtFileNames[0] = "CSE308/src/main/resources/static/geojson/kansas_districts.json";
-        precinctFileNames[0] = "CSE308/src/main/resources/static/geojson/precinct_data/kansas_state_voting_precincts_2012.json";
-        votingDataFileNames[0] = "CSE308/voting_data/kansas_2012_president_election.json";
+        districtFileNames[0] = "D:/CSE308/src/main/resources/static/geojson/kansas_districts.json";
+        precinctFileNames[0] = "D:/CSE308/src/main/resources/static/geojson/precinct_data/kansas_state_voting_precincts_2012.json";
+        votingDataFileNames[0] = "D:/CSE308/voting_data/kansas_2012_president_election.json";
 
         Set<File> districtFiles = PreprocessHelper.loadFiles(districtFileNames);
         Set<File> precinctFiles = PreprocessHelper.loadFiles(precinctFileNames);
@@ -38,10 +38,10 @@ public class Preprocessing {
         Set<Populations> populations = PreprocessHelper.generatePopulations(precinctFiles);
 //        persistPopulation(populations);
         HashMap<String, Integer> precinctVTD = new HashMap<>();
-        Set<Demographics> demographics = PreprocessHelper.generateDemographics(precinctFiles, precinctVTD);
+        Set<Demographics> demographics = PreprocessHelper.generateDemographics(precinctFiles, precinctVTD, precinctToDistrictID);
 //        persistDemographics(demographics);
         Set<VotingData> votingData = PreprocessHelper.generateVotingData(votingDataFiles, precinctVTD, precinctToDistrictID);
-        persistVotingData(votingData);
+//        persistVotingData(votingData);
     }
 
     private static void persistStates(Set<State> states) throws Throwable {

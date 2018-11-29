@@ -34,7 +34,7 @@ public class District{
         return borderPrecincts;
     }
 
-    public void recalculateBoundaryPrecincts(){
+    public void calculateBoundaryPrecincts(){
         for(Precinct p: precinctMap.values()){
             for(Precinct neighbor: p.getNeighbors()){
                 if(neighbor.getDistrict().getID() != this.getID()){
@@ -43,12 +43,15 @@ public class District{
             }
         }
     }
+
     public Precinct getPrecinct(int id){
         return precinctMap.get(id);
     }
+
     public void addPrecinct(int ID, Precinct precinct){
         precinctMap.put(ID, precinct);
     }
+
     public void removePrecinct(Precinct precinct){
         removePrecinct(precinct.getID());
     }
@@ -83,9 +86,7 @@ public class District{
     public void addPopulation(int population) {
         this.population+=population;
     }
-    public void removePopulation(int population) {
-        this.population-=population;
-    }
+
     public void addVotes(Parties p, int votes) {
         switch(p){
             case DEMOCRATIC:
@@ -93,16 +94,6 @@ public class District{
                 break;
             case REPUBLICAN:
                 republicanVotes+=votes;
-                break;
-        }
-    }
-    public void removeVotes(Parties p,int votes) {
-        switch(p){
-            case DEMOCRATIC:
-                democraticVotes-=votes;
-                break;
-            case REPUBLICAN:
-                republicanVotes-=votes;
                 break;
         }
     }
@@ -114,6 +105,7 @@ public class District{
         clonedDistrict.setPopulation(this.population);
         for(Precinct precinct: this.getAllPrecincts()){
             Precinct clonedPrecinct = precinct.clone(this);
+            clonedPrecinct.setDistrict(clonedDistrict);
             clonedDistrict.getPrecinctMap().put(clonedPrecinct.getID(), clonedPrecinct);
         }
         return clonedDistrict;
@@ -121,52 +113,26 @@ public class District{
     public int getTotalVotes() {
         return democraticVotes+republicanVotes;
     }
-    public double calculateVotesToWin() {
+
+    public int calculateVotesToWin() {
         return getTotalVotes()/2;
     }
-    //Getting the losing party wasted votes
-    public int getLosingWastedVotes() {
-        double votesNeedToWin = calculateVotesToWin();
-        if (democraticVotes>votesNeedToWin) {
-            return republicanVotes;
-        } else {
-            return democraticVotes;
-        }
-    }
-    //Getting the winning party wasted votes
-    public int getWinningWastedVotes() {
-        int losingVotes = getLosingWastedVotes();
-        double votesNeedToWin =  calculateVotesToWin();
-        if (democraticVotes==losingVotes) {
-            return (int) (republicanVotes - votesNeedToWin);
-        } else {
-            return (int) (democraticVotes - votesNeedToWin);
-        }
-    }
-    public double computeMetricValue(Metric m) {
-        switch(m) {
-            case POPULATION_EQUALITY:
-                double idealPopulation = this.state.getIdealPopulation();
-                return calculatePopulationRatio(this.population, idealPopulation);
-            case COMPACTNESS:
-                double area = this.currentGeometry.getArea();
-                double perimeter = this.currentGeometry.getLength();
-                return computePolsby(area, perimeter);
-            case PARTISAN_FAIRNESS:
-                int winningWastedVotes = getWinningWastedVotes();
-                int losingWastedVotes = getLosingWastedVotes();
-                int totalVotes = getTotalVotes();
-                return (winningWastedVotes-losingWastedVotes)/totalVotes;
 
+    public HashMap<Parties, Integer> retrieveWastedVotes(){
+        HashMap<Parties, Integer> map = new HashMap<>();
+        int targetVotes = calculateVotesToWin();
+        if(democraticVotes >= targetVotes){
+            map.put(Parties.DEMOCRATIC, democraticVotes - targetVotes);
+            map.put(Parties.REPUBLICAN, republicanVotes);
+        } else {
+            map.put(Parties.REPUBLICAN, republicanVotes - targetVotes);
+            map.put(Parties.DEMOCRATIC, democraticVotes);
         }
-        return 0.0;
+        return map;
     }
 
-    private double computePolsby(double area, double perimeter) {
-        return (4*Math.PI*area)/Math.pow(perimeter, 2);
-    }
-    private double calculatePopulationRatio(int population, double idealPopulation) {
-        return population/idealPopulation;
+    public double computePolsby() {
+        return (4*Math.PI*this.geometry.getArea())/Math.pow(this.geometry.getLength(), 2);
     }
 
     public void setPopulation(int population){
@@ -178,5 +144,21 @@ public class District{
 
     public HashMap<Integer, Precinct> getPrecinctMap(){
         return this.precinctMap;
+    }
+
+    public int getDemocraticVotes(){
+        return this.democraticVotes;
+    }
+
+    public int getRepublicanVotes(){
+        return this.republicanVotes;
+    }
+
+    public Set<Precinct> getBorderPrecincts(){
+        return this.borderPrecincts;
+    }
+
+    public void setState(State state){
+        this.state = state;
     }
 }

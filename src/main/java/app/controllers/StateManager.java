@@ -118,10 +118,13 @@ public class StateManager {
 
     public String loadPrecinctData(Integer districtID, Integer precinctID) throws Throwable {
         Precinct precinct = currentState.getDistrictMap().get(districtID).getPrecinct(precinctID);
-        getDemographics(precinct);
-        getElectionData(precinct);
-        JsonBuilder builder = new JsonBuilder();
-        return builder.buildPrecinctDataJson(precinct);
+        if(precinct != null){
+            getDemographics(precinct);
+            getElectionData(precinct);
+            JsonBuilder builder = new JsonBuilder();
+            return builder.buildPrecinctDataJson(precinct);
+        }
+        return "{}";
     }
 
     //METHOD IS PURELY FOR CLONED STATES ONLY AS THIS IS FOR THE ALGORITHM TO RUN
@@ -159,14 +162,16 @@ public class StateManager {
             List<Object> l;
             criteria.put("precinctID", precinct.getID());
             l = hb.getRecordsBasedOnCriteria(Demographics.class, criteria);
-            Demographics d = (Demographics)l.get(0);
-            HashMap<String, Integer> dMap = d.getDemographicMap();
-            precinct.addDemographic(Ethnicity.ASIAN, dMap.get("Asian"));
-            precinct.addDemographic(Ethnicity.AFRICAN_AMERICAN, dMap.get("African-American"));
-            precinct.addDemographic(Ethnicity.CAUCASIAN, dMap.get("Caucasian"));
-            precinct.addDemographic(Ethnicity.HISPANIC, dMap.get("Hispanic"));
-            precinct.addDemographic(Ethnicity.NATIVE_AMERICAN, dMap.get("Native-American"));
-            precinct.addDemographic(Ethnicity.OTHER, dMap.get("Other"));
+            if(l.size() != 0) {
+                Demographics d = (Demographics) l.get(0);
+                HashMap<String, Integer> dMap = d.getDemographicMap();
+                precinct.addDemographic(Ethnicity.ASIAN, dMap.get("Asian"));
+                precinct.addDemographic(Ethnicity.AFRICAN_AMERICAN, dMap.get("African-American"));
+                precinct.addDemographic(Ethnicity.CAUCASIAN, dMap.get("Caucasian"));
+                precinct.addDemographic(Ethnicity.HISPANIC, dMap.get("Hispanic"));
+                precinct.addDemographic(Ethnicity.NATIVE_AMERICAN, dMap.get("Native-American"));
+                precinct.addDemographic(Ethnicity.OTHER, dMap.get("Other"));
+            }
         }
     }
 

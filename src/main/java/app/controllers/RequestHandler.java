@@ -1,8 +1,6 @@
 package app.controllers;
 
-import app.algorithm.Annealing;
 import app.algorithm.Move;
-import app.algorithm.RegionGrow;
 import app.algorithm.Solver;
 import app.json.JTSConverter;
 import app.state.District;
@@ -82,7 +80,7 @@ public class RequestHandler {
             // move
             Move move = new Move(currentState.getDistrict(src), currentState.getDistrict(dest), p);
             move.execute();
-            double functionValue = solver.calculateFunctionValue();
+            double functionValue = 0;
 
             // undo if it is not a locking move
             if(!lock)
@@ -104,9 +102,7 @@ public class RequestHandler {
             sm.cloneState(sm.getCurrentState().getName());
             handler.send("{\"console_log\":\"Building precinct neighbors...\"}");
             HashMap<Integer, District> districtMap = sm.getClonedState().getDistrictMap();
-            for(District d : districtMap.values()){
-                JTSConverter.buildNeighbor(d.getAllPrecincts());
-            }
+            JTSConverter.buildNeighbor(sm.getClonedState().getAllPrecincts());
             handler.send("{\"console_log\":\"Retrieving election data...\"}");
             sm.loadElectionData();
             handler.send("{\"console_log\":\"Setting up algorithm...\"}");
@@ -120,7 +116,8 @@ public class RequestHandler {
             }
             solver.setState(sm.getClonedState());
             solver.setFunctionWeights(partFairnessMetric/100, compactnessMetric/100, popEqualityMetric/100);
-        //            solver.run();
+            solver.initAlgorithm();
+            solver.run();
             return "Algo started";
         }
 
