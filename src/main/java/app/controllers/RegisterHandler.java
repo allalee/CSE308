@@ -21,8 +21,7 @@ import java.io.Serializable;
 public class RegisterHandler {
 
     @RequestMapping(value = "/registration", method = RequestMethod.POST)
-    public @ResponseBody
-    void registration(@RequestParam("username") String username,
+    public String registration(@RequestParam("username") String username,
                       @RequestParam("password") String password,
                       @RequestParam("email") String email, HttpServletResponse resp) throws Throwable {
 
@@ -31,8 +30,7 @@ public class RegisterHandler {
         boolean persisted = hm.persistToDB(usersModel);
         System.out.println(persisted);
 
-
-        resp.sendRedirect("../static/templates/login.html");
+        return "../static/templates/login.html";
     }
 
 }

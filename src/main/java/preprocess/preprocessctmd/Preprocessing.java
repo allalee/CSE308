@@ -30,6 +30,8 @@ public class Preprocessing {
         String[] precinctFileNames = new String[2];
         String[] votingDataFileNames = new String[2];
         String[] demographicDataFileNames = new String[1];
+        String[] populationDataFileNames = new String[1];
+        String[] townDataFileNames = new String[1];
 
         districtFileNames[0] = "D:/CSE308/src/main/resources/static/geojson/connecticut_districts.json";
         districtFileNames[1] = "D:/CSE308/src/main/resources/static/geojson/maryland_districts.json";
@@ -38,13 +40,15 @@ public class Preprocessing {
         votingDataFileNames[0] = "D:/CSE308/voting_data/connvoting.json";
         votingDataFileNames[1] = "D:/CSE308/voting_data/marylandvoting.json";
         demographicDataFileNames[0] = "D:/CSE308/voting_data/population/marylanddemographics.json";
-
+        populationDataFileNames[0] = "D:/CSE308/voting_data/population/conn_town_pop.json";
+        townDataFileNames[0] = "D:/CSE308/voting_data/population/conn_town_to_precinctid.json";
 
         ArrayList<File> districtFiles = PreprocessHelper2.loadFiles(districtFileNames);
         ArrayList<File> precinctFiles = PreprocessHelper2.loadFiles(precinctFileNames);
         ArrayList<File> votingDataFiles = PreprocessHelper2.loadFiles(votingDataFileNames);
         ArrayList<File> demographicDataFiles = PreprocessHelper2.loadFiles(demographicDataFileNames);
-
+        ArrayList<File> populationDataFiles = PreprocessHelper2.loadFiles(populationDataFileNames);
+        ArrayList<File> townDataFiles = PreprocessHelper2.loadFiles(townDataFileNames);
 //STATES
         Set<State> states = PreprocessHelper2.generateStates();
 //        persistStates(states);
@@ -78,8 +82,9 @@ public class Preprocessing {
 //POPULATION DATA
         ArrayList<Populations> marylandPopulationData = PreprocessHelper2.generateMarylandPopulationData(demographicDataFiles, marylandPrecinctMap);
 //        persistPopulations(marylandPopulationData);
-
-
+       HashMap<String, ArrayList<Integer>> connTownPrecinctMap = townToPrecinctsMap(townDataFiles);
+        ArrayList<Populations> connPopulationData = PreprocessHelper2.generateConnPopulationData(populationDataFiles, connPrecinctMap, connTownPrecinctMap);
+//        persistPopulations(connPopulationData);
     }
 
 
@@ -175,4 +180,33 @@ public class Preprocessing {
         return countyToID; //count 1850. there are 10 where NAME10s are "Voting Districts not defined", resulting in 9 values missing
     }
 
+    private static HashMap<String, ArrayList<Integer>> townToPrecinctsMap(ArrayList<File> connTownPrecinctFile) throws IOException, ParseException {
+        HashMap<String, ArrayList<Integer>> townToPrecincts = new HashMap<>();
+        JSONParser parser = new JSONParser();
+        FileReader reader = new FileReader(connTownPrecinctFile.get(0));
+        JSONArray connTownPrecinctJSON = (JSONArray) parser.parse(reader);
+        for(Object connTown : connTownPrecinctJSON) {
+            JSONObject connTownObj = (JSONObject) connTown;
+            String pID = connTownObj.get("GeoID10").toString();
+            if (pID != null) {
+                String townName = connTownObj.get("Town").toString();
+                if (pID.equals("ZZZ")) {
+                    pID = pID.replace("ZZZ", "999"); //remove chars
+                } else {
+                    pID = pID.substring(3); //take off 090 for connecticut precincts because too large for int.
+                    //090 are the first 3 numbers of EVERY geoid10.
+                    pID = pID.replace("-", ""); //remove chars
+                }
+                Integer precinctId = Integer.parseInt(pID);
+                if (townToPrecincts.containsKey(townName)) {
+                    townToPrecincts.get(connTownObj.get("Town").toString()).add(precinctId);
+                } else {
+                    ArrayList<Integer> precinctIds = new ArrayList<>();
+                    precinctIds.add(precinctId);
+                    townToPrecincts.put(townName, precinctIds);
+                }
+            }
+        }
+        return townToPrecincts;
+    }
 }
