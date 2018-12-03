@@ -50,7 +50,7 @@ public class Demographics implements Serializable{
     @Column(
             name="DISTRICT_ID"
     )
-    private int district_id;
+    private int districtId;
 
     public Demographics(int precinctID, int asian, int caucasian, int hispanic, int african_american, int native_american, int other, int district_id){
         this.precinctID = precinctID;
@@ -60,7 +60,7 @@ public class Demographics implements Serializable{
         this.african_american = african_american;
         this.native_american = native_american;
         this.other = other;
-        this.district_id = district_id;
+        this.districtId = district_id;
     }
 
     public Demographics(){
@@ -73,6 +73,7 @@ public class Demographics implements Serializable{
     public int getPrecinctID(){
         return this.precinctID;
     }
+    public int getDistrictID() { return this.districtId; }
 
     public HashMap<String, Integer> getDemographicMap(){
         HashMap<String, Integer> hm = new HashMap<>();
