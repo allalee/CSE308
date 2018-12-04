@@ -163,6 +163,7 @@ public class StateManager {
             Map<String, Object> criteria = new HashMap<>();
             List<Object> l;
             criteria.put(PropertiesManager.get(Property.GETDEMOGRAPHICS_PRECINCTID), precinct.getID());
+            criteria.put(PropertiesManager.get(Property.GETPRECINCT_DISTRICTID), precinct.getDistrict().getID());
             l = hb.getRecordsBasedOnCriteria(Demographics.class, criteria);
             if(l.size() != 0) {
                 Demographics d = (Demographics) l.get(0);
