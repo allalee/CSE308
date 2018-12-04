@@ -4,6 +4,8 @@ import app.algorithm.Move;
 import app.election.ElectionData;
 import app.enums.Metric;
 import app.enums.Parties;
+import app.enums.Property;
+import app.json.PropertiesManager;
 import app.state.District;
 import app.state.Precinct;
 import app.state.State;
@@ -14,26 +16,32 @@ import java.util.HashMap;
 public abstract class Algorithm{
     protected State state;
     protected volatile boolean running;
+    protected volatile boolean paused;
     private ArrayDeque<Move> listOfMoves;
     private Thread algoThread;
     protected double functionValue;
     private HashMap<Metric, Double> weights;
     protected long systemStartTime;
+    protected final long MAX_RUN_TIME;
+    protected long remainingRunTime;
     private final int ONE = 1;
     private final int ZERO = 0;
 
 
     public Algorithm(){
         running = false;
+        paused = false;
         listOfMoves = new ArrayDeque<>();
         weights = new HashMap<>();
+        MAX_RUN_TIME = Integer.parseInt(PropertiesManager.get(Property.MAX_RUNTIME));
     }
 
     public void start(){
         if( running ){
             stop();
         }
-        systemStartTime = System.currentTimeMillis();
+        //systemStartTime = System.currentTimeMillis();
+        remainingRunTime = MAX_RUN_TIME;
         algoThread = new Thread(()->{
             running = true;
             run();
@@ -43,7 +51,15 @@ public abstract class Algorithm{
 
     public void stop(){
         running = false;
+        paused = false;
         algoThread.interrupt();
+    }
+
+    public void pause(boolean pause){
+        if(running) {
+            paused = pause;
+            System.out.println("Pause click");
+        }
     }
 
     public void addToMoveStack(Move move){
