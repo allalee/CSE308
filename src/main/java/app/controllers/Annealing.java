@@ -29,7 +29,13 @@ public class Annealing extends Algorithm {
         Precinct previouslyMovedPrecinct = null;
         Precinct precinctToMove;
         handler.send("{\"console_log\": \"Starting algorithm...\"}");
-        while(running && stagnant_iterations < max_stagnant && System.currentTimeMillis() < programEndTime){
+        while(running && stagnant_iterations < max_stagnant && remainingRunTime > 0){
+            if (paused) {
+                System.out.println("Algorithm Paused...");
+                try { Thread.sleep(500); } catch (InterruptedException e) {}
+                continue;
+            }
+            long startTime = System.currentTimeMillis();
             double startFunctionValue = functionValue;
             do  {
                 precinctToMove = getPrecinctToMove(allDistricts);
@@ -50,6 +56,9 @@ public class Annealing extends Algorithm {
             } else{
                 stagnant_iterations = 0;
             }
+
+            long deltaTime = System.currentTimeMillis() - startTime;
+            remainingRunTime -= deltaTime;
         }
         running = false;
         System.out.println("Algo finished");
