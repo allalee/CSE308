@@ -20,6 +20,7 @@ public class State {
     public HashMap<Integer, District> getDistrictMap(){
         return districtMap;
     }
+    public void setDistrictMap(HashMap<Integer, District> districtMap) { this.districtMap = districtMap;}
     public void addDistrict(District district){ districtMap.put(district.getID(), district); }
     public Collection<District> getAllDistricts(){
         return districtMap.values();
