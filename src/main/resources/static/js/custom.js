@@ -10,8 +10,26 @@ function toggleNav(){
     sideNavState = 0;
   }
 }
-var slider = document.getElementById("customRange3");
-function getValueEx() {
-  var val = document.getElementById("customRange3").value;
-  console.log(val);
+var pop_slider = document.getElementById("population_equality");
+var pop_output = document.getElementById("pop_value");
+pop_output.innerHTML = pop_slider.value;
+
+pop_slider.oninput = function() {
+  pop_output.innerHTML = this.value;
+}
+
+var part_slider = document.getElementById("partisan_fairness");
+var part_output = document.getElementById("part_value");
+part_output.innerHTML = part_slider.value;
+
+part_slider.oninput = function() {
+  part_output.innerHTML = this.value;
+}
+
+var comp_slider = document.getElementById("compactness");
+var comp_output = document.getElementById("comp_value");
+comp_output.innerHTML = comp_slider.value;
+
+comp_slider.oninput = function() {
+  comp_output.innerHTML = this.value;
 }

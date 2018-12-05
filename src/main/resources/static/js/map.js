@@ -267,6 +267,8 @@ function resetMap(){
     districtJson.remove();
   } else if(mymap.hasLayer(precinctJson)) {
     precinctJson.remove();
+  } else if(mymap.hasLayer(originalPrecinctJson)) {
+    originalPrecinctJson.remove();
   }
     currentStateID = null;
     currentConstText = null;

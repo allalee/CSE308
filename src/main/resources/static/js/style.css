@@ -104,3 +104,11 @@ i:hover {
 .display-button {
   width: 100px;
 }
+.weight-button {
+  height: 30px;
+  width: 60px;
+}
+.weight-save {
+  height: 30px;
+  width: inherit;
+}
