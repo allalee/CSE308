@@ -41,6 +41,12 @@ public class RequestHandler {
             return sm.loadPrecinctData(districtID, precinctID);
         }
 
+        @RequestMapping(value = "/getOriginal", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+        public @ResponseBody
+        String getOriginal() {
+            return sm.getOriginalPrecinctsMap();
+        }
+
         @RequestMapping(value = "/stateConst", method = RequestMethod.GET)
         public @ResponseBody
         String getStateConst(@RequestParam ("stateName") String state, @RequestParam("stateID") int stateID) throws Throwable {
