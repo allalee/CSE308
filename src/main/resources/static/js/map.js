@@ -369,6 +369,8 @@ function sendState(currentStateID, currentStateName){
 }
 
 document.getElementById("start").onclick = startAlgorithm
+document.getElementById("pause").onclick = togglePauseAlgorithm
+document.getElementById("stop").onclick = stopAlgorithm
 
 function startAlgorithm(){
     var algorithm_type = $('input[name="algorithm"]:checked').val()
@@ -394,19 +396,23 @@ function startAlgorithm(){
     }
 }
 
-function togglePauseAlgorithm(pause){
+paused = false;
+function togglePauseAlgorithm(){
 
-    if(pause){
+    if(!paused){    // if not paused, pause it
         connector.stop_reading()    // stop updating
         var url = 'http://localhost:8080/pauseAlgorithm'    // send to pause
     }
-    else{
+    else{           // if paused, start it
         connector.start_reading()    // start updating
         var url = 'http://localhost:8080/unpauseAlgorithm'    // send to unpause
     }
+
     var request = new XMLHttpRequest()
     request.open("GET", url, true)
     request.send(null)
+
+    paused = !paused
 }
 
 function stopAlgorithm(){

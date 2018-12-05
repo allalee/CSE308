@@ -49,13 +49,9 @@ public class Solver {
         currentAlgorithm.setInitialObjFunctionValue(objectiveFunctionValue);
     }
 //
-//    public void pause(){
-//        currentAlgorithm.pause();
-//    }
-//
-//    public void unpause(){
-//        currentAlgorithm.unpause();
-//    }
+    public void pause(boolean pause){
+        currentAlgorithm.pause(pause);
+    }
 
     public void stop(){
         currentAlgorithm.stop();

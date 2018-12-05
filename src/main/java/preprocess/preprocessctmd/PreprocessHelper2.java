@@ -132,6 +132,40 @@ public class PreprocessHelper2 {
         return populationsList;
     }
 
+    public static ArrayList<Populations> generateConnPopulationData(ArrayList<File> files, HashMap<Integer, Integer> connPrecinctMap, HashMap<String, ArrayList<Integer>> connTownPrecinctMap) throws IOException, ParseException {
+        ArrayList<Populations> populationsList = new ArrayList<>();
+        JSONParser parser = new JSONParser();
+        //build voting data for connecticut
+        FileReader reader = new FileReader(files.get(0));
+        JSONArray connPopulationsJSON = (JSONArray) parser.parse(reader);
+        buildConnPopulations(populationsList, connPopulationsJSON, connPrecinctMap, connTownPrecinctMap);
+        return populationsList;
+    }
+
+    private static void buildConnPopulations(ArrayList<Populations> populationsList, JSONArray populationsJSON, HashMap<Integer, Integer> connPrecinctMap, HashMap<String, ArrayList<Integer>> connTownPrecinctMap){
+        for(Object pop : populationsJSON) {
+            JSONObject popObj = (JSONObject) pop;
+            String townName = popObj.get("Town").toString();
+            Integer totalPopulationCnt = Integer.parseInt(popObj.get("Population").toString());
+            ArrayList<Integer> listOfPrecincts = connTownPrecinctMap.get(townName); //GET ALL PRECINCTS WITHIN CURRENT TOWN.
+            int count = listOfPrecincts.size(); //GET NUMBER OF PRECINCTS IN THE TOWN.
+            Integer individualPopCnt = totalPopulationCnt / count; //SPLIT THE POPULATION OF THE ENTIRE TOWN ACROSS THE PRECINCTS.
+
+            //SET POPULATION FOR EACH PRECINCT IN THE CURRENT LIST OF PRECINCTS UNDER THE TOWN.
+            for(Integer pID : listOfPrecincts) {
+                Integer precinctID = pID;
+                Integer districtID = connPrecinctMap.get(precinctID);
+
+                //DISTRICTID FIELD WILL BE ADDED TO THE VOTING DATA MODEL.
+                //DISTRICTID FROM 46 TO 50 INCLUSIVE IS PART OC CONNECTICUT.
+                if (districtID != null) {
+                    Populations data = new Populations(individualPopCnt, precinctID, districtID);
+                    populationsList.add(data);
+                }
+            }
+        }
+    }
+
     private static void buildMarylandPopulations(ArrayList<Populations> populationsList, JSONArray populationsJSON, HashMap<Integer, Integer> marylandPrecinctMap){
         for(Object pop : populationsJSON){
             JSONObject popObj = (JSONObject)pop;
