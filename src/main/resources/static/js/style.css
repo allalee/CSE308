@@ -100,3 +100,7 @@ i:hover {
     margin: 0 0 5px;
     color: #777;
 }
+
+.display-button {
+  width: 100px;
+}
