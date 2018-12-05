@@ -1,8 +1,12 @@
 package app.controllers;
 
 import app.algorithm.Move;
+import app.json.GeoJsonReader;
+import app.json.JsonBuilder;
 import app.state.District;
 import app.state.Precinct;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -23,10 +27,24 @@ public class RegionGrow extends Algorithm {
         Collection<Precinct> allPrecincts = state.getAllPrecincts();
         Collection<District> allDistricts = state.getAllDistricts();
 
-        ArrayList<District> regions = generateRegions(allDistricts);
-        //Make a call to the layer_manager to color all precincts the same color
-        //Generate seeds and place it into a region we created, color the map again
+        Collection<Precinct> unassignedPrecincts = new ArrayList<>();
+        for(Precinct p : allPrecincts){
+            p.setDistrict(null);
+            unassignedPrecincts.add(p);
+        }
+        //Call to the client to update all of the precincts white to denote that they are not part of a district
+        handler.send("{\"default" + "\": \"" + 0 + "\"}");
+        ArrayList<District> regions = generateRegions(allDistricts, unassignedPrecincts);
+        //Color the starting precincts in the map
+        updateClientForRegions(regions);
         //Start the while loop with the condition until all precincts are done growing
+        Random random = new Random();
+        while(running && allPrecincts.size() != 0){
+            int i = random.nextInt(allDistricts.size()); //randomly select a district for algorithm to use
+            District currentDistrictToGrow = (District)regions.toArray()[i];
+            currentDistrictToGrow.calculateBoundaryPrecincts();
+            System.out.println(currentDistrictToGrow.getBorderPrecincts().size());
+        }
 
 
 //        District dummyDistrict = new District(-1, null, null);
@@ -71,13 +89,6 @@ public class RegionGrow extends Algorithm {
         System.out.println("Algo done");
     }
 
-    private ArrayDeque<Precinct> generateSeeds(Collection<District> districtList, IterationType type){
-        switch(type){
-            case Random: return generateSeedRandom(districtList);
-            default: return null;
-        }
-    }
-
     /**
      * Districts will pick their precincts, overriding the precinct's previous district
      * @param districtList
@@ -104,13 +115,31 @@ public class RegionGrow extends Algorithm {
         return availablePrecincts.pollFirst();
     }
 
-    private ArrayList<District> generateRegions(Collection<District> allDistricts){
+    private ArrayList<District> generateRegions(Collection<District> allDistricts, Collection<Precinct> unassignedPrecincts){
         ArrayList<District> regions = new ArrayList<>();
+        ArrayList<Precinct> temp = new ArrayList<>(unassignedPrecincts);
         for(District d : allDistricts){
-            District newDistrict = new District(d.getID(), d.getState(), null);
+            Random rnd = new Random();
+            int i = rnd.nextInt(d.getAllPrecincts().size());
+            Precinct seedPrecinct = (Precinct)d.getAllPrecincts().toArray()[i];
+            temp.remove(seedPrecinct);
+            District newDistrict = new District(d.getID(), d.getState(), seedPrecinct.getGeometry());
+            newDistrict.addPrecinct(seedPrecinct.getID(), seedPrecinct);
+            seedPrecinct.setDistrict(newDistrict);
             regions.add(newDistrict);
         }
+        unassignedPrecincts.clear();
+        unassignedPrecincts.addAll(temp);
+        HashMap<Integer, District> newMap = new HashMap<>();
+        for(District region: regions){
+            newMap.put(region.getID(), region);
+        }
+        state.setDistrictMap(newMap);
         return regions;
+    }
+
+    private void findBorderPrecincts(){
+
     }
 
     private void updateClient(Move move){
@@ -122,6 +151,17 @@ public class RegionGrow extends Algorithm {
         json += "\",\"precinct\":\""+move.getPrecinctID();
         json += "\"}";
         handler.send(json);
+    }
+
+    private void updateClientForRegions(ArrayList<District> regions){
+        StringBuilder builder = new StringBuilder("{\"seeds\": {");
+        for(District region: regions){
+            Precinct p = (Precinct)region.getAllPrecincts().toArray()[0];
+            builder.append("\"" + p.getID() + "\": \"" + region.getID() + "\",");
+        }
+        builder.setCharAt(builder.length() -1, '}');
+        builder.append('}');
+        handler.send(builder.toString());
     }
 
     enum IterationType{

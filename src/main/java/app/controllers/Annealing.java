@@ -47,7 +47,6 @@ public class Annealing extends Algorithm {
             if(checkThreshold(startFunctionValue, functionValue)){
                 reconfigureBoundaries(precinctToMove, srcDistrict);
                 updateClient(currentMove);
-                System.out.println(functionValue);
             } else {
                 currentMove.undo();
             }

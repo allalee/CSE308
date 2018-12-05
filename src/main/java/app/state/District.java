@@ -37,8 +37,8 @@ public class District{
     public void calculateBoundaryPrecincts(){
         for(Precinct p: precinctMap.values()){
             for(Precinct neighbor: p.getNeighbors()){
-                if(neighbor.getDistrict().getID() != this.getID()){
-                    this.borderPrecincts.add(p);
+                if(neighbor.getDistrict() == null || neighbor.getDistrict().getID() != this.getID()){
+                    this.borderPrecincts.add(neighbor);
                 }
             }
         }
