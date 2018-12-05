@@ -4,7 +4,7 @@ var mapAccessToken = 'pk.eyJ1Ijoib3ZlcnRoZWNsb3VkcyIsImEiOiJjam1hdWwxc2I1aGhrM3F
 L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoib3ZlcnRoZWNsb3VkcyIsImEiOiJjam1hdWwxc2I1aGhrM3FwNGZ1cXd1c2c5In0.ixJrpwux_Hmz8kuRU-da-w', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     maxZoom: 18,
-    id: 'mapbox.streets'
+    id: 'mapbox.light'
 }).addTo(mymap);
 
 var stateJson; //State handler added to map
@@ -35,8 +35,17 @@ function consoleLog(message_body){
         layer_manager.color_precincts()
     }
     if(message_body["enable_reset"]){
+        connector.clear_message()
         document.getElementById("reset").disabled = false;
+        updateButtons(ButtonState.STOPPED)
     }
+}
+
+function consoleWrite(text){
+    var console = document.getElementById("console")
+    console.appendChild(document.createElement("br"))
+    console.append(text)
+    console.scrollTop = console.scrollHeight
 }
 
 state_fps_hashmap =
@@ -229,6 +238,15 @@ function onEachPrecinctFeature(feature, layer) {
 }
 
 function resetMap(){
+    // stop, clear, start reading again
+    connector.stop_reading()
+    connector.clear_message()
+    connector.start_reading()
+
+    // update ui
+    updateButtons(ButtonState.RUNNABLE)
+    enableManualMoveOption(false)
+
 	if(mymap.hasLayer(districtJson)) {
     districtJson.remove();
   } else if(mymap.hasLayer(precinctJson)) {
@@ -242,10 +260,6 @@ function resetMap(){
     addStateLayer();
     mymap.setView([37.0902, -95.7129], 4);
   }
-
-
-  //disable manual redistrict
-  enableManualMoveOption(false)
 }
 
 
@@ -302,7 +316,7 @@ function loadStateJson(state, currentState){
     var url = "http://localhost:8080/getState?stateName=" + state + "&stateID=" + currentState
     request.open("GET", url, true)
     request.onreadystatechange = function(){
-        if(request.status == 200){
+        if(request.readyState == 4 && request.status == 200){
             var loadedJson = request.response
             var obj = JSON.parse(loadedJson);
             obj = JSON.parse(obj);
@@ -321,7 +335,7 @@ function loadPrecinctProperties(layer){
       var request = new XMLHttpRequest()
       request.open("GET", url, true)
       request.onreadystatechange = function(){
-        if(request.status == 200){
+        if(request.readyState == 4 && request.status == 200){
             var loadedJson = request.response
             var obj = JSON.parse(loadedJson)
             if(obj['voting_data']){
@@ -361,7 +375,7 @@ function sendState(currentStateID, currentStateName){
     var request = new XMLHttpRequest();
     request.open("GET", url, true);
     request.onreadystatechange = function(){
-       if(request.status == 200){
+       if(request.readyState == 4 && request.status == 200){
             currentConstText = request.response;
        }
    }
@@ -371,6 +385,53 @@ function sendState(currentStateID, currentStateName){
 document.getElementById("start").onclick = startAlgorithm
 document.getElementById("pause").onclick = togglePauseAlgorithm
 document.getElementById("stop").onclick = stopAlgorithm
+
+ButtonState = {
+    RUNNABLE : 0,
+    RUNNING : 1,
+    PAUSED : 2,
+    STOPPED : 3
+}
+
+updateButtons(ButtonState.RUNNABLE)
+function turn(btn, on){
+    btn.hidden = !on
+}
+function updateButtons(state){
+    var start = document.getElementById("start")
+    var pause = document.getElementById("pause")
+    var stop = document.getElementById("stop")
+
+    switch(state){
+        case ButtonState.RUNNABLE:
+            turn(start, true)
+            turn(pause, false)
+            turn(stop, false)
+            paused = false
+            break
+        case ButtonState.RUNNING:
+            turn(start, false)
+            turn(pause, true)
+            turn(stop, true)
+            pause.innerHTML = "pause"
+            paused = false
+            break
+        case ButtonState.PAUSED:
+            turn(start, false)
+            turn(pause, true)
+            turn(stop, true)
+            pause.innerHTML = "play_arrow"
+            paused = true
+            break
+        case ButtonState.STOPPED:
+            turn(start, false)
+            turn(pause, false)
+            turn(stop, false)
+            paused = false
+            break
+        default: console.log("Invalid Button State: " + state)
+    }
+}
 
 function startAlgorithm(){
     var algorithm_type = $('input[name="algorithm"]:checked').val()
@@ -393,6 +454,7 @@ function startAlgorithm(){
         request.open("GET", url, true)
 
         request.send(null)
+        updateButtons(ButtonState.RUNNING)
     }
 }
 
@@ -402,29 +464,35 @@ function togglePauseAlgorithm(){
     if(!paused){    // if not paused, pause it
         connector.stop_reading()    // stop updating
         var url = 'http://localhost:8080/pauseAlgorithm'    // send to pause
+        updateButtons(ButtonState.PAUSED)
     }
     else{           // if paused, start it
         connector.start_reading()    // start updating
         var url = 'http://localhost:8080/unpauseAlgorithm'    // send to unpause
+        updateButtons(ButtonState.RUNNING)
     }
 
     var request = new XMLHttpRequest()
     request.open("GET", url, true)
     request.send(null)
-
-    paused = !paused
 }
 
 function stopAlgorithm(){
     // terminate updating, clear messages
     connector.stop_reading()
     connector.clear_message()
+    connector.start_reading()
 
     // send
     var url = 'http://localhost:8080/stopAlgorithm'
     var request = new XMLHttpRequest()
     request.open("GET", url, true)
     request.send(null)
+
+    // update the ui on client side
+    document.getElementById("reset").disabled = false;
+    updateButtons(ButtonState.STOPPED)
+    consoleWrite("Algorithm stopped by client")
 }
 
 info.addTo(mymap);
