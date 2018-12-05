@@ -29,9 +29,11 @@ connector.connect();
 con.start_reading();
 function consoleLog(message_body){
     var console = document.getElementById("console")
-    console.appendChild(document.createElement("br"))
-    console.append(message_body["console_log"])
-    console.scrollTop = console.scrollHeight
+    if(message_body["console_log"]){
+        console.appendChild(document.createElement("br"))
+        console.append(message_body["console_log"])
+        console.scrollTop = console.scrollHeight
+    }
     if(message_body["src"] && message_body["dest"] && message_body["precinct"]){
         layer_manager.set_new_precinct_district(message_body["precinct"], message_body["dest"])
         layer_manager.color_precincts()
@@ -41,6 +43,12 @@ function consoleLog(message_body){
         document.getElementById("reset").disabled = false;
         updateButtons(ButtonState.STOPPED)
         enableManualMoveOption(true)
+    }
+    if(message_body["default"]){
+        layer_manager.color_unassigned_precincts()
+    }
+    if(message_body["seeds"]){
+        layer_manager.color_default_regions(message_body["seeds"])
     }
 }
 
