@@ -115,12 +115,27 @@
        </div>
        <div id="measures" class="collapse">
          <div class="card-body">
-           <label for="population_equality">Population Equality</label>
+           <label for="population_equality">Population Equality:</label>
+           <label id="pop_value">50</label>
            <input type="range" class="custom-range" min="0" max="100" step="1" id="population_equality">
-           <label for="partisan_fairness">Partisan Fairness</label>
+           <label for="partisan_fairness">Partisan Fairness:</label>
+           <label id="part_value">50</label>
            <input type="range" class="custom-range" min="0" max="100" step="1" id="partisan_fairness">
-           <label for="compactness">Compactness</label>
+           <label for="compactness">Compactness:</label>
+           <label id="comp_value">50</label>
            <input type="range" class="custom-range" min="0" max="100" step="1" id="compactness">
+
+           <div class="container">
+             <div class="row">
+               <div class="col px-0 pt-3">
+                  <input type="text">
+               </div>
+               <div class="col-3 pt-3 px-0">
+                 <button type="button" class="btn btn-primary weight-save m-0 p-0">Save</button>
+               </div>
+             </div>
+           </div>
+
          </div>
        </div>
      </div>
@@ -193,7 +208,28 @@
                </div>
            </div>
        </div>
+       <div class="card rounded-0">
+           <div class="card-header">
+               <a data-toggle="collapse" data-parent="#sidenav" href="#weights_option" class="card-link">
+                   Weight Preferences
+               </a>
+           </div>
+           <div id="weights_option" class="collapse">
+               <div class="card-body">
 
+                 <div class="custom-control custom-radio">
+                   <input type="radio" id="saved1" name="weightRadio" class="custom-control-input" value="valuesHere">
+                   <label class="custom-control-label" for="saved1">Saved 1</label>
+                 </div>
+                 <div class="custom-control custom-radio">
+                   <input type="radio" id="saved2" name="weightRadio" class="custom-control-input" value="valuesHere">
+                   <label class="custom-control-label" for="saved2">Saved 2</label>
+                 </div>
+
+                <button type="button" class="btn btn-primary weight-button m-0 p-0 mt-2">Load</button>
+               </div>
+           </div>
+       </div>
 	</div>
 
 	<div class="bottom">
