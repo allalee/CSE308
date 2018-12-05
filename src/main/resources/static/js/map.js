@@ -40,6 +40,7 @@ function consoleLog(message_body){
         connector.clear_message()
         document.getElementById("reset").disabled = false;
         updateButtons(ButtonState.STOPPED)
+        enableManualMoveOption(true)
     }
 }
 
@@ -194,6 +195,7 @@ function loadPrecincts(e) {
 
     // enable manual redistrict
     enableManualMoveOption(true)
+    updateButtons(ButtonState.RUNNABLE)
 }
 
 function addPrecinctsLayer() {
@@ -440,7 +442,7 @@ ButtonState = {
     STOPPED : 3
 }
 
-updateButtons(ButtonState.RUNNABLE)
+updateButtons(ButtonState.STOPPED)
 function turn(btn, on){
     btn.hidden = !on
 }
@@ -608,6 +610,7 @@ function removeDistrictOption(){
 }*/
 
 var fadeWriter = makeFadeOutWriter()
+var manualMoveWriter = { write: function(PLACEHOLDER, message){ consoleWrite(message) } }
 var district_selector_div = document.getElementById('district_selector_options')
 var mover = makeManualMover(layer_manager, district_selector_div)
 var manualMoveToggle = document.getElementById("district_selector_toggle")
@@ -617,12 +620,12 @@ var lockMoveBtn = document.getElementById("move_lock")
 tempMoveBtn.onclick = function(e){
     var destID = document.getElementById('district_selector_options').querySelector('input[type=radio]:checked').value
     var messageDiv = document.getElementById('district_selector_message')
-    mover.sendManualMove(false, destID, messageDiv, fadeWriter)
+    mover.sendManualMove(false, destID, messageDiv, manualMoveWriter)
 }
 lockMoveBtn.onclick = function(e){
     var destID = document.getElementById('district_selector_options').querySelector('input[type=radio]:checked').value
     var messageDiv = document.getElementById('district_selector_message')
-    mover.sendManualMove(true, destID, messageDiv, fadeWriter)
+    mover.sendManualMove(true, destID, messageDiv, manualMoveWriter)
 }
 manualMoveToggle.onclick = function(e){
     if(mode == MODE.NORMAL){    // switch to manual if normal
@@ -650,7 +653,6 @@ function precinctOverEvent(e){
          break;
          case MODE.MANUAL_SELECT:
              mover.mouseoverFunction(e)
-             console.log("manual")
          break;
          default: console.log("invalid mode: "+ mode)
      }
@@ -662,7 +664,6 @@ function precinctOutEvent(e){
          break;
          case MODE.MANUAL_SELECT:
              mover.mouseoutFunction(e)
-             console.log("manual")
          break;
          default: console.log("invalid mode: "+ mode)
      }
@@ -674,7 +675,6 @@ function precinctClickEvent(e){
         break;
         case MODE.MANUAL_SELECT:
              mover.clickFunction(e)
-            console.log("manual")
         break;
         default: console.log("invalid mode: "+ mode)
     }
