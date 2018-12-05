@@ -10,6 +10,8 @@ L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=p
 var stateJson; //State handler added to map
 var districtJson; //District handler added to the map
 var precinctJson;
+var originalPrecinctJson = null;
+
 
 var currentStateID = null; //Keeping track of which state the user clicks on
 var currentStateName = null;
@@ -17,6 +19,7 @@ var currentStateName = null;
 var statesData;
 var districtData;
 var precinctData;
+var originalPrecinctData; //Retreived from server to display original when selected
 
 var currentConstText;
 
@@ -116,7 +119,6 @@ function highlightFeature(e) {
         layer.bringToFront();
     }
 }
-
 function highlightPrecinctFeature(e) {
     var layer = e.target;
 
@@ -206,6 +208,20 @@ function addStateLayer () {
   }).addTo(mymap);
 }
 
+function addOriginalPrecinctsLayer() {
+  originalPrecinctJson = L.geoJson(originalPrecinctData, {
+      style: function() {
+        return {
+          fillOpacity: 0.4,
+          color: "grey"
+        }
+      },
+      onEachFeature : onEachPrecinctFeature
+  }).addTo(mymap);
+  layer_manager.build_precincts_map(originalPrecinctJson)
+  layer_manager.color_precincts()
+}
+
 function onEachStateFeature(feature, layer) {
     layer.on({
         mouseover: highlightFeature,
@@ -236,6 +252,8 @@ function resetMap(){
   }
     currentStateID = null;
     currentConstText = null;
+    originalPrecinctData = null;
+    originalPrecinctJson = null;
   if(mymap.hasLayer(stateJson)) {
     return;
   } else {
@@ -312,6 +330,36 @@ function loadStateJson(state, currentState){
         }
     }
     request.send(null);
+}
+function displayOriginalMap() {
+    if(mymap.hasLayer(stateJson) || mymap.hasLayer(districtJson) || mymap.hasLayer(originalPrecinctJson)) {
+      return;
+    }
+    if(originalPrecinctJson) {
+      precinctJson.remove();
+      addOriginalPrecinctsLayer();
+      return;
+    }
+    var request = new XMLHttpRequest();
+    var url = "http://localhost:8080/getOriginal"
+    request.open("GET", url, true)
+    request.onreadystatechange = function() {
+      if (request.readyState == 4 && request.status == 200) {
+        var loadedJson = request.response
+        var obj = JSON.parse(loadedJson);
+        originalPrecinctData = obj;
+        precinctJson.remove();
+        addOriginalPrecinctsLayer();
+      }
+    }
+    request.send(null)
+}
+function displayGeneratedMap() {
+  if(mymap.hasLayer(stateJson) || mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
+    return;
+  }
+  originalPrecinctJson.remove();
+  addPrecinctsLayer();
 }
 
 function loadPrecinctProperties(layer){
