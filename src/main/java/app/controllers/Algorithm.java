@@ -9,11 +9,19 @@ import app.json.PropertiesManager;
 import app.state.District;
 import app.state.Precinct;
 import app.state.State;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
 
+@Service
+@Scope(value = "prototype")
 public abstract class Algorithm{
+    @Autowired
+    SocketHandler handler;
+
     protected State state;
     protected volatile boolean running;
     protected volatile boolean paused;
@@ -26,6 +34,7 @@ public abstract class Algorithm{
     protected long remainingRunTime;
     private final int ONE = 1;
     private final int ZERO = 0;
+    protected final String endMessage = "{\"enable_reset\": 1, \"console_log\" : \"Algo ended\"}";
 
 
     public Algorithm(){
@@ -45,6 +54,7 @@ public abstract class Algorithm{
         algoThread = new Thread(()->{
             running = true;
             run();
+            handler.send(endMessage);
         });
         algoThread.start();
     }
