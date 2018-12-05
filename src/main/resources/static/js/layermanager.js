@@ -2,6 +2,7 @@ var layer_manager = (function(){
     var ATTR_PROPERTY_NAME = "properties"
     var ATTR_DISTRICT_ID_NAME = "DISTRICTID"
     var ATTR_PRECINCT_ID_NAME = "PRECINCTID"
+    var DEFAULT_REGION_COLOR = "white"
 
     manager = {}
     manager.district_map = {}
@@ -14,6 +15,7 @@ var layer_manager = (function(){
         var temp_district_map = {}
         var temp_color_map = {}
         var rgb_values = ["red", "orange", "blue", "yellow", "green", "purple", "aqua", "pink", "silver"] //HARD CODED AS STRINGS FOR THE TIME BEING
+        var default_region_color = "white"
         var rgb_index = 0
         for(var key in district_layers){
             var district_id = district_layers[key].feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME]
@@ -48,6 +50,24 @@ var layer_manager = (function(){
             var district_id = layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME]
             var color = manager.district_layer_color_map[district_id]
             manager.precinct_map[id].setStyle({fillColor: color})
+        }
+    }
+
+    manager.color_unassigned_precincts = function(){
+        for(var id in manager.precinct_map){
+            var layer = manager.precinct_map[id]
+            layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME] = 0
+            manager.precinct_map[id].setStyle({fillColor : DEFAULT_REGION_COLOR})
+        }
+    }
+
+    manager.color_default_regions = function(seeds){
+        for(var key in seeds){
+            var layer = manager.precinct_map[key]
+            var district_id = seeds[key]
+            var color = manager.district_layer_color_map[district_id]
+            layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME] = district_id
+            manager.precinct_map[key].setStyle({fillColor: color})
         }
     }
 
