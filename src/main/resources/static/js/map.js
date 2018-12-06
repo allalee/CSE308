@@ -18,7 +18,7 @@ var currentStateName = null;
 
 var statesData;
 var districtData;
-var precinctData;
+var precinctData = null;
 var originalPrecinctData; //Retreived from server to display original when selected
 
 var currentConstText;
@@ -732,3 +732,22 @@ function enableManualMoveOption(enable){
     }
 }
 enableManualMoveOption(false)
+
+function save_map() {
+  if (!mymap.hasLayer(precinctJson)) {
+    return;
+  }
+  mapInput = document.getElementById("mapfield");
+  mapValue = mapInput.value;
+  mapData = JSON.stringify(precinctData);
+  var request = new XMLHttpRequest();
+  var url = "http://localhost:8080/saveMap?name=" + mapValue
+  request.open("GET", url, true);
+  request.onreadystatechange = function() {
+    if (request.readyState == 4 && request.status == 200) {
+      consoleWrite("Map Saved");
+    }
+  }
+  request.send(null);
+
+}

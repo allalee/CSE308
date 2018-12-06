@@ -8,9 +8,12 @@ import app.state.Precinct;
 import app.state.State;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 
 
@@ -33,6 +36,18 @@ public class RequestHandler {
         public @ResponseBody
         String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws Throwable {
             return sm.createState(state, stateID);
+        }
+
+        @RequestMapping(value = "/saveMap", method = RequestMethod.GET)
+        @ResponseStatus(value = HttpStatus.OK)
+        public
+        void saveMap(HttpServletRequest req, @RequestParam ("name") String name) throws Throwable {
+            Cookie userCookie = getCookie(req, "user");
+            String email = "";
+            if(userCookie != null) {
+                email = userCookie.getValue();
+            }
+            sm.saveMap(email, name); //REMEMBER TO CHANGE THIS TO MODIFIED ONE
         }
 
         @RequestMapping(value = "/loadPrecinctData", method = RequestMethod.GET)
@@ -153,4 +168,17 @@ public class RequestHandler {
 
             return "";
         }
+
+    public Cookie getCookie(HttpServletRequest req, String cookieName){
+        Cookie[] cookies = req.getCookies();
+        if(cookies != null) {
+            for(Cookie cookie : cookies){
+                if(cookie.getName().equals(cookieName)){
+                    return cookie;
+                }
+            }
+        }
+        return null;
+    }
+
 }
