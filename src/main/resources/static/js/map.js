@@ -34,9 +34,9 @@ function consoleLog(message_body){
         console.append(message_body["console_log"])
         console.scrollTop = console.scrollHeight
     }
-    if(message_body["src"] && message_body["dest"] && message_body["precinct"]){
-        layer_manager.set_new_precinct_district(message_body["precinct"], message_body["dest"])
-        layer_manager.color_precincts()
+    if(message_body["dest"] && message_body["precinct"]){
+            layer_manager.set_new_precinct_district(message_body["precinct"], message_body["dest"])
+            layer_manager.color_changed_precinct(message_body["precinct"], message_body["dest"])
     }
     if(message_body["enable_reset"]){
         connector.clear_message()
