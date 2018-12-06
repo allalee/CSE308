@@ -1,3 +1,4 @@
+
 makeManualMover = function(layerManager, selector_option_div){
 
     var mm = {}

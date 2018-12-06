@@ -104,6 +104,10 @@ var layer_manager = (function(){
         return layer.feature[ATTR_PROPERTY_NAME][ATTR_PRECINCT_ID_NAME]
     }
 
+    manager.get_district_id = function(layer){
+        return layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME]
+    }
+
     manager.get_district_id_by_precinct_layer = function(layer){
         return layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME]
     }
