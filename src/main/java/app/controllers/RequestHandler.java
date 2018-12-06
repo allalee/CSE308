@@ -98,10 +98,22 @@ public class RequestHandler {
                         "\"message\" : \"precinct not adjacent to the district\" }";
             }
 
+            currentState.getDistrict(src).calculateBoundaryPrecincts();
+            currentState.getDistrict(dest).calculateBoundaryPrecincts();
+
+            boolean isBorder = currentState.getDistrict(src).getBorderPrecincts().contains(p);
+            System.out.println("is border: "+  isBorder);
             // move
             Move move = new Move(currentState.getDistrict(src), currentState.getDistrict(dest), p);
             move.execute();
             double functionValue = 0;
+            currentState.getDistrict(src).calculateBoundaryPrecincts();
+            currentState.getDistrict(dest).calculateBoundaryPrecincts();
+
+            if(currentState.getDistrict(src).isCutoff() || currentState.getDistrict(dest).isCutoff()) {
+                System.out.println("cuts off");
+            }
+
 
             // undo if it is not a locking move
             if(!lock)
