@@ -82,6 +82,34 @@ public class StateManager {
             hb.persistToDB(data);
         }
     }
+    public String loadMap(String email, String mapName) throws Throwable{
+        int state_id = currentState.getID();
+        List<Object> l;
+        Map<String, Object> criteria = new HashMap<>();
+        criteria.put("name", mapName);
+        criteria.put("email", email);
+        criteria.put("state_id", state_id);
+        l = hb.getRecordsBasedOnCriteria(Maps.class, criteria);
+        String map = "";
+        for(Object o : l) {
+            Maps mapSegment = (Maps) o;
+            map+= mapSegment.getSavedmap();
+        }
+        return map;
+    }
+    public void deleteMap(String email, String mapName) throws Throwable {
+        int state_id = currentState.getID();
+        List<Object> l;
+        Map<String, Object> criteria = new HashMap<>();
+        criteria.put("name", mapName);
+        criteria.put("email", email);
+        criteria.put("state_id", state_id);
+        l = hb.getRecordsBasedOnCriteria(Maps.class, criteria);
+        for(Object o : l) {
+            Maps mapSegment = (Maps) o;
+            hb.removeFromDB(mapSegment);
+        }
+    }
 
 
     /**If a state already exists, then get it from the HashMap
