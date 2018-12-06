@@ -6,6 +6,7 @@ import app.json.JTSConverter;
 import app.state.District;
 import app.state.Precinct;
 import app.state.State;
+import com.vividsolutions.jts.geom.Geometry;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -58,7 +59,8 @@ public class RequestHandler {
         String tempMove(@RequestParam ("src") Integer src, @RequestParam("dest") Integer dest, @RequestParam("precinct") Integer precinct, @RequestParam("lock") Boolean lock) throws Throwable {
             System.out.println("inputs are: " + src+" "+ dest+" "+ precinct);
 
-            State currentState = sm.getCurrentState();
+            //State currentState = sm.getCurrentState();
+            State currentState = sm.getClonedState();
             Precinct p = null;
             for(District d : currentState.getAllDistricts()){
                 p = d.getPrecinct(precinct);
@@ -73,36 +75,46 @@ public class RequestHandler {
                        "\"message\" : \"invalid precinct\" }";
             }
             boolean destIsNeighbor = false;
+            Precinct n = null;
             for(Precinct neighbor : p.getNeighbors()){
-                if(neighbor.getDistrict().getID() == dest)
+                if(neighbor.getDistrict().getID() == dest) {
                     destIsNeighbor = true;
+                    n = neighbor;
+                    break;
+                }
             }
             if(!destIsNeighbor){
                 return "{ \"value\" : \"-1\", " +
                         "\"valid\" : false, " +
                         "\"message\" : \"precinct not adjacent to the district\" }";
             }
-
-            currentState.getDistrict(src).calculateBoundaryPrecincts();
-            currentState.getDistrict(dest).calculateBoundaryPrecincts();
-
-            boolean isBorder = currentState.getDistrict(src).getBorderPrecincts().contains(p);
-            System.out.println("is border: "+  isBorder);
+            Geometry intersection = n.getGeometry().intersection(p.getGeometry());
+            System.out.println("PERI" + intersection.getLength());
+            System.out.println("AREA" + intersection.getArea());
+//            currentState.getDistrict(src).calculateBoundaryPrecincts();
+//            currentState.getDistrict(dest).calculateBoundaryPrecincts();
+//
+//            boolean isBorder = currentState.getDistrict(src).getBorderPrecincts().contains(p);
+//            System.out.println("is border: "+  isBorder);
             // move
             Move move = new Move(currentState.getDistrict(src), currentState.getDistrict(dest), p);
             move.execute();
-            double functionValue = 0;
             currentState.getDistrict(src).calculateBoundaryPrecincts();
             currentState.getDistrict(dest).calculateBoundaryPrecincts();
 
-            if(currentState.getDistrict(src).isCutoff() || currentState.getDistrict(dest).isCutoff()) {
-                System.out.println("cuts off");
-            }
+            double functionValue = 0;
+
+//            if(currentState.getDistrict(src).isCutoff() || currentState.getDistrict(dest).isCutoff()) {
+//                System.out.println("cuts off");
+//            }
 
 
             // undo if it is not a locking move
-            if(!lock)
+            if(!lock) {
                 move.undo();
+                currentState.getDistrict(src).calculateBoundaryPrecincts();
+                currentState.getDistrict(dest).calculateBoundaryPrecincts();
+            }
 
             return  "{ \"value\" : \""+functionValue+"\", " +
                     "\"valid\" : true, " +
