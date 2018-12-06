@@ -45,16 +45,11 @@ public class Maps implements Serializable{
     private int index;
 
     public Maps(String name, String email, String savedmapJSON, int stateId, int index) throws Exception {
-        if (!Validator.isJSONValid(savedmapJSON)) {
-            throw new Exception("savedmapJSON value is not a valid JSON");
-        }
-        else {
             this.name = name;
             this.email = email;
             this.savedmap = savedmapJSON;
             this.stateId = stateId;
             this.index = index;
-        }
     }
 
     public Maps(){
