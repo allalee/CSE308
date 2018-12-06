@@ -449,7 +449,13 @@ function savePreferences(){
     var url = "http://localhost:8080/savePreferences?prefName=" + name + "&popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
     var request = new XMLHttpRequest()
     request.open("GET", url, true)
+    request.onreadystatechange = updateSavedList
     request.send(null)
+}
+
+function updateSavedList(){
+
+
 }
 
 function loadPreferences(){

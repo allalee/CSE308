@@ -50,7 +50,7 @@ public class PreferenceHandler {
     }
 
     @RequestMapping(value="/loadPreferences", method = RequestMethod.GET)
-    public void loadPref(HttpServletRequest req, HttpServletResponse resp, @RequestParam("name") String name) throws Throwable {
+    public void loadPref(HttpServletRequest req, @RequestParam("name") String name) throws Throwable {
         String email = "";
         Cookie userCookie = getCookie(req, "user");
         if (userCookie != null) {
@@ -60,7 +60,17 @@ public class PreferenceHandler {
         if (email != "" && name != "") {
             Map<String, Object> criteria = new HashMap<>();
             criteria.put("name", name);
+            criteria.put("email", email);
             List<Object> prefList = hm.getRecordsBasedOnCriteria(Preferences.class, criteria);
+            Iterator itr = prefList.iterator();
+            int index = 0;
+            while(itr.hasNext()){
+                Preferences thisPreference = (Preferences) prefList.get(index);
+                if(thisPreference.getName().equals(name)){
+                    //LOAD TO FRONT END
+
+                }
+            }
         }
     }
 
