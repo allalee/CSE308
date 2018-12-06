@@ -75,8 +75,8 @@ public class RequestHandler {
         public @ResponseBody
         String tempMove(@RequestParam ("src") Integer src, @RequestParam("dest") Integer dest, @RequestParam("precinct") Integer precinct, @RequestParam("lock") Boolean lock) throws Throwable {
             System.out.println("inputs are: " + src+" "+ dest+" "+ precinct);
-
-            State currentState = sm.getCurrentState();
+            sm.cloneState(sm.getCurrentState().getName());
+            State currentState = sm.getClonedState();
             Precinct p = null;
             for(District d : currentState.getAllDistricts()){
                 p = d.getPrecinct(precinct);

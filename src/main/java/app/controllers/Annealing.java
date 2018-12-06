@@ -23,78 +23,67 @@ public class Annealing extends Algorithm {
         Collection<District> allDistricts = state.getAllDistricts();
         int stagnant_iterations = 0;
         int max_stagnant = Integer.parseInt(PropertiesManager.get(Property.STAGNANT_ITERATION));
-        for(District district : allDistricts){
+        //Calculate boundary precincts which are precincts in the district that border another district
+        for (District district : allDistricts) {
             district.calculateBoundaryPrecincts();
         }
         Precinct previouslyMovedPrecinct = null;
         Precinct precinctToMove;
         handler.send("{\"console_log\": \"Starting algorithm...\"}");
-        while(running && stagnant_iterations < max_stagnant && remainingRunTime > 0){
+        while (running && stagnant_iterations < max_stagnant && remainingRunTime > 0) {
             if (paused) {
                 System.out.println("Algorithm Paused...");
-                try { Thread.sleep(500); } catch (InterruptedException e) {}
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                }
                 continue;
             }
-
             long startTime = System.currentTimeMillis();
             double startFunctionValue = functionValue;
-
-            // find src, dest
-            do  {
-                precinctToMove = getPrecinctToMove(allDistricts);
-            } while (previouslyMovedPrecinct == precinctToMove);
-            District destDistrict = selectDestinationDistrict(precinctToMove);
-            District srcDistrict = precinctToMove.getDistrict();
-
-            // check if geometry will be split before making the irrevertible move
-            srcDistrict.removePrecinct(precinctToMove);
-            srcDistrict.getBorderPrecincts().remove(precinctToMove);
-            destDistrict.addPrecinct(precinctToMove.getID(), precinctToMove);
-            destDistrict.getBorderPrecincts().add(precinctToMove);
-
-            // combine all illegalmoves
-            boolean illegalMoveForSure = destDistrict.isCutoff();
-            illegalMoveForSure |= srcDistrict.isCutoff();
-            //illegalMoveForSure |= touchedEnough;
-
-            if(illegalMoveForSure){
-                // this is a very bad move, do not move. Clean up everything used in calculation
-                destDistrict.removePrecinct(precinctToMove);
-                destDistrict.getBorderPrecincts().remove(precinctToMove);
-                srcDistrict.addPrecinct(precinctToMove.getID(), precinctToMove);
-                srcDistrict.getBorderPrecincts().add(precinctToMove);
-                System.out.println("Bad move on: " + precinctToMove.getID());
+            District districtToModify = getRandomDistrict(allDistricts);
+            Precinct neighboringPrecinctToAdd = getNeighborToAnneal(districtToModify.getBorderPrecincts());
+            Move currentMove = new Move(neighboringPrecinctToAdd.getDistrict(), districtToModify, neighboringPrecinctToAdd);
+            currentMove.execute();
+            if (checkThreshold(startFunctionValue, functionValue)) {
+                updateClient(currentMove);
+            } else {
+                currentMove.undo();
+                functionValue = startFunctionValue;
             }
-            else{
-                Move currentMove = new Move(srcDistrict, destDistrict, precinctToMove);
-                currentMove.execute();
-                functionValue = calculateFunctionValue();
-
-                if (checkThreshold(startFunctionValue, functionValue)) {
-                    updateClient(currentMove);
-                } else {
-                    currentMove.undo();
-                }
-
-                if (isStagnant(startFunctionValue, functionValue)) {
-                    stagnant_iterations++;
-                    System.out.println(stagnant_iterations+" "+functionValue);
-                } else {
-                    stagnant_iterations = 0;
-                }
-                startFunctionValue = functionValue;
-
-                previouslyMovedPrecinct = precinctToMove;
-                srcDistrict.calculateBoundaryPrecincts();
-                destDistrict.calculateBoundaryPrecincts();
+            if (isStagnant(startFunctionValue, functionValue)) {
+                stagnant_iterations++;
+                System.out.println(stagnant_iterations+" "+functionValue);
+            } else {
+                stagnant_iterations = 0;
             }
-
-
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
+
+//            do {
+//                //Find a precinct that borders a boundary precinct that is part of another district
+//                precinctToMove = getPrecinctToMove(allDistricts);
+//            } while (previouslyMovedPrecinct == precinctToMove);
+//            District destDistrict = selectDestinationDistrict(precinctToMove);
+//            District srcDistrict = precinctToMove.getDistrict();
+//            Move currentMove = new Move(srcDistrict, destDistrict, precinctToMove);
+//            currentMove.execute();
+//            functionValue = calculateFunctionValue();
+//            if (checkThreshold(startFunctionValue, functionValue)) {
+//                updateClient(currentMove);
+//            } else {
+//                currentMove.undo();
+//                functionValue = startFunctionValue;
+//            }
+//            if (isStagnant(startFunctionValue, functionValue)) {
+//                stagnant_iterations++;
+//                System.out.println(stagnant_iterations+" "+functionValue);
+//            } else {
+//                stagnant_iterations = 0;
+//            }
+//            long deltaTime = System.currentTimeMillis() - startTime;
+//            remainingRunTime -= deltaTime;
         }
-        running = false;
-        System.out.println("Algo finished");
     }
 
     private boolean isStagnant(double oldValue, double newValue){
@@ -115,38 +104,25 @@ public class Annealing extends Algorithm {
         handler.send(move.toString());
     }
 
-    private Set<Precinct> used = new HashSet<>();
-    private Precinct getPrecinctToMove(Collection<District> dCollection){
-        int totalPrecincts = 0;
-        for(District d: dCollection){
-            totalPrecincts += d.getBorderPrecincts().size();
-        }
-        if (used.size() >= totalPrecincts ) used.clear();
-        for(District d: dCollection){
-            for(Precinct p : d.getBorderPrecincts()){
-                if(!used.contains(p)){
-                    used.add(p);
-                    return p;
-                }
-            }
-        }
-
-
+    private District getRandomDistrict(Collection<District> dCollection){
         Random random = new Random();
         int index = random.nextInt(dCollection.size());
-        District selectedDistrict = (District)dCollection.toArray()[index];
-        int precinctIndex = random.nextInt(selectedDistrict.getBorderPrecincts().size());
-        return (Precinct)selectedDistrict.getBorderPrecincts().toArray()[precinctIndex];
+        return (District)dCollection.toArray()[index];
+    }
 
-//        Precinct thisSideBorder = (Precinct)selectedDistrict.getBorderPrecincts().toArray()[precinctIndex];
-//        Precinct otherSide = null;
-//        for(Precinct neighbor : thisSideBorder.getNeighbors()){
-//            if(neighbor.getDistrict().getID() != thisSideBorder.getDistrict().getID()){
-//                otherSide = neighbor;
-//            }
-//        }
-//        if(otherSide==null) System.out.println("How can this bee");
-//        return otherSide;
+    private Precinct getNeighborToAnneal(Collection<Precinct> borderingPrecincts){
+        Random random = new Random();
+        int index = random.nextInt(borderingPrecincts.size());
+        return (Precinct)borderingPrecincts.toArray()[index];
+    }
+
+    //Get a random boundary precinct from another district
+    private Precinct getPrecinctToMove(Collection<District> dCollection){
+        Random random = new Random();
+        int index = random.nextInt(dCollection.size());
+        District selectedDistrict = (District)dCollection.toArray()[index]; //Retrieve a random district to have their precinct moved.
+        int precinctIndex = random.nextInt(selectedDistrict.getBorderPrecincts().size()); //Select a random bordering precinct
+        return (Precinct)selectedDistrict.getBorderPrecincts().toArray()[precinctIndex]; //Return the bordering precinct to be moved to another adjacent district
     }
 
     private District selectDestinationDistrict(Precinct precinct){

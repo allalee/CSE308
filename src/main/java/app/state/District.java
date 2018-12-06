@@ -3,6 +3,7 @@ package app.state;
 import app.enums.Metric;
 import app.enums.Parties;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.simplify.VWSimplifier;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,8 +39,8 @@ public class District{
         this.borderPrecincts.clear();
         for(Precinct p: precinctMap.values()){
             for(Precinct neighbor: p.getNeighbors()){
-                if(neighbor.getDistrict() == null || neighbor.getDistrict().getID() != this.getID()){
-                    this.borderPrecincts.add(p);
+                if(neighbor.getDistrict().getID() != this.getID()){
+                    this.borderPrecincts.add(neighbor);
                 }
             }
         }
@@ -117,10 +118,14 @@ public class District{
 
     //Merges the district geometry with the specified precinct geometry
     public void addToCurrentGeometry(Geometry geometry) {
-        this.currentGeometry= this.currentGeometry.union(geometry);
+        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
+        geometry = VWSimplifier.simplify(geometry, 0.001);
+        this.currentGeometry = this.currentGeometry.union(geometry);
     }
     //Difference the district geometry with the specified precinct geometry
     public void subtractFromCurrentGeometry(Geometry geometry) {
+        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
+        geometry = VWSimplifier.simplify(geometry, 0.001);
         this.currentGeometry = this.currentGeometry.difference(geometry);
     }
     public void addPopulation(int population) {
