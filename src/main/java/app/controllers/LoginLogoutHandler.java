@@ -1,5 +1,6 @@
 package app.controllers;
 
+import app.user.Preferences;
 import app.user.UsersModel;
 import gerrymandering.HibernateManager;
 import org.springframework.context.annotation.Configuration;
@@ -15,8 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Andrew on 11/13/2018.
@@ -37,14 +37,28 @@ public class LoginLogoutHandler {
         List<Object> users = getUsers();
         Iterator<Object> itr = users.iterator();
 
+        HibernateManager hm = HibernateManager.getInstance();
+        ArrayList<Preferences> userPreferences = new ArrayList<>();
         //Check to see if a user is logged in through cookie.
         while(itr.hasNext()){
             UsersModel user = (UsersModel) itr.next();
             if(user.getEmail().equals(email)) {
                 username = user.getUsername();
                 usertype = user.getType();
+                if(email != "" && username != "") {
+                    Map<String, Object> criteria = new HashMap<>();
+                    criteria.put("email", email);
+                    List<Object> prefList = hm.getRecordsBasedOnCriteria(Preferences.class, criteria);
+                    int index = 0;
+                    while (index < prefList.size()) {
+                        Preferences thisPreference = (Preferences) prefList.get(index);
+                        userPreferences.add(thisPreference);
+                        index++;
+                    }
+                }
                 model.addAttribute("username", username);
                 model.addAttribute("usertype", usertype);
+                model.addAttribute("userPreferences", userPreferences);
             }
         }
 

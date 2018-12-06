@@ -442,6 +442,7 @@ function sendState(currentStateID, currentStateName){
 
 
 function savePreferences(){
+    var prefDiv = document.getElementById("prefDiv");
     var name = document.getElementById("prefName").value
     var populationEquality = document.getElementById("population_equality").value
     var partisanFairness = document.getElementById("partisan_fairness").value
@@ -449,7 +450,23 @@ function savePreferences(){
     var url = "http://localhost:8080/savePreferences?prefName=" + name + "&popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
     var request = new XMLHttpRequest()
     request.open("GET", url, true)
+    request.onreadystatechange = function () {
+        if(request.readyState == 4 && request.status == 200){
+            var newcontent = document.createElement('a');
+            newcontent.innerHTML = name;
+            newcontent.setAttribute("class", "dropdown-item");
+            newcontent.setAttribute("onclick", "select_preference(this);");
+            prefDiv.appendChild(newcontent);
+        }
+    }
+    document.getElementById("prefName").value = "";
     request.send(null)
+}
+
+function select_preference(e){
+    selected = e.innerText;
+    target = document.getElementById("dropdownPreferences");
+    target.innerText = selected;
 }
 
 function loadPreferences(){
