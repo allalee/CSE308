@@ -73,10 +73,7 @@ public class RequestHandler {
         public @ResponseBody
         String tempMove(@RequestParam ("src") Integer src, @RequestParam("dest") Integer dest, @RequestParam("precinct") Integer precinct, @RequestParam("lock") Boolean lock) throws Throwable {
             System.out.println("inputs are: " + src+" "+ dest+" "+ precinct);
-
-            if(sm.getClonedState() == null){
-                sm.cloneState(sm.getCurrentState().getName());
-            }
+            sm.cloneState(sm.getCurrentState().getName());
             State currentState = sm.getClonedState();
             Precinct p = null;
             for(District d : currentState.getAllDistricts()){
@@ -146,8 +143,7 @@ public class RequestHandler {
         public @ResponseBody
         String startAlgo(@RequestParam("algorithmType") String algorithmType, @RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric ) throws Throwable {
             handler.send("{\"console_log\":\"Server received connection...\"}");
-            if(sm.getClonedState() == null)
-                sm.cloneState(sm.getCurrentState().getName());
+            sm.cloneState(sm.getCurrentState().getName());
             handler.send("{\"console_log\":\"Building precinct neighbors...\"}");
             HashMap<Integer, District> districtMap = sm.getClonedState().getDistrictMap();
             JTSConverter.buildNeighbor(sm.getClonedState().getAllPrecincts());
