@@ -43,19 +43,20 @@ public class Annealing extends Algorithm {
             District srcDistrict = precinctToMove.getDistrict();
             Move currentMove = new Move(srcDistrict, destDistrict, precinctToMove);
             try {
-                currentMove.execute();
-            }catch(TopologyException e){
-                System.out.println("Cutting geometry inhalf is not allowed, abort move");
-                continue;
-            }
-            functionValue = calculateFunctionValue();
-            if(checkThreshold(startFunctionValue, functionValue)){
+                currentMove.execute();  // bug, values not reset even if geometry merge fails
+
                 srcDistrict.calculateBoundaryPrecincts();
                 destDistrict.calculateBoundaryPrecincts();
+            functionValue = calculateFunctionValue();
+            functionValue = destDistrict.isCutoff()? -999 : functionValue;
+            functionValue = srcDistrict.isCutoff()? -999 : functionValue;
+            if(checkThreshold(startFunctionValue, functionValue)){
                 //reconfigureBoundaries(precinctToMove, srcDistrict);
                 updateClient(currentMove);
             } else {
                 currentMove.undo();
+                srcDistrict.calculateBoundaryPrecincts();
+                destDistrict.calculateBoundaryPrecincts();
             }
             if(isStagnant(startFunctionValue, functionValue)){
                 stagnant_iterations++;
@@ -65,6 +66,10 @@ public class Annealing extends Algorithm {
             previouslyMovedPrecinct = precinctToMove;
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
+            }catch(TopologyException e){
+                System.out.println("Cutting geometry inhalf is not allowed, abort move");
+                continue;
+            }
         }
         running = false;
         System.out.println("Algo finished");
@@ -93,7 +98,16 @@ public class Annealing extends Algorithm {
         int index = random.nextInt(dCollection.size());
         District selectedDistrict = (District)dCollection.toArray()[index];
         int precinctIndex = random.nextInt(selectedDistrict.getBorderPrecincts().size());
-        return (Precinct)selectedDistrict.getBorderPrecincts().toArray()[precinctIndex];
+
+        Precinct thisSideBorder = (Precinct)selectedDistrict.getBorderPrecincts().toArray()[precinctIndex];
+        Precinct otherSide = null;
+        for(Precinct neighbor : thisSideBorder.getNeighbors()){
+            if(neighbor.getDistrict().getID() != thisSideBorder.getDistrict().getID()){
+                otherSide = neighbor;
+            }
+        }
+        if(otherSide==null) System.out.println("How can this bee");
+        return otherSide;
     }
 
     private District selectDestinationDistrict(Precinct precinct){

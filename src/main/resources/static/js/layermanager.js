@@ -53,6 +53,12 @@ var layer_manager = (function(){
         }
     }
 
+    manager.color_changed_precinct = function(id, district_id){
+        var layer = manager.precinct_map[id]
+        var color = manager.district_layer_color_map[district_id]
+        manager.precinct_map[id].setStyle({fillColor: color})
+    }
+
     manager.color_unassigned_precincts = function(){
         for(var id in manager.precinct_map){
             var layer = manager.precinct_map[id]
@@ -96,6 +102,10 @@ var layer_manager = (function(){
 
     manager.get_precinct_id = function(layer){
         return layer.feature[ATTR_PROPERTY_NAME][ATTR_PRECINCT_ID_NAME]
+    }
+
+    manager.get_district_id = function(layer){
+        return layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME]
     }
 
     manager.get_district_id_by_precinct_layer = function(layer){
