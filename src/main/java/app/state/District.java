@@ -61,7 +61,6 @@ public class District{
         Precinct beginPrecinct = borderPrecincts.iterator().next();
         Set<Precinct> iteratedPrecincts = new HashSet<>();
         int numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
-        System.out.println("Borders reached" + numReached + ", Expected: "+numBorders);
         return numReached != numBorders;
     }
 
