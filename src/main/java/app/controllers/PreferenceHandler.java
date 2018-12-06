@@ -2,10 +2,12 @@ package app.controllers;
 
 import app.user.Preferences;
 import gerrymandering.HibernateManager;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +23,7 @@ import java.util.Map;
 @Controller
 public class PreferenceHandler {
     @RequestMapping(value="/savePreferences", method = RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.OK)
     public void savePref(HttpServletRequest req,
                          @RequestParam("prefName") String name,
                          @RequestParam("popEqual") int popequality,
@@ -50,7 +53,7 @@ public class PreferenceHandler {
     }
 
     @RequestMapping(value="/loadPreferences", method = RequestMethod.GET)
-    public void loadPref(HttpServletRequest req, HttpServletResponse resp, @RequestParam("name") String name) throws Throwable {
+    public void loadPref(HttpServletRequest req, @RequestParam("name") String name) throws Throwable {
         String email = "";
         Cookie userCookie = getCookie(req, "user");
         if (userCookie != null) {
@@ -60,7 +63,17 @@ public class PreferenceHandler {
         if (email != "" && name != "") {
             Map<String, Object> criteria = new HashMap<>();
             criteria.put("name", name);
+            criteria.put("email", email);
             List<Object> prefList = hm.getRecordsBasedOnCriteria(Preferences.class, criteria);
+            int index = 0;
+            while(index < prefList.size()){
+                Preferences thisPreference = (Preferences) prefList.get(index);
+                if(thisPreference.getName().equals(name)){
+                    //LOAD TO FRONT END
+
+                }
+                index++;
+            }
         }
     }
 

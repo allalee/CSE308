@@ -6,8 +6,6 @@ package app.enums;
 public enum Property {
 
     STAGNANT_ITERATION, MAX_RUNTIME,
-
-
     ALGO_NAME_ANNEAL,
     ALGO_NAME_GROW,
     ANNEALINGTHRESHOLD,

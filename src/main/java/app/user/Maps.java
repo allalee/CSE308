@@ -52,6 +52,10 @@ public class Maps implements Serializable{
         }
     }
 
+    public Maps(){
+
+    }
+
     public String getName() {
         return name;
     }

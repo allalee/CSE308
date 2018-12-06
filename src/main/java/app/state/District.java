@@ -45,6 +45,17 @@ public class District{
         }
     }
 
+    public void calculateBoundaryPrecincts(boolean regionGrowing){
+        this.borderPrecincts.clear();
+        for(Precinct p: precinctMap.values()){
+            for(Precinct neighbor: p.getNeighbors()){
+                if(neighbor.getDistrict() == null){
+                    this.borderPrecincts.add(neighbor);
+                }
+            }
+        }
+    }
+
     public boolean isCutoff(){
         int numBorders = borderPrecincts.size();
         Precinct beginPrecinct = borderPrecincts.iterator().next();

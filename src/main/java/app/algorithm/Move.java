@@ -133,6 +133,15 @@ public class Move {
         return json;
     }
 
+    public String toString(boolean regionGrow){
+        String json = "{\"console_log\": \"Precinct with ID: " + getPrecinctID() + ", moved to district with ID: " + getDestDistrict() + "\"";
+        json += ",\"dest\":\""+getDestDistrict();
+        json += "\",\"precinct\":\""+getPrecinctID();
+        json += "\"}";
+        System.out.println(json);
+        return json;
+    }
+
     public int getSrcDistrict() {
         return srcDistrict;
     }
