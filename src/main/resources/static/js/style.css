@@ -118,5 +118,5 @@ i:hover {
 }
 .map-drop-h {
   height: 30px;
-  width: inherit;
+  width: 100%;
 }
