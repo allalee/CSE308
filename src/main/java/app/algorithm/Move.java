@@ -20,6 +20,7 @@ public class Move {
     private District dest;
     private Precinct precinct;
 
+    //Annealing Constructor
     public Move(District src, District dest, Precinct precinct) {
         this.src = src;
         this.dest = dest;
@@ -28,6 +29,14 @@ public class Move {
         this.srcDistrict = src.getID();
         this.destDistrict = dest.getID();
     }
+    //Region Growing Constructor
+    public Move(District dest, Precinct precinct){
+        this.dest = dest;
+        this.precinct = precinct;
+        this.precinctID = precinct.getID();
+        this.destDistrict = dest.getID();
+    }
+
     public void execute(){
         precinct.setDistrict(dest);
         dest.addPrecinct(precinctID, precinct);
@@ -54,6 +63,23 @@ public class Move {
 
     }
 
+    public void execute(boolean regionGrowing){
+        precinct.setDistrict(dest);
+        dest.addPrecinct(precinctID, precinct);
+        Geometry precinctGeometry = precinct.getGeometry();
+        dest.addToCurrentGeometry(precinctGeometry);
+        int precinctPopulation = precinct.getPopulation();
+        dest.addPopulation(precinctPopulation);
+        ElectionData precinctVotes = precinct.getElectionData();
+        HashMap<Parties, Integer> voterDistribution = precinctVotes.getVoterDistribution();
+        if(voterDistribution.containsKey(Parties.DEMOCRATIC)){
+            dest.addVotes(Parties.DEMOCRATIC, voterDistribution.get(Parties.DEMOCRATIC));
+        }
+        if(voterDistribution.containsKey(Parties.REPUBLICAN)) {
+            dest.addVotes(Parties.REPUBLICAN, voterDistribution.get(Parties.REPUBLICAN));
+        }
+    }
+
     public void undo(){
         precinct.setDistrict(src);
         dest.removePrecinct(precinct);
@@ -77,6 +103,23 @@ public class Move {
             dest.addVotes(Parties.REPUBLICAN, -voterDistribution.get(Parties.REPUBLICAN));
             src.addVotes(Parties.REPUBLICAN, (voterDistribution.get(Parties.REPUBLICAN)));
         }
+    }
+
+    public void undo(boolean regionGrow){
+        precinct.setDistrict(null);
+        dest.removePrecinct(precinct);
+        Geometry precinctGeometry = precinct.getGeometry();
+        dest.subtractFromCurrentGeometry(precinctGeometry);
+        int precinctPopulation = precinct.getPopulation();
+        dest.addPopulation(-(precinctPopulation));
+        ElectionData precinctVotes = precinct.getElectionData();
+        HashMap<Parties, Integer> voterDistribution = precinctVotes.getVoterDistribution();
+        if(voterDistribution.containsKey(Parties.DEMOCRATIC)){
+            dest.addVotes(Parties.DEMOCRATIC, -voterDistribution.get(Parties.DEMOCRATIC));
+        }
+        if(voterDistribution.containsKey(Parties.REPUBLICAN)){
+            dest.addVotes(Parties.REPUBLICAN, -voterDistribution.get(Parties.REPUBLICAN));
+        }
 
     }
 
@@ -84,6 +127,15 @@ public class Move {
         String json = "{\"console_log\": \"Precinct with ID: " + getPrecinctID() + ", moved to district with ID: " + getDestDistrict() + "\"";
         json += ",\"src\":\""+getSrcDistrict();
         json += "\",\"dest\":\""+getDestDistrict();
+        json += "\",\"precinct\":\""+getPrecinctID();
+        json += "\"}";
+        System.out.println(json);
+        return json;
+    }
+
+    public String toString(boolean regionGrow){
+        String json = "{\"console_log\": \"Precinct with ID: " + getPrecinctID() + ", moved to district with ID: " + getDestDistrict() + "\"";
+        json += ",\"dest\":\""+getDestDistrict();
         json += "\",\"precinct\":\""+getPrecinctID();
         json += "\"}";
         System.out.println(json);

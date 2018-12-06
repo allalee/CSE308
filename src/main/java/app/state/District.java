@@ -35,9 +35,21 @@ public class District{
     }
 
     public void calculateBoundaryPrecincts(){
+        this.borderPrecincts.clear();
         for(Precinct p: precinctMap.values()){
             for(Precinct neighbor: p.getNeighbors()){
-                if(neighbor.getDistrict() == null || neighbor.getDistrict().getID() != this.getID()){
+                if(neighbor.getDistrict().getID() != this.getID()){
+                    this.borderPrecincts.add(neighbor);
+                }
+            }
+        }
+    }
+
+    public void calculateBoundaryPrecincts(boolean regionGrowing){
+        this.borderPrecincts.clear();
+        for(Precinct p: precinctMap.values()){
+            for(Precinct neighbor: p.getNeighbors()){
+                if(neighbor.getDistrict() == null){
                     this.borderPrecincts.add(neighbor);
                 }
             }

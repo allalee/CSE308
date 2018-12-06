@@ -11,7 +11,7 @@ function makeConnector(){
     con.stomp = null;
     con.message_queue = [];
     con.is_reading = false;
-    con.reading_interval = 200;
+    con.reading_interval = 50;
     con.message_pointer = 0;
 
     con.connect = function(){
