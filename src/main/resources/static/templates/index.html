@@ -141,13 +141,11 @@
              <div class="row">
                <div class="col px-0 pt-3">
                  <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle weight-drop m-0 p-0" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button class="btn btn-secondary dropdown-toggle weight-drop m-0 p-0" type="button" id="dropdownPreferences" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       Select
                     </button>
-                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                      <a class="dropdown-item" href="#">Action</a>
-                      <a class="dropdown-item" href="#">Another action</a>
-                      <a class="dropdown-item" href="#">Something else here</a>
+                    <div id="prefDiv" class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a th:each = "preference : ${userPreferences}" th:text="${preference.getName()}" class="dropdown-item" onclick="select_preference(this);"></a>
                     </div>
                   </div>
                </div>

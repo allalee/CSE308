@@ -2,10 +2,12 @@ package app.controllers;
 
 import app.user.Preferences;
 import gerrymandering.HibernateManager;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -21,6 +23,7 @@ import java.util.Map;
 @Controller
 public class PreferenceHandler {
     @RequestMapping(value="/savePreferences", method = RequestMethod.GET)
+    @ResponseStatus(value = HttpStatus.OK)
     public void savePref(HttpServletRequest req,
                          @RequestParam("prefName") String name,
                          @RequestParam("popEqual") int popequality,
@@ -62,14 +65,14 @@ public class PreferenceHandler {
             criteria.put("name", name);
             criteria.put("email", email);
             List<Object> prefList = hm.getRecordsBasedOnCriteria(Preferences.class, criteria);
-            Iterator itr = prefList.iterator();
             int index = 0;
-            while(itr.hasNext()){
+            while(index < prefList.size()){
                 Preferences thisPreference = (Preferences) prefList.get(index);
                 if(thisPreference.getName().equals(name)){
                     //LOAD TO FRONT END
 
                 }
+                index++;
             }
         }
     }

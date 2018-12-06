@@ -49,6 +49,10 @@ public class Preferences implements Serializable {
         this.compactness = compactness;
     }
 
+    public Preferences(){
+
+    }
+
     public String getName() {
         return name;
     }
