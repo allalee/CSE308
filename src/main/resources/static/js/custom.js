@@ -33,3 +33,9 @@ comp_output.innerHTML = comp_slider.value;
 comp_slider.oninput = function() {
   comp_output.innerHTML = this.value;
 }
+
+function select_map(e) {
+  selected = e.innerText
+  target = document.getElementById("dropdownMapButton")
+  target.innerText = selected
+}
