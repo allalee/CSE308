@@ -14,11 +14,15 @@ import app.json.PropertiesManager;
 import app.state.District;
 import app.state.Precinct;
 import app.state.State;
+import app.user.Maps;
 import gerrymandering.HibernateManager;
 import preprocess.dbclasses.Populations;
 import preprocess.dbclasses.VotingData;
 import preprocess.dbclasses.Demographics;
 import preprocess.dbclasses.Precincts;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 
 public class StateManager {
@@ -54,6 +58,32 @@ public class StateManager {
     public String getOriginalPrecinctsMap() {
         JsonBuilder jsonBuilder = new JsonBuilder();
         return jsonBuilder.buildPrecinctJson(currentState.getAllPrecincts());
+    }
+    public void saveMap(String email, String mapName) throws Throwable {
+        JsonBuilder jsonBuilder = new JsonBuilder();
+        int state_id = currentState.getID();
+        String map = jsonBuilder.buildPrecinctJson(clonedState.getAllPrecincts());
+        int chunkSize = 4000000;
+        int totalSize = map.length();
+        String[] segments = new String[(totalSize/chunkSize)+1];
+        for(int i =0; i<segments.length;i++) {
+            int start = i*chunkSize;
+            int end = i*chunkSize+chunkSize;
+            String chunk = "";
+            if(end>totalSize) {
+                chunk = map.substring(start);
+            } else {
+                chunk = map.substring(start, end);
+            }
+            segments[i] = chunk;
+
+        }
+        for (int i=0;i<segments.length;i++) {
+            Maps data = new Maps(mapName, email, segments[i], state_id,i );
+            hb.persistToDB(data);
+        }
+        //Maps data = new Maps(mapName, email, map, state_id );
+        //hb.persistToDB(data);
     }
 
 
@@ -121,6 +151,8 @@ public class StateManager {
         }
 
     }
+
+
 
     public String loadPrecinctData(Integer districtID, Integer precinctID) throws Throwable {
         Precinct precinct = currentState.getDistrictMap().get(districtID).getPrecinct(precinctID);
