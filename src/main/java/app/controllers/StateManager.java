@@ -63,8 +63,27 @@ public class StateManager {
         JsonBuilder jsonBuilder = new JsonBuilder();
         int state_id = currentState.getID();
         String map = jsonBuilder.buildPrecinctJson(clonedState.getAllPrecincts());
-        Maps data = new Maps(mapName, email, map, state_id);
-        hb.persistToDB(data);
+        int chunkSize = 4000000;
+        int totalSize = map.length();
+        String[] segments = new String[(totalSize/chunkSize)+1];
+        for(int i =0; i<segments.length;i++) {
+            int start = i*chunkSize;
+            int end = i*chunkSize+chunkSize;
+            String chunk = "";
+            if(end>totalSize) {
+                chunk = map.substring(start);
+            } else {
+                chunk = map.substring(start, end);
+            }
+            segments[i] = chunk;
+
+        }
+        for (int i=0;i<segments.length;i++) {
+            Maps data = new Maps(mapName, email, segments[i], state_id,i );
+            hb.persistToDB(data);
+        }
+        //Maps data = new Maps(mapName, email, map, state_id );
+        //hb.persistToDB(data);
     }
 
 
