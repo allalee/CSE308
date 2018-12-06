@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -74,8 +76,7 @@ public class RequestHandler {
         String tempMove(@RequestParam ("src") Integer src, @RequestParam("dest") Integer dest, @RequestParam("precinct") Integer precinct, @RequestParam("lock") Boolean lock) throws Throwable {
             System.out.println("inputs are: " + src+" "+ dest+" "+ precinct);
 
-            //State currentState = sm.getCurrentState();
-            State currentState = sm.getClonedState();
+            State currentState = sm.getCurrentState();
             Precinct p = null;
             for(District d : currentState.getAllDistricts()){
                 p = d.getPrecinct(precinct);
@@ -89,28 +90,28 @@ public class RequestHandler {
                        "\"valid\" : false, " +
                        "\"message\" : \"invalid precinct\" }";
             }
-            boolean destIsNeighbor = false;
-            Precinct n = null;
-            for(Precinct neighbor : p.getNeighbors()){
-                if(neighbor.getDistrict().getID() == dest) {
-                    destIsNeighbor = true;
-                    n = neighbor;
-                    break;
-                }
-            }
-            if(!destIsNeighbor){
-                return "{ \"value\" : \"-1\", " +
-                        "\"valid\" : false, " +
-                        "\"message\" : \"precinct not adjacent to the district\" }";
-            }
-            Geometry intersection = n.getGeometry().intersection(p.getGeometry());
-            System.out.println("PERI" + intersection.getLength());
-            System.out.println("AREA" + intersection.getArea());
-//            currentState.getDistrict(src).calculateBoundaryPrecincts();
-//            currentState.getDistrict(dest).calculateBoundaryPrecincts();
+//            boolean destIsNeighbor = false;
+//            for(Precinct neighbor : p.getNeighbors()){
+//                if(neighbor.getDistrict().getID() == dest) {
+//                    destIsNeighbor = true;
+//                    break;
+//                }
+//            }
+//            if(!destIsNeighbor){
+//                return "{ \"value\" : \"-1\", " +
+//                        "\"valid\" : false, " +
+//                        "\"message\" : \"precinct not adjacent to the district\" }";
+//            }
+//            Geometry intersection = n.getGeometry().intersection(p.getGeometry());
+//            System.out.println("PERI" + intersection.getLength());
+//            System.out.println("AREA" + intersection.getArea());
+            currentState.getDistrict(src).calculateBoundaryPrecincts();
+            currentState.getDistrict(dest).calculateBoundaryPrecincts();
 //
-//            boolean isBorder = currentState.getDistrict(src).getBorderPrecincts().contains(p);
-//            System.out.println("is border: "+  isBorder);
+            boolean isBorder = currentState.getDistrict(src).getBorderPrecincts().contains(p);
+            System.out.println("is border: "+  isBorder);
+            boolean cutOff = currentState.getDistrict(src).isCutoff();
+            System.out.println("is cut off: "+cutOff);
             // move
             Move move = new Move(currentState.getDistrict(src), currentState.getDistrict(dest), p);
             move.execute();
@@ -131,9 +132,21 @@ public class RequestHandler {
                 currentState.getDistrict(dest).calculateBoundaryPrecincts();
             }
 
-            return  "{ \"value\" : \""+functionValue+"\", " +
-                    "\"valid\" : true, " +
-                    "\"message\" : \"move value is: "+functionValue+"\" }";
+            Set<Precinct> borders = new HashSet<>();
+            currentState.getDistrict(src).getCutOff(borders);
+            String json = "[";
+            for(Precinct pre : borders) {
+                json += pre.getID() +",";
+
+            }
+            json = json.substring(0, json.length()-1);
+            json += "]";
+
+            return json;
+//
+//            return  "{ \"value\" : \""+functionValue+"\", " +
+//                    "\"valid\" : true, " +
+//                    "\"message\" : \"move value is: "+functionValue+"\" }";
         }
 
 

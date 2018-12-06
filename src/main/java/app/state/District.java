@@ -61,6 +61,17 @@ public class District{
         Precinct beginPrecinct = borderPrecincts.iterator().next();
         Set<Precinct> iteratedPrecincts = new HashSet<>();
         int numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
+        System.out.println("numReached: " + numReached + " numExpected: " + numBorders);
+        return numReached != numBorders;
+    }
+
+    public boolean getCutOff(Set<Precinct> borders){
+        int numBorders = borderPrecincts.size();
+        Precinct beginPrecinct = borderPrecincts.iterator().next();
+        Set<Precinct> iteratedPrecincts = new HashSet<>();
+        int numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
+        System.out.println("numReached: " + numReached + " numExpected: " + numBorders);
+        borders.addAll(iteratedPrecincts);
         return numReached != numBorders;
     }
 
@@ -68,7 +79,7 @@ public class District{
         int reachedBorders = 1;
         iteratedPrecincts.add(current);
         for(Precinct neighbor: current.getNeighbors()){
-            if(!iteratedPrecincts.contains(neighbor) && borderPrecincts.contains(neighbor))
+            if(borderPrecincts.contains(neighbor)&& !iteratedPrecincts.contains(neighbor))
                 reachedBorders += numBordersReachable(neighbor, iteratedPrecincts);
         }
         return reachedBorders;
@@ -109,7 +120,6 @@ public class District{
         this.currentGeometry= this.currentGeometry.union(geometry);
     }
     //Difference the district geometry with the specified precinct geometry
-
     public void subtractFromCurrentGeometry(Geometry geometry) {
         this.currentGeometry = this.currentGeometry.difference(geometry);
     }

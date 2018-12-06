@@ -52,22 +52,6 @@ public class Annealing extends Algorithm {
             destDistrict.addPrecinct(precinctToMove.getID(), precinctToMove);
             destDistrict.getBorderPrecincts().add(precinctToMove);
 
-            // check if their intersecting length is long enough
-//            boolean touchedEnough = false;
-//            for(Precinct neighbor: precinctToMove.getNeighbors()){
-//                if(neighbor.getDistrict().getID() == destDistrict.getID()){
-//                    try {
-//                        System.out.println("Attempt intersection");
-//                        Geometry intersection = neighbor.getGeometry().intersection(precinctToMove.getGeometry());
-//                        System.out.println("Intersection done");
-//                        if (intersection.getLength() > Double.parseDouble(PropertiesManager.get(Property.MIN_TOUCHING))) {
-//                            touchedEnough = true;
-//                            break;
-//                        }
-//                    }catch (TopologyException e){break;}
-//                }
-//            }
-
             // combine all illegalmoves
             boolean illegalMoveForSure = destDistrict.isCutoff();
             illegalMoveForSure |= srcDistrict.isCutoff();
@@ -131,7 +115,23 @@ public class Annealing extends Algorithm {
         handler.send(move.toString());
     }
 
+    private Set<Precinct> used = new HashSet<>();
     private Precinct getPrecinctToMove(Collection<District> dCollection){
+        int totalPrecincts = 0;
+        for(District d: dCollection){
+            totalPrecincts += d.getBorderPrecincts().size();
+        }
+        if (used.size() >= totalPrecincts ) used.clear();
+        for(District d: dCollection){
+            for(Precinct p : d.getBorderPrecincts()){
+                if(!used.contains(p)){
+                    used.add(p);
+                    return p;
+                }
+            }
+        }
+
+
         Random random = new Random();
         int index = random.nextInt(dCollection.size());
         District selectedDistrict = (District)dCollection.toArray()[index];
