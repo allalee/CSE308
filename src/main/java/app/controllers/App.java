@@ -12,7 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class App{
 
 	public static void main(String[] args){
-		PropertiesManager.init("src/main/resources/static/settings/RequestHandlerXML.xml");
+		PropertiesManager.init("D:/CSE308/src/main/resources/static/settings/RequestHandlerXML.xml");
 		SpringApplication.run(App.class, args);
 	}
 }
