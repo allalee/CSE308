@@ -439,6 +439,35 @@ function sendState(currentStateID, currentStateName){
    request.send(null);
 }
 
+
+
+function savePreferences(){
+    var name = document.getElementById("prefName").value
+    var populationEquality = document.getElementById("population_equality").value
+    var partisanFairness = document.getElementById("partisan_fairness").value
+    var compactness = document.getElementById("compactness").value
+    var url = "http://localhost:8080/savePreferences?prefName=" + name + "&popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
+    var request = new XMLHttpRequest()
+    request.open("GET", url, true)
+    request.send(null)
+}
+
+function loadPreferences(){
+    var name = document.getElementById("weightRadio").value
+    var url = "http://localhost:8080/loadPreferences?name=" + name
+    var request = new XMLHttpRequest()
+    request.open("GET", url, true)
+    request.onreadystatechange = updatePref
+    request.send(null)
+}
+
+function updatePref(){
+    var populationEquality = document.getElementById("population_equality")
+    var partisanFairness = document.getElementById("partisan_fairness")
+    var compactness = document.getElementById("compactness")
+}
+
+
 document.getElementById("start").onclick = startAlgorithm
 document.getElementById("pause").onclick = togglePauseAlgorithm
 document.getElementById("stop").onclick = stopAlgorithm
