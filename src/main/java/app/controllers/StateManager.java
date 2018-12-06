@@ -76,14 +76,11 @@ public class StateManager {
                 chunk = map.substring(start, end);
             }
             segments[i] = chunk;
-
         }
         for (int i=0;i<segments.length;i++) {
-            Maps data = new Maps(mapName, email, segments[i], state_id,i );
+            Maps data = new Maps(mapName, email,segments[i],state_id,i);
             hb.persistToDB(data);
         }
-        //Maps data = new Maps(mapName, email, map, state_id );
-        //hb.persistToDB(data);
     }
 
 

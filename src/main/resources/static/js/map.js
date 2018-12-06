@@ -771,15 +771,18 @@ function save_map() {
   }
   mapInput = document.getElementById("mapfield");
   mapValue = mapInput.value;
-  mapData = JSON.stringify(precinctData);
   var request = new XMLHttpRequest();
   var url = "http://localhost:8080/saveMap?name=" + mapValue
   request.open("GET", url, true);
-  request.onreadystatechange = function() {
-    if (request.readyState == 4 && request.status == 200) {
-      consoleWrite("Map Saved");
+  request.onreadystatechange = function () {
+        if(request.readyState == 4 && request.status == 200){
+            var newcontent = document.createElement('a');
+            newcontent.innerHTML = name;
+            newcontent.setAttribute("class", "dropdown-item");
+            newcontent.setAttribute("onclick", "select_preference(this);");
+            prefDiv.appendChild(newcontent);
+        }
     }
-  }
-  request.send(null);
-
+  document.getElementById("prefName").value = "";
+  request.send(null)
 }
