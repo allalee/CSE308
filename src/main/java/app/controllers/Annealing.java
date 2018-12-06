@@ -5,6 +5,7 @@ import app.enums.Property;
 import app.json.PropertiesManager;
 import app.state.District;
 import app.state.Precinct;
+import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.TopologyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -34,42 +35,79 @@ public class Annealing extends Algorithm {
                 try { Thread.sleep(500); } catch (InterruptedException e) {}
                 continue;
             }
+
             long startTime = System.currentTimeMillis();
             double startFunctionValue = functionValue;
+
+            // find src, dest
             do  {
                 precinctToMove = getPrecinctToMove(allDistricts);
             } while (previouslyMovedPrecinct == precinctToMove);
             District destDistrict = selectDestinationDistrict(precinctToMove);
             District srcDistrict = precinctToMove.getDistrict();
-            Move currentMove = new Move(srcDistrict, destDistrict, precinctToMove);
-            try {
-                currentMove.execute();  // bug, values not reset even if geometry merge fails
 
-                srcDistrict.calculateBoundaryPrecincts();
-                destDistrict.calculateBoundaryPrecincts();
-            functionValue = calculateFunctionValue();
-            functionValue = destDistrict.isCutoff()? -999 : functionValue;
-            functionValue = srcDistrict.isCutoff()? -999 : functionValue;
-            if(checkThreshold(startFunctionValue, functionValue)){
-                //reconfigureBoundaries(precinctToMove, srcDistrict);
-                updateClient(currentMove);
-            } else {
-                currentMove.undo();
+            // check if geometry will be split before making the irrevertible move
+            srcDistrict.removePrecinct(precinctToMove);
+            srcDistrict.getBorderPrecincts().remove(precinctToMove);
+            destDistrict.addPrecinct(precinctToMove.getID(), precinctToMove);
+            destDistrict.getBorderPrecincts().add(precinctToMove);
+
+            // check if their intersecting length is long enough
+//            boolean touchedEnough = false;
+//            for(Precinct neighbor: precinctToMove.getNeighbors()){
+//                if(neighbor.getDistrict().getID() == destDistrict.getID()){
+//                    try {
+//                        System.out.println("Attempt intersection");
+//                        Geometry intersection = neighbor.getGeometry().intersection(precinctToMove.getGeometry());
+//                        System.out.println("Intersection done");
+//                        if (intersection.getLength() > Double.parseDouble(PropertiesManager.get(Property.MIN_TOUCHING))) {
+//                            touchedEnough = true;
+//                            break;
+//                        }
+//                    }catch (TopologyException e){break;}
+//                }
+//            }
+
+            // combine all illegalmoves
+            boolean illegalMoveForSure = destDistrict.isCutoff();
+            illegalMoveForSure |= srcDistrict.isCutoff();
+            //illegalMoveForSure |= touchedEnough;
+
+            if(illegalMoveForSure){
+                // this is a very bad move, do not move. Clean up everything used in calculation
+                destDistrict.removePrecinct(precinctToMove);
+                destDistrict.getBorderPrecincts().remove(precinctToMove);
+                srcDistrict.addPrecinct(precinctToMove.getID(), precinctToMove);
+                srcDistrict.getBorderPrecincts().add(precinctToMove);
+                System.out.println("Bad move on: " + precinctToMove.getID());
+            }
+            else{
+                Move currentMove = new Move(srcDistrict, destDistrict, precinctToMove);
+                currentMove.execute();
+                functionValue = calculateFunctionValue();
+
+                if (checkThreshold(startFunctionValue, functionValue)) {
+                    updateClient(currentMove);
+                } else {
+                    currentMove.undo();
+                }
+
+                if (isStagnant(startFunctionValue, functionValue)) {
+                    stagnant_iterations++;
+                    System.out.println(stagnant_iterations+" "+functionValue);
+                } else {
+                    stagnant_iterations = 0;
+                }
+                startFunctionValue = functionValue;
+
+                previouslyMovedPrecinct = precinctToMove;
                 srcDistrict.calculateBoundaryPrecincts();
                 destDistrict.calculateBoundaryPrecincts();
             }
-            if(isStagnant(startFunctionValue, functionValue)){
-                stagnant_iterations++;
-            } else{
-                stagnant_iterations = 0;
-            }
-            previouslyMovedPrecinct = precinctToMove;
+
+
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
-            }catch(TopologyException e){
-                System.out.println("Cutting geometry inhalf is not allowed, abort move");
-                continue;
-            }
         }
         running = false;
         System.out.println("Algo finished");
@@ -98,16 +136,17 @@ public class Annealing extends Algorithm {
         int index = random.nextInt(dCollection.size());
         District selectedDistrict = (District)dCollection.toArray()[index];
         int precinctIndex = random.nextInt(selectedDistrict.getBorderPrecincts().size());
+        return (Precinct)selectedDistrict.getBorderPrecincts().toArray()[precinctIndex];
 
-        Precinct thisSideBorder = (Precinct)selectedDistrict.getBorderPrecincts().toArray()[precinctIndex];
-        Precinct otherSide = null;
-        for(Precinct neighbor : thisSideBorder.getNeighbors()){
-            if(neighbor.getDistrict().getID() != thisSideBorder.getDistrict().getID()){
-                otherSide = neighbor;
-            }
-        }
-        if(otherSide==null) System.out.println("How can this bee");
-        return otherSide;
+//        Precinct thisSideBorder = (Precinct)selectedDistrict.getBorderPrecincts().toArray()[precinctIndex];
+//        Precinct otherSide = null;
+//        for(Precinct neighbor : thisSideBorder.getNeighbors()){
+//            if(neighbor.getDistrict().getID() != thisSideBorder.getDistrict().getID()){
+//                otherSide = neighbor;
+//            }
+//        }
+//        if(otherSide==null) System.out.println("How can this bee");
+//        return otherSide;
     }
 
     private District selectDestinationDistrict(Precinct precinct){
