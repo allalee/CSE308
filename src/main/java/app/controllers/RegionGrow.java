@@ -21,6 +21,7 @@ import java.util.*;
 public class RegionGrow extends Algorithm {
     @Autowired
     SocketHandler handler;
+    double threshold = 1; //Decaying threshold?
 
     @Override
     void run() {
@@ -37,13 +38,19 @@ public class RegionGrow extends Algorithm {
         ArrayList<District> regions = generateRegions(allDistricts, unassignedPrecincts);
         //Color the starting precincts in the map
         updateClientForRegions(regions);
-        //Start the while loop with the condition until all precincts are done growing
         Random random = new Random();
-        while(running && allPrecincts.size() != 0){
-            int i = random.nextInt(allDistricts.size()); //randomly select a district for algorithm to use
+        //Start the while loop with the condition until all precincts are placed into a district
+        while(running && unassignedPrecincts.size() != 0){
+            double startFunctionValue = calculateFunctionValue();
+            int i = random.nextInt(allDistricts.size());
             District currentDistrictToGrow = (District)regions.toArray()[i];
-            currentDistrictToGrow.calculateBoundaryPrecincts();
-            System.out.println(currentDistrictToGrow.getBorderPrecincts().size());
+            Precinct precinctToAdd = getPrecinctToAdd(currentDistrictToGrow, random);
+            Move move = new Move(currentDistrictToGrow, precinctToAdd);
+
+            //Add precinct the region and check if the move is good
+            //Check if the move is good
+            //Reconfigure the bordering precincts of the region
+
         }
 
 
@@ -126,6 +133,7 @@ public class RegionGrow extends Algorithm {
             District newDistrict = new District(d.getID(), d.getState(), seedPrecinct.getGeometry());
             newDistrict.addPrecinct(seedPrecinct.getID(), seedPrecinct);
             seedPrecinct.setDistrict(newDistrict);
+            newDistrict.calculateBoundaryPrecincts();
             regions.add(newDistrict);
         }
         unassignedPrecincts.clear();
@@ -138,8 +146,10 @@ public class RegionGrow extends Algorithm {
         return regions;
     }
 
-    private void findBorderPrecincts(){
-
+    private Precinct getPrecinctToAdd(District currentDistrictToGrow, Random random){
+        Collection<Precinct> borderPrecincts = currentDistrictToGrow.getBorderPrecincts();
+        int next = random.nextInt(borderPrecincts.size());
+        return (Precinct)borderPrecincts.toArray()[next];
     }
 
     private void updateClient(Move move){

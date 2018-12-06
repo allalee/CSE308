@@ -112,3 +112,11 @@ i:hover {
   height: 30px;
   width: inherit;
 }
+.weight-drop {
+  height: 30px;
+  width: 182px;
+}
+.map-drop-h {
+  height: 30px;
+  width: 100%;
+}

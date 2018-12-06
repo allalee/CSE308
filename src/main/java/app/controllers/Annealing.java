@@ -5,6 +5,7 @@ import app.enums.Property;
 import app.json.PropertiesManager;
 import app.state.District;
 import app.state.Precinct;
+import com.vividsolutions.jts.geom.TopologyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,9 @@ public class Annealing extends Algorithm {
     SocketHandler handler;
     @Override
     void run() {
-        Collection<Precinct> allPrecincts = state.getAllPrecincts();
         Collection<District> allDistricts = state.getAllDistricts();
         int stagnant_iterations = 0;
         int max_stagnant = Integer.parseInt(PropertiesManager.get(Property.STAGNANT_ITERATION));
-        long programEndTime = systemStartTime + Integer.parseInt(PropertiesManager.get(Property.MAX_RUNTIME));
         for(District district : allDistricts){
             district.calculateBoundaryPrecincts();
         }
@@ -43,9 +42,17 @@ public class Annealing extends Algorithm {
             District destDistrict = selectDestinationDistrict(precinctToMove);
             District srcDistrict = precinctToMove.getDistrict();
             Move currentMove = new Move(srcDistrict, destDistrict, precinctToMove);
+            try {
+                currentMove.execute();
+            }catch(TopologyException e){
+                System.out.println("Cutting geometry inhalf is not allowed, abort move");
+                continue;
+            }
             functionValue = calculateFunctionValue();
             if(checkThreshold(startFunctionValue, functionValue)){
-                reconfigureBoundaries(precinctToMove, srcDistrict);
+                srcDistrict.calculateBoundaryPrecincts();
+                destDistrict.calculateBoundaryPrecincts();
+                //reconfigureBoundaries(precinctToMove, srcDistrict);
                 updateClient(currentMove);
             } else {
                 currentMove.undo();
@@ -55,7 +62,7 @@ public class Annealing extends Algorithm {
             } else{
                 stagnant_iterations = 0;
             }
-
+            previouslyMovedPrecinct = precinctToMove;
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
         }
@@ -64,12 +71,12 @@ public class Annealing extends Algorithm {
     }
 
     private boolean isStagnant(double oldValue, double newValue){
-        double threshold = 0.00000001;
+        double threshold = 0.001;
         return (Math.abs(oldValue - newValue) < threshold);
     }
 
     private boolean checkThreshold(double oldValue, double newValue){
-        double threshold = 0.005;
+        double threshold = Double.parseDouble(PropertiesManager.get(Property.ANNEALINGTHRESHOLD));
         if(newValue > oldValue){
             return true;
         } else {

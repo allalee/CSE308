@@ -26,11 +26,15 @@ public class RegisterHandler {
                       @RequestParam("email") String email, HttpServletResponse resp) throws Throwable {
 
         HibernateManager hm = HibernateManager.getInstance();
-        UsersModel usersModel = new UsersModel(username, password, email, "user");
-        boolean persisted = hm.persistToDB(usersModel);
-        System.out.println(persisted);
-
-        return "../static/templates/login.html";
+        if((username != null && email != null && password != null) && (username != "" && email != "" && password != "")){
+            UsersModel usersModel = new UsersModel(username, password, email, "user");
+            boolean persisted = hm.persistToDB(usersModel);
+            System.out.println(persisted);
+            return "../static/templates/login.html";
+        }
+        else{
+            return "../static/templates/register.html";
+        }
     }
 
 }

@@ -14,6 +14,7 @@
 	  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
     <script src="bootstrap/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="../js/style.css">
@@ -136,6 +137,28 @@
              </div>
            </div>
 
+           <div class="container">
+             <div class="row">
+               <div class="col px-0 pt-3">
+                 <div class="dropdown">
+                    <button class="btn btn-secondary dropdown-toggle weight-drop m-0 p-0" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      Select
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <a class="dropdown-item" href="#">Action</a>
+                      <a class="dropdown-item" href="#">Another action</a>
+                      <a class="dropdown-item" href="#">Something else here</a>
+                    </div>
+                  </div>
+               </div>
+               <div class="col-3 pt-3 px-0">
+                 <button type="button" class="btn btn-primary weight-save m-0 p-0">Load</button>
+               </div>
+             </div>
+           </div>
+
+
+
          </div>
        </div>
      </div>
@@ -208,28 +231,57 @@
                </div>
            </div>
        </div>
+
        <div class="card rounded-0">
-           <div class="card-header">
-               <a data-toggle="collapse" data-parent="#sidenav" href="#weights_option" class="card-link">
-                   Weight Preferences
-               </a>
-           </div>
-           <div id="weights_option" class="collapse">
-               <div class="card-body">
+         <div class="card-header">
+           <a data-toggle="collapse" data-parent="#sidenav" href="#map_option" class="card-link">
+             Save Map
+           </a>
+         </div>
+           <div id="map_option" class="collapse">
+             <div class="card-body">
 
-                 <div class="custom-control custom-radio">
-                   <input type="radio" id="saved1" name="weightRadio" class="custom-control-input" value="valuesHere">
-                   <label class="custom-control-label" for="saved1">Saved 1</label>
+               <div class="container">
+                 <div class="row">
+                   <div class="col px-0 pt-3">
+                      <input type="text">
+                   </div>
+                   <div class="col-3 pt-3 px-0">
+                     <button type="button" class="btn btn-primary weight-save m-0 p-0">Save</button>
+                   </div>
                  </div>
-                 <div class="custom-control custom-radio">
-                   <input type="radio" id="saved2" name="weightRadio" class="custom-control-input" value="valuesHere">
-                   <label class="custom-control-label" for="saved2">Saved 2</label>
-                 </div>
-
-                <button type="button" class="btn btn-primary weight-button m-0 p-0 mt-2">Load</button>
                </div>
+
+               <div class="container">
+                 <div class="row">
+                   <div class="col px-0 pt-3">
+                     <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle m-0 p-0 map-drop-h" type="button" id="dropdownMapButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                          Select
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMapButton">
+                          <a class="dropdown-item" href="#">Action</a>
+                          <a class="dropdown-item" href="#">Another action</a>
+                          <a class="dropdown-item" href="#">Something else here</a>
+                        </div>
+                      </div>
+                   </div>
+                   <div class="col-3 pt-3 px-0 mx-2">
+                     <button type="button" class="btn btn-primary weight-save m-0 p-0">Load</button>
+                   </div>
+                   <div class="col-3 pt-3 px-0">
+                     <button type="button" class="btn btn-primary weight-save m-0 p-0">Delete</button>
+                   </div>
+                 </div>
+               </div>
+
+
+
+             </div>
+
            </div>
-       </div>
+         </div>
+
 	</div>
 
 	<div class="bottom">
