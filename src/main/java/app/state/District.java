@@ -39,10 +39,29 @@ public class District{
         for(Precinct p: precinctMap.values()){
             for(Precinct neighbor: p.getNeighbors()){
                 if(neighbor.getDistrict() == null || neighbor.getDistrict().getID() != this.getID()){
-                    this.borderPrecincts.add(neighbor);
+                    this.borderPrecincts.add(p);
                 }
             }
         }
+    }
+
+    public boolean isCutoff(){
+        int numBorders = borderPrecincts.size();
+        Precinct beginPrecinct = borderPrecincts.iterator().next();
+        Set<Precinct> iteratedPrecincts = new HashSet<>();
+        int numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
+        System.out.println("Borders reached" + numReached + ", Expected: "+numBorders);
+        return numReached != numBorders;
+    }
+
+    private int numBordersReachable(Precinct current, Set<Precinct> iteratedPrecincts){
+        int reachedBorders = 1;
+        iteratedPrecincts.add(current);
+        for(Precinct neighbor: current.getNeighbors()){
+            if(!iteratedPrecincts.contains(neighbor) && borderPrecincts.contains(neighbor))
+                reachedBorders += numBordersReachable(neighbor, iteratedPrecincts);
+        }
+        return reachedBorders;
     }
 
     public Precinct getPrecinct(int id){
