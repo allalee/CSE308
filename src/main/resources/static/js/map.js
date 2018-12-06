@@ -4,12 +4,14 @@ var mapAccessToken = 'pk.eyJ1Ijoib3ZlcnRoZWNsb3VkcyIsImEiOiJjam1hdWwxc2I1aGhrM3F
 L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=pk.eyJ1Ijoib3ZlcnRoZWNsb3VkcyIsImEiOiJjam1hdWwxc2I1aGhrM3FwNGZ1cXd1c2c5In0.ixJrpwux_Hmz8kuRU-da-w', {
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     maxZoom: 18,
-    id: 'mapbox.streets'
+    id: 'mapbox.light'
 }).addTo(mymap);
 
 var stateJson; //State handler added to map
 var districtJson; //District handler added to the map
 var precinctJson;
+var originalPrecinctJson = null;
+
 
 var currentStateID = null; //Keeping track of which state the user clicks on
 var currentStateName = null;
@@ -17,6 +19,7 @@ var currentStateName = null;
 var statesData;
 var districtData;
 var precinctData;
+var originalPrecinctData; //Retreived from server to display original when selected
 
 var currentConstText;
 
@@ -24,19 +27,35 @@ var connector = makeConnector();
 connector.onMessage(consoleLog)
 connector.connect();
 con.start_reading();
-
 function consoleLog(message_body){
     var console = document.getElementById("console")
-    console.appendChild(document.createElement("br"))
-    console.append(message_body["console_log"])
-    console.scrollTop = console.scrollHeight
+    if(message_body["console_log"]){
+        console.appendChild(document.createElement("br"))
+        console.append(message_body["console_log"])
+        console.scrollTop = console.scrollHeight
+    }
     if(message_body["src"] && message_body["dest"] && message_body["precinct"]){
         layer_manager.set_new_precinct_district(message_body["precinct"], message_body["dest"])
         layer_manager.color_precincts()
     }
     if(message_body["enable_reset"]){
+        connector.clear_message()
         document.getElementById("reset").disabled = false;
+        updateButtons(ButtonState.STOPPED)
     }
+    if(message_body["default"]){
+        layer_manager.color_unassigned_precincts()
+    }
+    if(message_body["seeds"]){
+        layer_manager.color_default_regions(message_body["seeds"])
+    }
+}
+
+function consoleWrite(text){
+    var console = document.getElementById("console")
+    console.appendChild(document.createElement("br"))
+    console.append(text)
+    console.scrollTop = console.scrollHeight
 }
 
 state_fps_hashmap =
@@ -116,7 +135,6 @@ function highlightFeature(e) {
         layer.bringToFront();
     }
 }
-
 function highlightPrecinctFeature(e) {
     var layer = e.target;
 
@@ -206,6 +224,20 @@ function addStateLayer () {
   }).addTo(mymap);
 }
 
+function addOriginalPrecinctsLayer() {
+  originalPrecinctJson = L.geoJson(originalPrecinctData, {
+      style: function() {
+        return {
+          fillOpacity: 0.4,
+          color: "grey"
+        }
+      },
+      onEachFeature : onEachPrecinctFeature
+  }).addTo(mymap);
+  layer_manager.build_precincts_map(originalPrecinctJson)
+  layer_manager.color_precincts()
+}
+
 function onEachStateFeature(feature, layer) {
     layer.on({
         mouseover: highlightFeature,
@@ -229,23 +261,32 @@ function onEachPrecinctFeature(feature, layer) {
 }
 
 function resetMap(){
+    // stop, clear, start reading again
+    connector.stop_reading()
+    connector.clear_message()
+    connector.start_reading()
+
+    // update ui
+    updateButtons(ButtonState.RUNNABLE)
+    enableManualMoveOption(false)
+
 	if(mymap.hasLayer(districtJson)) {
     districtJson.remove();
   } else if(mymap.hasLayer(precinctJson)) {
     precinctJson.remove();
+  } else if(mymap.hasLayer(originalPrecinctJson)) {
+    originalPrecinctJson.remove();
   }
     currentStateID = null;
     currentConstText = null;
+    originalPrecinctData = null;
+    originalPrecinctJson = null;
   if(mymap.hasLayer(stateJson)) {
     return;
   } else {
     addStateLayer();
     mymap.setView([37.0902, -95.7129], 4);
   }
-
-
-  //disable manual redistrict
-  enableManualMoveOption(false)
 }
 
 
@@ -302,7 +343,7 @@ function loadStateJson(state, currentState){
     var url = "http://localhost:8080/getState?stateName=" + state + "&stateID=" + currentState
     request.open("GET", url, true)
     request.onreadystatechange = function(){
-        if(request.status == 200){
+        if(request.readyState == 4 && request.status == 200){
             var loadedJson = request.response
             var obj = JSON.parse(loadedJson);
             obj = JSON.parse(obj);
@@ -313,6 +354,36 @@ function loadStateJson(state, currentState){
     }
     request.send(null);
 }
+function displayOriginalMap() {
+    if(mymap.hasLayer(stateJson) || mymap.hasLayer(districtJson) || mymap.hasLayer(originalPrecinctJson)) {
+      return;
+    }
+    if(originalPrecinctJson) {
+      precinctJson.remove();
+      addOriginalPrecinctsLayer();
+      return;
+    }
+    var request = new XMLHttpRequest();
+    var url = "http://localhost:8080/getOriginal"
+    request.open("GET", url, true)
+    request.onreadystatechange = function() {
+      if (request.readyState == 4 && request.status == 200) {
+        var loadedJson = request.response
+        var obj = JSON.parse(loadedJson);
+        originalPrecinctData = obj;
+        precinctJson.remove();
+        addOriginalPrecinctsLayer();
+      }
+    }
+    request.send(null)
+}
+function displayGeneratedMap() {
+  if(mymap.hasLayer(stateJson) || mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
+    return;
+  }
+  originalPrecinctJson.remove();
+  addPrecinctsLayer();
+}
 
 function loadPrecinctProperties(layer){
       var district_id = layer.feature["properties"]["DISTRICTID"]
@@ -321,7 +392,7 @@ function loadPrecinctProperties(layer){
       var request = new XMLHttpRequest()
       request.open("GET", url, true)
       request.onreadystatechange = function(){
-        if(request.status == 200){
+        if(request.readyState == 4 && request.status == 200){
             var loadedJson = request.response
             var obj = JSON.parse(loadedJson)
             if(obj['voting_data']){
@@ -361,7 +432,7 @@ function sendState(currentStateID, currentStateName){
     var request = new XMLHttpRequest();
     request.open("GET", url, true);
     request.onreadystatechange = function(){
-       if(request.status == 200){
+       if(request.readyState == 4 && request.status == 200){
             currentConstText = request.response;
        }
    }
@@ -401,6 +472,53 @@ document.getElementById("start").onclick = startAlgorithm
 document.getElementById("pause").onclick = togglePauseAlgorithm
 document.getElementById("stop").onclick = stopAlgorithm
 
+ButtonState = {
+    RUNNABLE : 0,
+    RUNNING : 1,
+    PAUSED : 2,
+    STOPPED : 3
+}
+
+updateButtons(ButtonState.RUNNABLE)
+function turn(btn, on){
+    btn.hidden = !on
+}
+function updateButtons(state){
+    var start = document.getElementById("start")
+    var pause = document.getElementById("pause")
+    var stop = document.getElementById("stop")
+
+    switch(state){
+        case ButtonState.RUNNABLE:
+            turn(start, true)
+            turn(pause, false)
+            turn(stop, false)
+            paused = false
+            break
+        case ButtonState.RUNNING:
+            turn(start, false)
+            turn(pause, true)
+            turn(stop, true)
+            pause.innerHTML = "pause"
+            paused = false
+            break
+        case ButtonState.PAUSED:
+            turn(start, false)
+            turn(pause, true)
+            turn(stop, true)
+            pause.innerHTML = "play_arrow"
+            paused = true
+            break
+        case ButtonState.STOPPED:
+            turn(start, false)
+            turn(pause, false)
+            turn(stop, false)
+            paused = false
+            break
+        default: console.log("Invalid Button State: " + state)
+    }
+}
+
 function startAlgorithm(){
     var algorithm_type = $('input[name="algorithm"]:checked').val()
     if(currentStateID == null){
@@ -422,6 +540,7 @@ function startAlgorithm(){
         request.open("GET", url, true)
 
         request.send(null)
+        updateButtons(ButtonState.RUNNING)
     }
 }
 
@@ -431,29 +550,35 @@ function togglePauseAlgorithm(){
     if(!paused){    // if not paused, pause it
         connector.stop_reading()    // stop updating
         var url = 'http://localhost:8080/pauseAlgorithm'    // send to pause
+        updateButtons(ButtonState.PAUSED)
     }
     else{           // if paused, start it
         connector.start_reading()    // start updating
         var url = 'http://localhost:8080/unpauseAlgorithm'    // send to unpause
+        updateButtons(ButtonState.RUNNING)
     }
 
     var request = new XMLHttpRequest()
     request.open("GET", url, true)
     request.send(null)
-
-    paused = !paused
 }
 
 function stopAlgorithm(){
     // terminate updating, clear messages
     connector.stop_reading()
     connector.clear_message()
+    connector.start_reading()
 
     // send
     var url = 'http://localhost:8080/stopAlgorithm'
     var request = new XMLHttpRequest()
     request.open("GET", url, true)
     request.send(null)
+
+    // update the ui on client side
+    document.getElementById("reset").disabled = false;
+    updateButtons(ButtonState.STOPPED)
+    consoleWrite("Algorithm stopped by client")
 }
 
 info.addTo(mymap);
@@ -503,124 +628,10 @@ function dropdownStateSearch(){
 }
 populateStateSelect();
 
-makeFadeOutWriter = function(){
-    fow = {}
-    fow.timer
-    fow.write = function(element, message, color, millisecond){
-        if(fow.timer){
-            clearTimeout(fow.timer)
-        }
-        element.innerHTML = message
-        element.style.color = color
-        fow.timer = setTimeout(function(){
-            element.innerHTML = "&nbsp"
-            fow.timer = undefined
-        }, millisecond)
-    }
-    return fow
-}
 
-makeManualMover = function(layerManager){
 
-    var mm = {}
-    mm.selected_precinct;
-    mm.selected_color = "black"
 
-    mm.clickFunction = function(e){
-        var layer = e.target;
-        if (mm.selected_precinct == layer)
-            return
-
-        // clear and set new selection
-        if (mm.selected_precinct){
-            mm.resetSelection()
-        }
-        mm.selected_precinct = layer;
-        layerManager.color_precinct(mm.getSelectedID(), mm.selected_color)
-
-        // repopulate the district options
-        removeDistrictOption()
-        for(var i in layerManager.district_layer_color_map){
-            insertDistrictOption(i, layerManager.district_layer_color_map[i])
-        }
-
-    }
-
-    mm.mouseoutFunction = function(e){
-        var layer = e.target;
-        if (mm.selected_precinct == layer)  // reset to custom color for selected
-            layerManager.color_precinct(mm.getSelectedID(), mm.selected_color)
-        else
-            manager.reset_precinct_color(layer)
-        info.update();
-    }
-
-    mm.mouseoverFunction = function(e){
-        var layer = e.target;
-
-        if (mm.selected_precinct != layer){
-            layer.setStyle({
-                weight: 5,
-                color: '#666',
-                dashArray: '',
-                fillOpacity: 0.7
-            });
-        }
-        loadPrecinctProperties(layer)
-    }
-
-    mm.exit = function(){
-        if (mm.selected_precinct){
-            mm.resetSelection()
-        }
-        removeDistrictOption()
-    }
-
-    mm.getSelectedID = function(){
-        return layerManager.get_precinct_id(mm.selected_precinct)
-    }
-
-    // reset when a move lock is done
-    mm.resetSelection = function(){
-        layerManager.reset_precinct_color(mm.selected_precinct)
-        mm.selected_precinct = undefined
-    }
-
-    mm.sendManualMove = function (isLock, dest_id, message_log_div, writer){
-        var url = "manualMove"
-        var isLock = isLock;
-        var src_id = layerManager.get_district_id_by_precinct_layer(mm.selected_precinct)
-        var precinct_id = mm.getSelectedID()
-
-        var request = new XMLHttpRequest();
-        var url = "http://localhost:8080/" + url + "?src=" + src_id + "&dest=" + dest_id +"&precinct=" + precinct_id + "&lock=" + isLock
-        request.open("GET", url, true)
-        request.onreadystatechange = function(){
-            if(request.readyState == 4 && request.status == 200){
-                var json = JSON.parse(request.response);
-                value = json.value;
-                console.log("The move is worth: "+value)
-                if(!json.valid){    // invalid move
-                    console.log(json.message)
-                    writer.write(message_log_div, json.message, "red", 5000)
-                }
-                else{               // valid
-                    console.log(json.value)
-                    var message_div = document.getElementById(mm.LOG_DIV_ID)
-                    writer.write(message_log_div, json.message, "green", 5000)
-                    //if LOCK
-                    if(isLock){
-                        layerManager.move_precinct(precinct_id, dest_id)
-                        mm.resetSelection()
-                    }
-                }
-            }
-        }
-        request.send(null);
-    }
-
-    return mm
-}
+/*
 var districtOptionTemplate = "<div class=\"custom-control custom-radio\"> <input type=\"radio\" id=\"district[id]\" name=\"district_option\" class=\"custom-control-input\" value=\"[id]\"> <label id=\"districtlabel[id]\" class=\"custom-control-label\" for=\"district[id]\">&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp</label> </div>"
 function insertDistrictOption(id, color){
     var div = districtOptionTemplate.split('[id]').join(id)
@@ -633,10 +644,11 @@ function insertDistrictOption(id, color){
 function removeDistrictOption(){
     var selectorDiv = document.getElementById('district_selector_options')
     selectorDiv.innerHTML = ""
-}
+}*/
 
 var fadeWriter = makeFadeOutWriter()
-var mover = makeManualMover(layer_manager)
+var district_selector_div = document.getElementById('district_selector_options')
+var mover = makeManualMover(layer_manager, district_selector_div)
 var manualMoveToggle = document.getElementById("district_selector_toggle")
 var tempMoveBtn = document.getElementById("move_temporary")
 var lockMoveBtn = document.getElementById("move_lock")

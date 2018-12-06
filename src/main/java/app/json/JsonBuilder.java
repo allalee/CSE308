@@ -78,7 +78,7 @@ public class JsonBuilder {
         return builder.toString();
     }
 
-    private String buildPrecinctJson(Collection<Precinct> precincts) {
+    public String buildPrecinctJson(Collection<Precinct> precincts) {
         StringBuilder builder = new StringBuilder("[");
         for(Precinct precinct: precincts) {
             Geometry precinctGeometry = precinct.getGeometry();

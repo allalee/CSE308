@@ -51,6 +51,10 @@ public class StateManager {
         JsonBuilder jsonBuilder = new JsonBuilder();
         return jsonBuilder.buildStateJson(currentState);
     }
+    public String getOriginalPrecinctsMap() {
+        JsonBuilder jsonBuilder = new JsonBuilder();
+        return jsonBuilder.buildPrecinctJson(currentState.getAllPrecincts());
+    }
 
 
     /**If a state already exists, then get it from the HashMap
