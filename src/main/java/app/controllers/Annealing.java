@@ -23,6 +23,7 @@ public class Annealing extends Algorithm {
         Collection<District> allDistricts = state.getAllDistricts();
         int stagnant_iterations = 0;
         int max_stagnant = Integer.parseInt(PropertiesManager.get(Property.STAGNANT_ITERATION));
+        double initFuncValue = functionValue;
         //Calculate boundary precincts which are precincts in the district that border another district
         for (District district : allDistricts) {
             district.calculateBoundaryPrecincts();
@@ -59,6 +60,8 @@ public class Annealing extends Algorithm {
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
         }
+        handler.send("{\"console_log\": \"Initial Function Value = " + initFuncValue + "\"}");
+        handler.send("{\"console_log\": \"Final Function Value = " + functionValue + "\"}");
     }
 
     private boolean isStagnant(double oldValue, double newValue){

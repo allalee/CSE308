@@ -38,6 +38,7 @@ public class RegionGrow extends Algorithm {
         int incrementer = 0;
         int stagnant_iterations = 0;
         int max_stagnant = 100;
+        double initFuncValue = functionValue;
         //Call to the client to update all of the precincts white to denote that they are not part of a district
         handler.send("{\"default" + "\": \"" + 0 + "\"}");
         ArrayList<District> regions = generateRegions(allDistricts, unassignedPrecincts);
@@ -45,6 +46,7 @@ public class RegionGrow extends Algorithm {
         updateClientForRegions(regions);
         Random random = new Random();
         //Start the while loop with the condition until all precincts are placed into a district
+        handler.send("{\"console_log\": \"Starting algorithm...\"}");
         while(running && unassignedPrecincts.size() != 0 && max_stagnant != stagnant_iterations){
             double startFunctionValue = calculateFunctionValue();
             int i = random.nextInt(allDistricts.size());
@@ -83,6 +85,8 @@ public class RegionGrow extends Algorithm {
         }
         running = false;
         System.out.println("Algo done");
+        handler.send("{\"console_log\": \"Initial Function Value = " + initFuncValue + "\"}");
+        handler.send("{\"console_log\": \"Final Function Value = " + functionValue + "\"}");
     }
 
     private boolean isStagnant(double oldValue, double newValue) {
