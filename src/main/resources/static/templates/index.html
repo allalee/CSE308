@@ -170,16 +170,16 @@
        <div id="algorithms" class="collapse">
          <div class="card-body">
            <div class="custom-control custom-radio">
-             <input type="radio" id="algorithm1" name="algorithm" class="custom-control-input" value="Region Growing">
-             <label class="custom-control-label" for="algorithm1">Region Growing</label>
+             <input type="radio" id="algorithm1" name="algorithm" class="custom-control-input" checked="checked" value="Region Growing">
+             <label class="custom-control-label" for="algorithm1">Region Growing (Random)</label>
            </div>
            <div class="custom-control custom-radio">
              <input type="radio" id="algorithm2" name="algorithm" class="custom-control-input" value="Simulated Annealing">
              <label class="custom-control-label" for="algorithm2">Simulated Annealing</label>
            </div>
            <div class="custom-control custom-radio">
-             <input type="radio" id="algorithm3" name="algorithm" class="custom-control-input" checked="checked" value="Region Growing Variant">
-             <label class="custom-control-label" for="algorithm3">Region Growing Variant</label>
+             <input type="radio" id="algorithm3" name="algorithm" class="custom-control-input" value="Region Growing Variant">
+             <label class="custom-control-label" for="algorithm3">Region Growing (Round-Robin)</label>
            </div>
            <div class="custom-control custom-radio">
              <input type="radio" id="algorithm4" name="algorithm" class="custom-control-input" value="Simulated Annealing Variant">
@@ -269,16 +269,26 @@
                      <button type="button" class="btn btn-primary weight-save m-0 p-0" onclick="delete_map()">Delete</button>
                    </div>
                  </div>
-
-
                </div>
 
-
-
              </div>
-
            </div>
          </div>
+
+         <div class="card rounded-0">
+           <div class="card-header">
+             <a data-toggle="collapse" data-parent="#sidenav" href="#district_options" class="card-link">
+               District Exclusion
+             </a>
+           </div>
+           <div id="district_options" class="collapse">
+             <div id="exclusionMenu" class="card-body">
+          
+             </div>
+           </div>
+         </div>
+
+
 
 	</div>
 
