@@ -23,12 +23,11 @@ public class Annealing extends Algorithm {
         Collection<District> allDistricts = state.getAllDistricts();
         int stagnant_iterations = 0;
         int max_stagnant = Integer.parseInt(PropertiesManager.get(Property.STAGNANT_ITERATION));
+        double initFuncValue = functionValue;
         //Calculate boundary precincts which are precincts in the district that border another district
         for (District district : allDistricts) {
             district.calculateBoundaryPrecincts();
         }
-        Precinct previouslyMovedPrecinct = null;
-        Precinct precinctToMove;
         handler.send("{\"console_log\": \"Starting algorithm...\"}");
         while (running && stagnant_iterations < max_stagnant && remainingRunTime > 0) {
             if (paused) {
@@ -45,6 +44,7 @@ public class Annealing extends Algorithm {
             Precinct neighboringPrecinctToAdd = getNeighborToAnneal(districtToModify.getBorderPrecincts());
             Move currentMove = new Move(neighboringPrecinctToAdd.getDistrict(), districtToModify, neighboringPrecinctToAdd);
             currentMove.execute();
+            calculateFunctionValue();
             if (checkThreshold(startFunctionValue, functionValue)) {
                 updateClient(currentMove);
             } else {
@@ -59,31 +59,9 @@ public class Annealing extends Algorithm {
             }
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
-
-//            do {
-//                //Find a precinct that borders a boundary precinct that is part of another district
-//                precinctToMove = getPrecinctToMove(allDistricts);
-//            } while (previouslyMovedPrecinct == precinctToMove);
-//            District destDistrict = selectDestinationDistrict(precinctToMove);
-//            District srcDistrict = precinctToMove.getDistrict();
-//            Move currentMove = new Move(srcDistrict, destDistrict, precinctToMove);
-//            currentMove.execute();
-//            functionValue = calculateFunctionValue();
-//            if (checkThreshold(startFunctionValue, functionValue)) {
-//                updateClient(currentMove);
-//            } else {
-//                currentMove.undo();
-//                functionValue = startFunctionValue;
-//            }
-//            if (isStagnant(startFunctionValue, functionValue)) {
-//                stagnant_iterations++;
-//                System.out.println(stagnant_iterations+" "+functionValue);
-//            } else {
-//                stagnant_iterations = 0;
-//            }
-//            long deltaTime = System.currentTimeMillis() - startTime;
-//            remainingRunTime -= deltaTime;
         }
+        handler.send("{\"console_log\": \"Initial Function Value = " + initFuncValue + "\"}");
+        handler.send("{\"console_log\": \"Final Function Value = " + functionValue + "\"}");
     }
 
     private boolean isStagnant(double oldValue, double newValue){

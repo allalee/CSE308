@@ -3,6 +3,7 @@ package app.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Socket handler
@@ -11,7 +12,7 @@ import org.springframework.stereotype.Controller;
  * Use "@Autowired SocketHandler handler;" to obtain the object.
  *
  */
-@Controller
+@RestController
 public class    SocketHandler {
 
     private String room = "/client_socket/algorithm";
