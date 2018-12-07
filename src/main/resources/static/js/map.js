@@ -456,6 +456,7 @@ function savePreferences(){
     request.open("GET", url, true)
     request.onreadystatechange = function () {
         if(request.readyState == 4 && request.status == 200){
+            consoleWrite("Preferences Saved"); //Update interface
             var newcontent = document.createElement('a');
             newcontent.innerHTML = name;
             newcontent.setAttribute("class", "dropdown-item");
@@ -474,20 +475,33 @@ function select_preference(e){
 }
 
 function loadPreferences(){
-    var name = document.getElementById("weightRadio").value
+    var name = document.getElementById("dropdownPreferences").innerText;
     var url = "http://localhost:8080/loadPreferences?name=" + name
     var request = new XMLHttpRequest()
     request.open("GET", url, true)
-    request.onreadystatechange = updatePref
+    request.onreadystatechange = function(){
+        if(request.readyState == 4 && request.status == 200){
+            var populationEquality = document.getElementById("population_equality")
+            var partisanFairness = document.getElementById("partisan_fairness")
+            var compactness = document.getElementById("compactness")
+            var pop_output = document.getElementById("pop_value");
+            var part_output = document.getElementById("part_value");
+            var comp_output = document.getElementById("comp_value");
+            var loadedJson = request.response
+            var pref = JSON.parse(loadedJson)
+            var popEqualityVal = pref.popequality
+            var partisanVal = pref.partisan
+            var compactnessVal = pref.compactness
+            populationEquality.value = popEqualityVal
+            partisanFairness.value = partisanVal
+            compactness.value = compactnessVal
+            pop_output.innerHTML = popEqualityVal
+            part_output.innerHTML = partisanVal
+            comp_output.innerHTML = compactnessVal
+        }
+    }
     request.send(null)
 }
-
-function updatePref(){
-    var populationEquality = document.getElementById("population_equality")
-    var partisanFairness = document.getElementById("partisan_fairness")
-    var compactness = document.getElementById("compactness")
-}
-
 
 document.getElementById("start").onclick = startAlgorithm
 document.getElementById("pause").onclick = togglePauseAlgorithm
