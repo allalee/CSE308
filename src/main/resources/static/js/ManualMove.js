@@ -86,11 +86,13 @@ makeManualMover = function(layerManager, selector_option_div){
         request.open("GET", url, true)
         request.onreadystatechange = function(){
             if(request.readyState == 4 && request.status == 200){
-                 json = JSON.parse(request.response);
-                json.forEach(function(e){
-                    layerManager.color_precinct(e, "black")
-                })
-                return
+
+                var json = JSON.parse(request.response);
+                // border print
+//                json.forEach(function(e){
+//                    layerManager.color_precinct(e, "black")
+//                })
+//                return
                 value = json.value;
                 console.log("The move is worth: "+value)
                 if(!json.valid){    // invalid move

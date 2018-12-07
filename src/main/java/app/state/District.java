@@ -57,30 +57,31 @@ public class District{
         }
     }
 
-    public boolean isCutoff(){
-        int numBorders = borderPrecincts.size();
-        Precinct beginPrecinct = borderPrecincts.iterator().next();
+    public boolean getCutOff(Set<Precinct> borders){
+        int expectedSize = precinctMap.size();
+        Precinct beginPrecinct = precinctMap.values().iterator().next();
         Set<Precinct> iteratedPrecincts = new HashSet<>();
         int numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
-        System.out.println("numReached: " + numReached + " numExpected: " + numBorders);
-        return numReached != numBorders;
+        System.out.println("numReached: " + numReached + " numExpected: " + expectedSize);
+        borders.addAll(iteratedPrecincts);
+        return numReached != expectedSize;
     }
 
-    public boolean getCutOff(Set<Precinct> borders){
-        int numBorders = borderPrecincts.size();
-        Precinct beginPrecinct = borderPrecincts.iterator().next();
+    public boolean isCutoff(){
+        int expectedSize = precinctMap.size();
+        Precinct beginPrecinct = precinctMap.values().iterator().next();
         Set<Precinct> iteratedPrecincts = new HashSet<>();
         int numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
-        System.out.println("numReached: " + numReached + " numExpected: " + numBorders);
-        borders.addAll(iteratedPrecincts);
-        return numReached != numBorders;
+        System.out.println("numReached: " + numReached + " numExpected: " + expectedSize);
+        return numReached != expectedSize;
     }
+
 
     private int numBordersReachable(Precinct current, Set<Precinct> iteratedPrecincts){
         int reachedBorders = 1;
         iteratedPrecincts.add(current);
         for(Precinct neighbor: current.getNeighbors()){
-            if(borderPrecincts.contains(neighbor)&& !iteratedPrecincts.contains(neighbor))
+            if(neighbor.getDistrict().getID()==this.getID()&& !iteratedPrecincts.contains(neighbor))
                 reachedBorders += numBordersReachable(neighbor, iteratedPrecincts);
         }
         return reachedBorders;
