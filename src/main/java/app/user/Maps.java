@@ -23,38 +23,32 @@ public class Maps implements Serializable{
             name = "NAME"
     )
     private String name;
-
+    @Id
     @Column(
             name = "EMAIL"
     )
     private String email;
-
     @Column(
             name = "SAVEDMAP"
     )
     private String savedmap;
-
+    @Id
     @Column(
             name = "STATE_ID"
     )
     private int stateId;
-
+    @Id
     @Column(
-            name = "INDEX"
+            name = "SEGMENT_INDEX"
     )
-    private int index;
+    private int segment_index;
 
     public Maps(String name, String email, String savedmapJSON, int stateId, int index) throws Exception {
-        if (!Validator.isJSONValid(savedmapJSON)) {
-            throw new Exception("savedmapJSON value is not a valid JSON");
-        }
-        else {
             this.name = name;
             this.email = email;
             this.savedmap = savedmapJSON;
             this.stateId = stateId;
-            this.index = index;
-        }
+            this.segment_index = index;
     }
 
     public Maps(){
@@ -94,11 +88,11 @@ public class Maps implements Serializable{
     }
 
     public int getIndex() {
-        return index;
+        return segment_index;
     }
 
     public void setIndex(int index) {
-        this.index = index;
+        this.segment_index = index;
     }
 
 }

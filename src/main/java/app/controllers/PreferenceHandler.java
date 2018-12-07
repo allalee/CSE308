@@ -2,12 +2,10 @@ package app.controllers;
 
 import app.user.Preferences;
 import gerrymandering.HibernateManager;
+import org.json.simple.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -53,7 +51,8 @@ public class PreferenceHandler {
     }
 
     @RequestMapping(value="/loadPreferences", method = RequestMethod.GET)
-    public void loadPref(HttpServletRequest req, @RequestParam("name") String name) throws Throwable {
+    public @ResponseBody
+    String loadPref(HttpServletRequest req, @RequestParam("name") String name) throws Throwable {
         String email = "";
         Cookie userCookie = getCookie(req, "user");
         if (userCookie != null) {
@@ -70,11 +69,20 @@ public class PreferenceHandler {
                 Preferences thisPreference = (Preferences) prefList.get(index);
                 if(thisPreference.getName().equals(name)){
                     //LOAD TO FRONT END
-
+                    int compactness = thisPreference.getCompactness();
+                    int partisan = thisPreference.getPartisan();
+                    int popequality = thisPreference.getPopequality();
+                    JSONObject prefJSON = new JSONObject();
+                    prefJSON.put("compactness", compactness);
+                    prefJSON.put("partisan", partisan);
+                    prefJSON.put("popequality", popequality);
+                    String prefJSONString = prefJSON.toString();
+                    return prefJSONString;
                 }
                 index++;
             }
         }
+        return null;
     }
 
 
