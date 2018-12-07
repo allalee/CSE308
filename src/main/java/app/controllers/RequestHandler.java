@@ -180,6 +180,9 @@ public class RequestHandler {
                 case "Region Growing":
                     solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
                     break;
+                case "Region Growing Variant":
+                    solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
+                    solver.setVariant("RR");
             }
             solver.setState(sm.getClonedState());
             solver.setFunctionWeights(partFairnessMetric/100, compactnessMetric/100, popEqualityMetric/100);

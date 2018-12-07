@@ -38,6 +38,7 @@ public class RegionGrow extends Algorithm {
         int incrementer = 0;
         int stagnant_iterations = 0;
         int max_stagnant = 100;
+        int roundRobinCounter = 0;
         double initFuncValue = functionValue;
         //Call to the client to update all of the precincts white to denote that they are not part of a district
         handler.send("{\"default" + "\": \"" + 0 + "\"}");
@@ -49,12 +50,29 @@ public class RegionGrow extends Algorithm {
         handler.send("{\"console_log\": \"Starting algorithm...\"}");
         while(running && unassignedPrecincts.size() != 0 && max_stagnant != stagnant_iterations){
             double startFunctionValue = calculateFunctionValue();
-            int i = random.nextInt(allDistricts.size());
-            District currentDistrictToGrow = (District)regions.toArray()[i];
-            while(currentDistrictToGrow.getBorderPrecincts().size() == 0){
-                i = random.nextInt(regions.size());
-                currentDistrictToGrow = (District)regions.toArray()[i];
+            District currentDistrictToGrow;
+
+            if(this.variant.equals("RR")){
+                if(roundRobinCounter == regions.size()){
+                    roundRobinCounter = 0;
+                }
+                currentDistrictToGrow = (District)regions.toArray()[roundRobinCounter];
+                while(currentDistrictToGrow.getBorderPrecincts().size() == 0){
+                    roundRobinCounter++;
+                    if(roundRobinCounter == regions.size())
+                        roundRobinCounter = 0;
+                    currentDistrictToGrow = (District)regions.toArray()[roundRobinCounter];
+                }
+                roundRobinCounter++;
+            } else {
+                int i = random.nextInt(allDistricts.size());
+                currentDistrictToGrow = (District) regions.toArray()[i];
+                while (currentDistrictToGrow.getBorderPrecincts().size() == 0) {
+                    i = random.nextInt(regions.size());
+                    currentDistrictToGrow = (District) regions.toArray()[i];
+                }
             }
+
             Precinct precinctToAdd = getPrecinctToAdd(currentDistrictToGrow, random, unassignedPrecincts);
             unassignedPrecincts.remove(precinctToAdd);
             Move move = new Move(currentDistrictToGrow, precinctToAdd);
@@ -125,8 +143,6 @@ public class RegionGrow extends Algorithm {
         state.setDistrictMap(newMap);
         return regions;
     }
-
-    //STUCK BECAUSE THE CURRENTDISTRICTTOGROW HAS NO BORDER PRECINCTS AVAILABLE TO GROW
     private Precinct getPrecinctToAdd(District currentDistrictToGrow, Random random, Collection<Precinct> unassigned){
         Collection<Precinct> borderPrecincts = currentDistrictToGrow.getBorderPrecincts();
         int next = random.nextInt(borderPrecincts.size());
@@ -165,10 +181,4 @@ public class RegionGrow extends Algorithm {
         builder.append('}');
         handler.send(builder.toString());
     }
-
-    enum IterationType{
-        Random
-    }
-
-
 }

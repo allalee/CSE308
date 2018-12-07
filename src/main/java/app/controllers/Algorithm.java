@@ -35,6 +35,7 @@ public abstract class Algorithm{
     private final int ONE = 1;
     private final int ZERO = 0;
     protected final String endMessage = "{\"enable_reset\": 1, \"console_log\" : \"Algo ended\"}";
+    protected String variant = "";
 
 
     public Algorithm(){
@@ -157,6 +158,7 @@ public abstract class Algorithm{
         }
     }
 
+    public void setVariant(String variant){this.variant = variant;}
     abstract void run();
 
 }
