@@ -57,19 +57,31 @@ public class District{
         }
     }
 
-    public boolean isCutoff(){
-        int numBorders = borderPrecincts.size();
-        Precinct beginPrecinct = borderPrecincts.iterator().next();
+    public boolean getCutOff(Set<Precinct> borders){
+        int expectedSize = precinctMap.size();
+        Precinct beginPrecinct = precinctMap.values().iterator().next();
         Set<Precinct> iteratedPrecincts = new HashSet<>();
         int numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
-        return numReached != numBorders;
+        System.out.println("numReached: " + numReached + " numExpected: " + expectedSize);
+        borders.addAll(iteratedPrecincts);
+        return numReached != expectedSize;
     }
+
+    public boolean isCutoff(){
+        int expectedSize = precinctMap.size();
+        Precinct beginPrecinct = precinctMap.values().iterator().next();
+        Set<Precinct> iteratedPrecincts = new HashSet<>();
+        int numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
+        System.out.println("numReached: " + numReached + " numExpected: " + expectedSize);
+        return numReached != expectedSize;
+    }
+
 
     private int numBordersReachable(Precinct current, Set<Precinct> iteratedPrecincts){
         int reachedBorders = 1;
         iteratedPrecincts.add(current);
         for(Precinct neighbor: current.getNeighbors()){
-            if(!iteratedPrecincts.contains(neighbor) && borderPrecincts.contains(neighbor))
+            if(neighbor.getDistrict().getID()==this.getID()&& !iteratedPrecincts.contains(neighbor))
                 reachedBorders += numBordersReachable(neighbor, iteratedPrecincts);
         }
         return reachedBorders;
@@ -107,15 +119,14 @@ public class District{
 
     //Merges the district geometry with the specified precinct geometry
     public void addToCurrentGeometry(Geometry geometry) {
-        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
-        geometry = VWSimplifier.simplify(geometry, 0.001);
+//        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
+//        geometry = VWSimplifier.simplify(geometry, 0.001);
         this.currentGeometry = this.currentGeometry.union(geometry);
     }
     //Difference the district geometry with the specified precinct geometry
-
     public void subtractFromCurrentGeometry(Geometry geometry) {
-        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
-        geometry = VWSimplifier.simplify(geometry, 0.001);
+//        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
+//        geometry = VWSimplifier.simplify(geometry, 0.001);
         this.currentGeometry = this.currentGeometry.difference(geometry);
     }
     public void addPopulation(int population) {

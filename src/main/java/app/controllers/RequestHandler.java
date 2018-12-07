@@ -6,17 +6,19 @@ import app.json.JTSConverter;
 import app.state.District;
 import app.state.Precinct;
 import app.state.State;
+import com.vividsolutions.jts.JTSVersion;
 import com.vividsolutions.jts.geom.Geometry;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -24,7 +26,7 @@ import java.util.HashMap;
  *
  */
 
-@Controller
+@RestController
 public class RequestHandler {
         private StateManager sm = new StateManager();
         private Solver solver = new Solver();
@@ -97,7 +99,10 @@ public class RequestHandler {
         public @ResponseBody
         String tempMove(@RequestParam ("src") Integer src, @RequestParam("dest") Integer dest, @RequestParam("precinct") Integer precinct, @RequestParam("lock") Boolean lock) throws Throwable {
             System.out.println("inputs are: " + src+" "+ dest+" "+ precinct);
-            sm.cloneState(sm.getCurrentState().getName());
+            if(sm.getClonedState() == null) {
+                sm.cloneState(sm.getCurrentState().getName());
+                JTSConverter.buildNeighbor(sm.getClonedState().getAllPrecincts());
+            }
             State currentState = sm.getClonedState();
             Precinct p = null;
             for(District d : currentState.getAllDistricts()){
@@ -112,25 +117,26 @@ public class RequestHandler {
                        "\"valid\" : false, " +
                        "\"message\" : \"invalid precinct\" }";
             }
-            boolean destIsNeighbor = false;
-            Precinct n = null;
-            for(Precinct neighbor : p.getNeighbors()){
-                if(neighbor.getDistrict().getID() == dest) {
-                    destIsNeighbor = true;
-                    n = neighbor;
-                    break;
-                }
-            }
-            if(!destIsNeighbor){
-                return "{ \"value\" : \"-1\", " +
-                        "\"valid\" : false, " +
-                        "\"message\" : \"precinct not adjacent to the district\" }";
-            }
-            Geometry intersection = n.getGeometry().intersection(p.getGeometry());
-            System.out.println("PERI" + intersection.getLength());
-            System.out.println("AREA" + intersection.getArea());
-//            currentState.getDistrict(src).calculateBoundaryPrecincts();
-//            currentState.getDistrict(dest).calculateBoundaryPrecincts();
+//            boolean destIsNeighbor = false;
+//            for(Precinct neighbor : p.getNeighbors()){
+//                if(neighbor.getDistrict().getID() == dest) {
+//                    destIsNeighbor = true;
+//                    break;
+//                }
+//            }
+//            if(!destIsNeighbor){
+//                return "{ \"value\" : \"-1\", " +
+//                        "\"valid\" : false, " +
+//                        "\"message\" : \"precinct not adjacent to the district\" }";
+//            }
+//            Geometry intersection = n.getGeometry().intersection(p.getGeometry());
+//            System.out.println("PERI" + intersection.getLength());
+//            System.out.println("AREA" + intersection.getArea());
+            currentState.getDistrict(src).calculateBoundaryPrecincts();
+            currentState.getDistrict(dest).calculateBoundaryPrecincts();
+            System.out.println("before mov:");
+            System.out.println("src: "+currentState.getDistrict(src).getPrecinctMap().size());
+            System.out.println("dest: "+currentState.getDistrict(dest).getPrecinctMap().size());
 //
 //            boolean isBorder = currentState.getDistrict(src).getBorderPrecincts().contains(p);
 //            System.out.println("is border: "+  isBorder);
@@ -140,23 +146,44 @@ public class RequestHandler {
             currentState.getDistrict(src).calculateBoundaryPrecincts();
             currentState.getDistrict(dest).calculateBoundaryPrecincts();
 
+            System.out.println("after mov:");
+            System.out.println("src: "+currentState.getDistrict(src).getPrecinctMap().size());
+            System.out.println("dest: "+currentState.getDistrict(dest).getPrecinctMap().size());
+
             double functionValue = 0;
 
 //            if(currentState.getDistrict(src).isCutoff() || currentState.getDistrict(dest).isCutoff()) {
 //                System.out.println("cuts off");
 //            }
 
+            boolean cutOff = currentState.getDistrict(src).isCutoff();
+            System.out.println("is cut off: "+cutOff);
 
             // undo if it is not a locking move
             if(!lock) {
                 move.undo();
+//                cutOff = currentState.getDistrict(src).isCutoff();
+//                System.out.println("is cut off: "+cutOff);
                 currentState.getDistrict(src).calculateBoundaryPrecincts();
                 currentState.getDistrict(dest).calculateBoundaryPrecincts();
             }
 
+//            Set<Precinct> borders = new HashSet<>();
+//            currentState.getDistrict(src).getCutOff(borders);
+//            String json = "[";
+//            for(Precinct pre : borders) {
+//                json += pre.getID() +",";
+//
+//            }
+//            json = json.substring(0, json.length()-1);
+//            json += "]";
+//
+//            return json;
+
             return  "{ \"value\" : \""+functionValue+"\", " +
                     "\"valid\" : true, " +
                     "\"message\" : \"move value is: "+functionValue+"\" }";
+                    //"\"message\" : \"cut off: "+cutOff+"\" }";
         }
 
 
@@ -181,6 +208,9 @@ public class RequestHandler {
                 case "Region Growing":
                     solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
                     break;
+                case "Region Growing Variant":
+                    solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
+                    solver.setVariant("RR");
             }
             solver.setState(sm.getClonedState());
             solver.setFunctionWeights(partFairnessMetric/100, compactnessMetric/100, popEqualityMetric/100);
