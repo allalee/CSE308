@@ -2,7 +2,7 @@
 <root>
     <STAGNANT_ITERATION value="50"></STAGNANT_ITERATION>
     <MAX_RUNTIME value="300000"></MAX_RUNTIME>
-    <MIN_TOUCHING value="0.09"></MIN_TOUCHING>
+    <MIN_TOUCHING value="0.01"></MIN_TOUCHING>
 
 
     <GETSTATE_NAME value="name"></GETSTATE_NAME>

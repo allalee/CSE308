@@ -41,11 +41,17 @@ public class Annealing extends Algorithm {
             long startTime = System.currentTimeMillis();
             double startFunctionValue = calculateFunctionValue();
             District districtToModify = getRandomDistrict(allDistricts);
+            districtToModify.calculateBoundaryPrecincts();
             Precinct neighboringPrecinctToAdd = getNeighborToAnneal(districtToModify.getBorderPrecincts());
+
+            District targetDistrict = neighboringPrecinctToAdd.getDistrict();
+            targetDistrict.calculateBoundaryPrecincts();
             Move currentMove = new Move(neighboringPrecinctToAdd.getDistrict(), districtToModify, neighboringPrecinctToAdd);
             currentMove.execute();
-            calculateFunctionValue();
-            if (checkThreshold(startFunctionValue, functionValue)) {
+            functionValue = calculateFunctionValue();
+            boolean cutOff = districtToModify.isCutoff() || targetDistrict.isCutoff();
+            System.out.println(districtToModify.getID() + " "+neighboringPrecinctToAdd.getDistrict().getID());
+            if (!cutOff && checkThreshold(startFunctionValue, functionValue)) {
                 updateClient(currentMove);
             } else {
                 currentMove.undo();
@@ -66,7 +72,7 @@ public class Annealing extends Algorithm {
     }
 
     private boolean isStagnant(double oldValue, double newValue){
-        double threshold = 0.001;
+        double threshold = 0.0001;
         return (Math.abs(oldValue - newValue) < threshold);
     }
 
