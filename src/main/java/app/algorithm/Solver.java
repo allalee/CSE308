@@ -56,4 +56,6 @@ public class Solver {
     public void stop(){
         currentAlgorithm.stop();
     }
+
+    public void setVariant(String variant){currentAlgorithm.setVariant(variant);}
 }

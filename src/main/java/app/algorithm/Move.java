@@ -37,10 +37,11 @@ public class Move {
         this.destDistrict = dest.getID();
     }
 
+    // the order of src/dest removal/add is IMPROTANT!! ex: src & dest is same
     public void execute(){
         precinct.setDistrict(dest);
-        dest.addPrecinct(precinctID, precinct);
         src.removePrecinct(precinct);
+        dest.addPrecinct(precinctID, precinct);
 
         Geometry precinctGeometry = precinct.getGeometry();
         dest.addToCurrentGeometry(precinctGeometry);
@@ -80,6 +81,7 @@ public class Move {
         }
     }
 
+    // the order of src/dest removal/add is IMPROTANT!! ex: src & dest is same
     public void undo(){
         precinct.setDistrict(src);
         dest.removePrecinct(precinct);

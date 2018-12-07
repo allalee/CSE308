@@ -2,4 +2,3 @@
 .idea
 /target/
 /bin/
-src/main/app/controllers/App.java

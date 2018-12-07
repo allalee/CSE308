@@ -6,10 +6,8 @@ import app.json.JTSConverter;
 import app.state.District;
 import app.state.Precinct;
 import app.state.State;
-import app.user.Maps;
+import com.vividsolutions.jts.JTSVersion;
 import com.vividsolutions.jts.geom.Geometry;
-import gerrymandering.HibernateManager;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,10 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -37,9 +34,8 @@ public class RequestHandler {
         @Autowired
         SocketHandler socketHandler;
 
-        public RequestHandler() throws Exception {
-        }
-
+    public RequestHandler() throws Exception {
+    }
         @RequestMapping(value = "/getState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
         public @ResponseBody
         String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws Throwable {
@@ -103,7 +99,10 @@ public class RequestHandler {
         public @ResponseBody
         String tempMove(@RequestParam ("src") Integer src, @RequestParam("dest") Integer dest, @RequestParam("precinct") Integer precinct, @RequestParam("lock") Boolean lock) throws Throwable {
             System.out.println("inputs are: " + src+" "+ dest+" "+ precinct);
-            sm.cloneState(sm.getCurrentState().getName());
+            if(sm.getClonedState() == null) {
+                sm.cloneState(sm.getCurrentState().getName());
+                JTSConverter.buildNeighbor(sm.getClonedState().getAllPrecincts());
+            }
             State currentState = sm.getClonedState();
             Precinct p = null;
             for(District d : currentState.getAllDistricts()){
@@ -118,25 +117,26 @@ public class RequestHandler {
                        "\"valid\" : false, " +
                        "\"message\" : \"invalid precinct\" }";
             }
-            boolean destIsNeighbor = false;
-            Precinct n = null;
-            for(Precinct neighbor : p.getNeighbors()){
-                if(neighbor.getDistrict().getID() == dest) {
-                    destIsNeighbor = true;
-                    n = neighbor;
-                    break;
-                }
-            }
-            if(!destIsNeighbor){
-                return "{ \"value\" : \"-1\", " +
-                        "\"valid\" : false, " +
-                        "\"message\" : \"precinct not adjacent to the district\" }";
-            }
-            Geometry intersection = n.getGeometry().intersection(p.getGeometry());
-            System.out.println("PERI" + intersection.getLength());
-            System.out.println("AREA" + intersection.getArea());
-//            currentState.getDistrict(src).calculateBoundaryPrecincts();
-//            currentState.getDistrict(dest).calculateBoundaryPrecincts();
+//            boolean destIsNeighbor = false;
+//            for(Precinct neighbor : p.getNeighbors()){
+//                if(neighbor.getDistrict().getID() == dest) {
+//                    destIsNeighbor = true;
+//                    break;
+//                }
+//            }
+//            if(!destIsNeighbor){
+//                return "{ \"value\" : \"-1\", " +
+//                        "\"valid\" : false, " +
+//                        "\"message\" : \"precinct not adjacent to the district\" }";
+//            }
+//            Geometry intersection = n.getGeometry().intersection(p.getGeometry());
+//            System.out.println("PERI" + intersection.getLength());
+//            System.out.println("AREA" + intersection.getArea());
+            currentState.getDistrict(src).calculateBoundaryPrecincts();
+            currentState.getDistrict(dest).calculateBoundaryPrecincts();
+            System.out.println("before mov:");
+            System.out.println("src: "+currentState.getDistrict(src).getPrecinctMap().size());
+            System.out.println("dest: "+currentState.getDistrict(dest).getPrecinctMap().size());
 //
 //            boolean isBorder = currentState.getDistrict(src).getBorderPrecincts().contains(p);
 //            System.out.println("is border: "+  isBorder);
@@ -146,23 +146,44 @@ public class RequestHandler {
             currentState.getDistrict(src).calculateBoundaryPrecincts();
             currentState.getDistrict(dest).calculateBoundaryPrecincts();
 
+            System.out.println("after mov:");
+            System.out.println("src: "+currentState.getDistrict(src).getPrecinctMap().size());
+            System.out.println("dest: "+currentState.getDistrict(dest).getPrecinctMap().size());
+
             double functionValue = 0;
 
 //            if(currentState.getDistrict(src).isCutoff() || currentState.getDistrict(dest).isCutoff()) {
 //                System.out.println("cuts off");
 //            }
 
+            boolean cutOff = currentState.getDistrict(src).isCutoff();
+            System.out.println("is cut off: "+cutOff);
 
             // undo if it is not a locking move
             if(!lock) {
                 move.undo();
+//                cutOff = currentState.getDistrict(src).isCutoff();
+//                System.out.println("is cut off: "+cutOff);
                 currentState.getDistrict(src).calculateBoundaryPrecincts();
                 currentState.getDistrict(dest).calculateBoundaryPrecincts();
             }
 
+//            Set<Precinct> borders = new HashSet<>();
+//            currentState.getDistrict(src).getCutOff(borders);
+//            String json = "[";
+//            for(Precinct pre : borders) {
+//                json += pre.getID() +",";
+//
+//            }
+//            json = json.substring(0, json.length()-1);
+//            json += "]";
+//
+//            return json;
+
             return  "{ \"value\" : \""+functionValue+"\", " +
                     "\"valid\" : true, " +
                     "\"message\" : \"move value is: "+functionValue+"\" }";
+                    //"\"message\" : \"cut off: "+cutOff+"\" }";
         }
 
 
@@ -187,6 +208,9 @@ public class RequestHandler {
                 case "Region Growing":
                     solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
                     break;
+                case "Region Growing Variant":
+                    solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
+                    solver.setVariant("RR");
             }
             solver.setState(sm.getClonedState());
             solver.setFunctionWeights(partFairnessMetric/100, compactnessMetric/100, popEqualityMetric/100);
@@ -221,38 +245,6 @@ public class RequestHandler {
 
             return "";
         }
-
-        @RequestMapping(value = "/loadSavedMaps", method = RequestMethod.GET)
-        public @ResponseBody
-        String loadSavedMaps(HttpServletRequest req,@RequestParam("currentStateID") int state_id) throws Throwable {
-            HibernateManager hm = HibernateManager.getInstance();
-            Cookie userCookie = getCookie(req, "user");
-            String email = "";
-            if(userCookie != null) {
-                email = userCookie.getValue();
-            }
-            Map<String, Object> criteria = new HashMap<>();
-            criteria.put("email", email);
-            criteria.put("state_id", state_id);
-            List<Object> savedmapList = hm.getRecordsBasedOnCriteria(Maps.class, criteria);
-            ArrayList<String> userMapNames = new ArrayList<>();
-            int index = 0;
-            while (index < savedmapList.size()) {
-                Maps thisMap = (Maps) savedmapList.get(index);
-                if(!userMapNames.contains(thisMap.getName())) {
-                    userMapNames.add(thisMap.getName());
-                }
-                index++;
-            }
-//            JSONObject savedMapsJSON = new JSONObject();
-//            savedMapJSON.put("compactness", compactness);
-//            prefJSON.put("partisan", partisan);
-//            prefJSON.put("popequality", popequality);
-//            String prefJSONString = prefJSON.toString();
-//            return prefJSONString;
-            return null;
-        }
-
 
     public Cookie getCookie(HttpServletRequest req, String cookieName){
         Cookie[] cookies = req.getCookies();
