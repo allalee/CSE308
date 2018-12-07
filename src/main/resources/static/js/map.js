@@ -808,8 +808,8 @@ function addLoadedPrecinctsLayer() {
 }
 
 function load_map() {
-  console.log("Load Map");
-  if (!mymap.hasLayer(precinctJson) || !mymap.hasLayer(originalPrecinctJson)) { //Remember to check or originalPrecicntJson too
+  console.log("mapload")
+  if (!mymap.hasLayer(precinctJson)) { //Remember to check or originalPrecicntJson too
     return;
   }
   mapObj = document.getElementById("dropdownMapButton");
@@ -857,5 +857,5 @@ function delete_map() {
     }
   }
   request.send(null);
-
+  mapObj.innerText="Select"
 }

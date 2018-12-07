@@ -36,7 +36,7 @@ public class Maps implements Serializable{
     @Column(
             name = "STATE_ID"
     )
-    private int stateId;
+    private int state_id;
     @Id
     @Column(
             name = "SEGMENT_INDEX"
@@ -47,7 +47,7 @@ public class Maps implements Serializable{
             this.name = name;
             this.email = email;
             this.savedmap = savedmapJSON;
-            this.stateId = stateId;
+            this.state_id = stateId;
             this.segment_index = index;
     }
 
@@ -80,11 +80,11 @@ public class Maps implements Serializable{
     }
 
     public int getStateId() {
-        return stateId;
+        return state_id;
     }
 
     public void setStateId(int stateId) {
-        this.stateId = stateId;
+        this.state_id = stateId;
     }
 
     public int getIndex() {

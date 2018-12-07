@@ -93,7 +93,7 @@ public class StateManager {
         String map = "";
         for(Object o : l) {
             Maps mapSegment = (Maps) o;
-            map+= mapSegment.getSavedmap();
+            map += mapSegment.getSavedmap();
         }
         return map;
     }
