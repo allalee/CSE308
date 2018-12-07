@@ -40,7 +40,7 @@ public class LoginLogoutHandler {
 
         HibernateManager hm = HibernateManager.getInstance();
         ArrayList<Preferences> userPreferences = new ArrayList<>();
-        ArrayList<String> userMapNames = new ArrayList<>();
+//        ArrayList<String> userMapNames = new ArrayList<>();
         //Check to see if a user is logged in through cookie.
         while(itr.hasNext()){
             UsersModel user = (UsersModel) itr.next();
@@ -57,22 +57,22 @@ public class LoginLogoutHandler {
                         userPreferences.add(thisPreference);
                         index++;
                     }
-                    criteria.clear();
-                    criteria.put("email", email);
-                    List<Object> savedmapList = hm.getRecordsBasedOnCriteria(Maps.class, criteria);
-                    index = 0;
-                    while (index < savedmapList.size()) {
-                        Maps thisMap = (Maps) savedmapList.get(index);
-                        if(!userMapNames.contains(thisMap.getName())) {
-                            userMapNames.add(thisMap.getName());
-                        }
-                        index++;
-                    }
+//                    criteria.clear();
+//                    criteria.put("email", email);
+//                    List<Object> savedmapList = hm.getRecordsBasedOnCriteria(Maps.class, criteria);
+//                    index = 0;
+//                    while (index < savedmapList.size()) {
+//                        Maps thisMap = (Maps) savedmapList.get(index);
+//                        if(!userMapNames.contains(thisMap.getName())) {
+//                            userMapNames.add(thisMap.getName());
+//                        }
+//                        index++;
+//                    }
                 }
                 model.addAttribute("username", username);
                 model.addAttribute("usertype", usertype);
                 model.addAttribute("userPreferences", userPreferences);
-                model.addAttribute("userMapNames", userMapNames);
+//                model.addAttribute("userMapNames", userMapNames);
             }
         }
 

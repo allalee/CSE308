@@ -113,6 +113,7 @@ function stateSearch() {
     mymap.fitBounds(targetState.getBounds());
     stateJson.remove();
     loadStateJson(currentStateName, currentStateID);
+
   }
 }
 
@@ -179,7 +180,6 @@ function loadDistricts(e) {
     //Retrieve districts data from server and set
     loadStateJson(currentStateName, currentStateID);
     stateJson.remove();
-
 }
 function addDistrictsLayer() {
   districtJson = L.geoJson(districtData, {
@@ -858,4 +858,11 @@ function delete_map() {
   }
   request.send(null);
   mapObj.innerText="Select"
+}
+
+function loadStateSavedMaps(currentStateID){
+    var url = "http://localhost:8080/loadSavedMaps?currentStateID=" + currentStateID;
+    var request = new XMLHttpRequest();
+
+
 }

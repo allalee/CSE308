@@ -6,7 +6,10 @@ import app.json.JTSConverter;
 import app.state.District;
 import app.state.Precinct;
 import app.state.State;
+import app.user.Maps;
 import com.vividsolutions.jts.geom.Geometry;
+import gerrymandering.HibernateManager;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,7 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -31,8 +37,9 @@ public class RequestHandler {
         @Autowired
         SocketHandler socketHandler;
 
-    public RequestHandler() throws Exception {
-    }
+        public RequestHandler() throws Exception {
+        }
+
         @RequestMapping(value = "/getState", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
         public @ResponseBody
         String getState(@RequestParam ("stateName") String state, @RequestParam("stateID") Integer stateID) throws Throwable {
@@ -214,6 +221,38 @@ public class RequestHandler {
 
             return "";
         }
+
+        @RequestMapping(value = "/loadSavedMaps", method = RequestMethod.GET)
+        public @ResponseBody
+        String loadSavedMaps(HttpServletRequest req,@RequestParam("currentStateID") int state_id) throws Throwable {
+            HibernateManager hm = HibernateManager.getInstance();
+            Cookie userCookie = getCookie(req, "user");
+            String email = "";
+            if(userCookie != null) {
+                email = userCookie.getValue();
+            }
+            Map<String, Object> criteria = new HashMap<>();
+            criteria.put("email", email);
+            criteria.put("state_id", state_id);
+            List<Object> savedmapList = hm.getRecordsBasedOnCriteria(Maps.class, criteria);
+            ArrayList<String> userMapNames = new ArrayList<>();
+            int index = 0;
+            while (index < savedmapList.size()) {
+                Maps thisMap = (Maps) savedmapList.get(index);
+                if(!userMapNames.contains(thisMap.getName())) {
+                    userMapNames.add(thisMap.getName());
+                }
+                index++;
+            }
+//            JSONObject savedMapsJSON = new JSONObject();
+//            savedMapJSON.put("compactness", compactness);
+//            prefJSON.put("partisan", partisan);
+//            prefJSON.put("popequality", popequality);
+//            String prefJSONString = prefJSON.toString();
+//            return prefJSONString;
+            return null;
+        }
+
 
     public Cookie getCookie(HttpServletRequest req, String cookieName){
         Cookie[] cookies = req.getCookies();
