@@ -838,7 +838,7 @@ function addLoadedPrecinctsLayer() {
 
 function load_map() {
   console.log("Load Map");
-  if(currentLayer!=2 || mymap.hasLayer(loadedMapJson)) { //Has to be on any precinct Layer to load map
+  if(currentLayer!=2) { //Has to be on any precinct Layer to load map
     return;
   }
   /*
@@ -861,6 +861,9 @@ function load_map() {
       }
       if(mymap.hasLayer(originalPrecinctJson)) {
         originalPrecinctJson.remove();
+      }
+      if(mymap.hasLayer(loadedMapJson)) {
+        loadedMapJson.remove();
       }
       addLoadedPrecinctsLayer();
     }
