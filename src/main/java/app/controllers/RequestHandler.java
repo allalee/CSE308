@@ -11,10 +11,10 @@ import com.vividsolutions.jts.geom.Geometry;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +26,7 @@ import java.util.Set;
  *
  */
 
-@Controller
+@RestController
 public class RequestHandler {
         private StateManager sm = new StateManager();
         private Solver solver = new Solver();
@@ -54,6 +54,18 @@ public class RequestHandler {
             sm.saveMap(email, name); //REMEMBER TO CHANGE THIS TO MODIFIED ONE
         }
 
+        @RequestMapping(value = "/deleteMap", method = RequestMethod.GET)
+        @ResponseStatus(value = HttpStatus.OK)
+        public
+        void deleteMap(HttpServletRequest req, @RequestParam ("name") String name) throws Throwable {
+            Cookie userCookie = getCookie(req, "user");
+            String email = "";
+            if(userCookie != null) {
+                email = userCookie.getValue();
+            }
+            sm.deleteMap(email, name);
+        }
+
         @RequestMapping(value = "/loadPrecinctData", method = RequestMethod.GET)
         public @ResponseBody
         String loadPrecinctData(@RequestParam ("districtID") Integer districtID, @RequestParam("precinctID") Integer precinctID) throws Throwable {
@@ -64,6 +76,17 @@ public class RequestHandler {
         public @ResponseBody
         String getOriginal() {
             return sm.getOriginalPrecinctsMap();
+        }
+
+        @RequestMapping(value = "/loadMap", method = RequestMethod.GET, produces = "application/json;charset=utf-8")
+        public @ResponseBody
+        String loadMap(HttpServletRequest req, @RequestParam ("name") String mapName) throws Throwable{
+            Cookie userCookie = getCookie(req, "user");
+            String email = "";
+            if(userCookie != null) {
+                email = userCookie.getValue();
+            }
+            return sm.loadMap(email, mapName);
         }
 
         @RequestMapping(value = "/stateConst", method = RequestMethod.GET)
@@ -185,6 +208,9 @@ public class RequestHandler {
                 case "Region Growing":
                     solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
                     break;
+                case "Region Growing Variant":
+                    solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
+                    solver.setVariant("RR");
             }
             solver.setState(sm.getClonedState());
             solver.setFunctionWeights(partFairnessMetric/100, compactnessMetric/100, popEqualityMetric/100);

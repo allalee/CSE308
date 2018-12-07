@@ -150,7 +150,7 @@
                   </div>
                </div>
                <div class="col-3 pt-3 px-0">
-                 <button type="button" class="btn btn-primary weight-save m-0 p-0">Load</button>
+                 <button type="button" class="btn btn-primary weight-save m-0 p-0" onclick="loadPreferences();">Load</button>
                </div>
              </div>
            </div>
@@ -256,19 +256,17 @@
                           Select
                    </button>
                       <div id="mapMenu"class="dropdown-menu" aria-labelledby="dropdownMapButton">
-                          <a class="dropdown-item" onclick="select_map(this)">Action</a>
-                          <a class="dropdown-item" onclick="select_map(this)">Another action</a>
-                          <a class="dropdown-item" onclick="select_map(this)">Something else here</a>
+                          <a th:each = "mapName : ${userMapNames}" th:text="${mapName}" class="dropdown-item" onclick="select_map(this);"></a>
                       </div>
                 </div>
 
                <div class="container">
                  <div class="row">
                    <div class="col pt-3 px-0 mr-2">
-                     <button type="button" class="btn btn-primary weight-save m-0 p-0">Load</button>
+                     <button type="button" class="btn btn-primary weight-save m-0 p-0" onclick="load_map()">Load</button>
                    </div>
                    <div class="col pt-3 px-0">
-                     <button type="button" class="btn btn-primary weight-save m-0 p-0">Delete</button>
+                     <button type="button" class="btn btn-primary weight-save m-0 p-0" onclick="delete_map()">Delete</button>
                    </div>
                  </div>
 

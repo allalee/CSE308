@@ -11,6 +11,7 @@ var stateJson; //State handler added to map
 var districtJson; //District handler added to the map
 var precinctJson;
 var originalPrecinctJson = null;
+var loadedMapJson = null;
 
 
 var currentStateID = null; //Keeping track of which state the user clicks on
@@ -20,6 +21,7 @@ var statesData;
 var districtData;
 var precinctData = null;
 var originalPrecinctData; //Retreived from server to display original when selected
+var loadedMapData;
 
 var currentConstText;
 
@@ -454,6 +456,7 @@ function savePreferences(){
     request.open("GET", url, true)
     request.onreadystatechange = function () {
         if(request.readyState == 4 && request.status == 200){
+            consoleWrite("Preferences Saved"); //Update interface
             var newcontent = document.createElement('a');
             newcontent.innerHTML = name;
             newcontent.setAttribute("class", "dropdown-item");
@@ -472,20 +475,33 @@ function select_preference(e){
 }
 
 function loadPreferences(){
-    var name = document.getElementById("weightRadio").value
+    var name = document.getElementById("dropdownPreferences").innerText;
     var url = "http://localhost:8080/loadPreferences?name=" + name
     var request = new XMLHttpRequest()
     request.open("GET", url, true)
-    request.onreadystatechange = updatePref
+    request.onreadystatechange = function(){
+        if(request.readyState == 4 && request.status == 200){
+            var populationEquality = document.getElementById("population_equality")
+            var partisanFairness = document.getElementById("partisan_fairness")
+            var compactness = document.getElementById("compactness")
+            var pop_output = document.getElementById("pop_value");
+            var part_output = document.getElementById("part_value");
+            var comp_output = document.getElementById("comp_value");
+            var loadedJson = request.response
+            var pref = JSON.parse(loadedJson)
+            var popEqualityVal = pref.popequality
+            var partisanVal = pref.partisan
+            var compactnessVal = pref.compactness
+            populationEquality.value = popEqualityVal
+            partisanFairness.value = partisanVal
+            compactness.value = compactnessVal
+            pop_output.innerHTML = popEqualityVal
+            part_output.innerHTML = partisanVal
+            comp_output.innerHTML = compactnessVal
+        }
+    }
     request.send(null)
 }
-
-function updatePref(){
-    var populationEquality = document.getElementById("population_equality")
-    var partisanFairness = document.getElementById("partisan_fairness")
-    var compactness = document.getElementById("compactness")
-}
-
 
 document.getElementById("start").onclick = startAlgorithm
 document.getElementById("pause").onclick = togglePauseAlgorithm
@@ -751,9 +767,11 @@ function enableManualMoveOption(enable){
 enableManualMoveOption(false)
 
 function save_map() {
+  console.log("Save Map");
   if (!mymap.hasLayer(precinctJson)) {
     return;
   }
+  var mapDiv = document.getElementById("mapMenu");
   mapInput = document.getElementById("mapfield");
   mapValue = mapInput.value;
   mapData = JSON.stringify(precinctData);
@@ -762,9 +780,82 @@ function save_map() {
   request.open("GET", url, true);
   request.onreadystatechange = function() {
     if (request.readyState == 4 && request.status == 200) {
-      consoleWrite("Map Saved");
+      consoleWrite("Map Saved"); //Update interface
+      var newmap = document.createElement('a');
+      newmap.innerHTML = mapValue;
+      newmap.setAttribute("class", "dropdown-item");
+      newmap.setAttribute("onclick", "select_map(this);");
+      mapDiv.appendChild(newmap);
     }
   }
   request.send(null);
+  mapInput.value = "";
 
+}
+
+function addLoadedPrecinctsLayer() {
+  loadedMapJson = L.geoJson(loadedMapData, {
+      style: function() {
+        return {
+          fillOpacity: 0.4,
+          color: "grey"
+        }
+      },
+      onEachFeature : onEachPrecinctFeature
+  }).addTo(mymap);
+  layer_manager.build_precincts_map(loadedMapJson)
+  layer_manager.color_precincts()
+}
+
+function load_map() {
+  console.log("mapload")
+  if (!mymap.hasLayer(precinctJson)) { //Remember to check or originalPrecicntJson too
+    return;
+  }
+  mapObj = document.getElementById("dropdownMapButton");
+  mapName= mapObj.innerText;
+  var request = new XMLHttpRequest();
+  var url = "http://localhost:8080/loadMap?name=" + mapName
+  request.open("GET", url, true);
+  request.onreadystatechange = function() {
+    if (request.readyState ==4 && request.status == 200) {
+      consoleWrite("Map Loaded");
+      var loadedJson = request.response
+      var obj = JSON.parse(loadedJson);
+      loadedMapData = obj;
+      if(mymap.hasLayer(precinctJson)) {
+        precinctJson.remove();
+      }
+      if(mymap.hasLayer(originalPrecinctJson)) {
+        originalPrecinctJson.remove();
+      }
+      addLoadedPrecinctsLayer();
+    }
+  }
+  request.send(null);
+}
+
+function delete_map() {
+  console.log("Delete Map");
+  if (!mymap.hasLayer(precinctJson)) {
+    return;
+  }
+  mapObj = document.getElementById("dropdownMapButton");
+  mapName= mapObj.innerText;
+  var request = new XMLHttpRequest();
+  var url = "http://localhost:8080/deleteMap?name=" + mapName
+  request.open("GET", url, true);
+  request.onreadystatechange = function() {
+    if (request.readyState ==4 && request.status == 200) {
+      consoleWrite("Map Deleted"); 
+      children_list = document.getElementById("mapMenu").children;
+      for (let i = 0; i < children_list.length; i++) {
+        if(children_list[i].innerText==mapName) {
+          children_list[i].remove();
+        }
+      }
+    }
+  }
+  request.send(null);
+  mapObj.innerText="Select"
 }

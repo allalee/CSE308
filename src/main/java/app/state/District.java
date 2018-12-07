@@ -119,14 +119,14 @@ public class District{
 
     //Merges the district geometry with the specified precinct geometry
     public void addToCurrentGeometry(Geometry geometry) {
-        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
-        geometry = VWSimplifier.simplify(geometry, 0.001);
+//        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
+//        geometry = VWSimplifier.simplify(geometry, 0.001);
         this.currentGeometry = this.currentGeometry.union(geometry);
     }
     //Difference the district geometry with the specified precinct geometry
     public void subtractFromCurrentGeometry(Geometry geometry) {
-        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
-        geometry = VWSimplifier.simplify(geometry, 0.001);
+//        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
+//        geometry = VWSimplifier.simplify(geometry, 0.001);
         this.currentGeometry = this.currentGeometry.difference(geometry);
     }
     public void addPopulation(int population) {
