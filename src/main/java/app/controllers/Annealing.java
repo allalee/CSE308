@@ -39,7 +39,7 @@ public class Annealing extends Algorithm {
                 continue;
             }
             long startTime = System.currentTimeMillis();
-            double startFunctionValue = functionValue;
+            double startFunctionValue = calculateFunctionValue();
             District districtToModify = getRandomDistrict(allDistricts);
             Precinct neighboringPrecinctToAdd = getNeighborToAnneal(districtToModify.getBorderPrecincts());
             Move currentMove = new Move(neighboringPrecinctToAdd.getDistrict(), districtToModify, neighboringPrecinctToAdd);
@@ -60,6 +60,7 @@ public class Annealing extends Algorithm {
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
         }
+        running = false;
         handler.send("{\"console_log\": \"Initial Function Value = " + initFuncValue + "\"}");
         handler.send("{\"console_log\": \"Final Function Value = " + functionValue + "\"}");
     }
