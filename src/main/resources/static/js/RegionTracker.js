@@ -1,7 +1,7 @@
 makeRegionTracker = function(layerManager, forPrecinct){
     rt = {}
     rt.color = "black"
-    rt.selection_history = {}   //id -> original style
+    rt.selection_history = {}   //id -> layer
     //rt.selection_save = {}
     //layer.options.style() // get style
     rt.forPrecinct = forPrecinct
@@ -9,12 +9,37 @@ makeRegionTracker = function(layerManager, forPrecinct){
     rt.clickFunction = function(e){
         var layer = e.target;
         var layer_id = rt.get_layer_id(layer)
-        if (rt.selection_history[layer_id]){ //already selected
-            rt.remove(layer)
+
+
+        if(rt.forPrecinct){
+            if (rt.selection_history[layer_id]){ // has precinct from same district
+                rt.remove(layer)
+            }
+            else{
+                var layerWithSameDistrict = false;
+                for(var i in rt.selection_history){
+                    var iLayer = rt.selection_history[i]
+                    var iDistrict = layerManager.get_district_id_by_precinct_layer(iLayer)
+                    var district = layerManager.get_district_id_by_precinct_layer(layer)
+                    if(iDistrict == district){
+                        layerWithSameDistrict = iLayer
+                        break;
+                    }
+                }
+                if(layerWithSameDistrict)
+                    rt.remove(layerWithSameDistrict)
+                rt.add(layer)
+            }
         }
-        else{
-            rt.add(layer)
+        else{ //
+            if (rt.selection_history[layer_id]){ //already selected
+                rt.remove(layer)
+            }
+            else{
+                rt.add(layer)
+            }
         }
+
     }
 
     rt.get_layer_id = function(layer){

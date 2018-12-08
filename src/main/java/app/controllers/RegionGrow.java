@@ -124,9 +124,12 @@ public class RegionGrow extends Algorithm {
         ArrayList<District> regions = new ArrayList<>();
         ArrayList<Precinct> temp = new ArrayList<>(unassignedPrecincts);
         for(District d : allDistricts){
-            Random rnd = new Random();
-            int i = rnd.nextInt(d.getAllPrecincts().size());
-            Precinct seedPrecinct = (Precinct)d.getAllPrecincts().toArray()[i];
+            Precinct seedPrecinct = getManualPrecinctSeed(d); // check for manual seed
+            if(seedPrecinct == null){
+                Random rnd = new Random();
+                int i = rnd.nextInt(d.getAllPrecincts().size());
+                seedPrecinct = (Precinct)d.getAllPrecincts().toArray()[i];
+            }
             temp.remove(seedPrecinct);
             District newDistrict = new District(d.getID(), d.getState(), seedPrecinct.getGeometry());
             newDistrict.addPrecinct(seedPrecinct.getID(), seedPrecinct);

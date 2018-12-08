@@ -599,6 +599,13 @@ function startAlgorithm(){
         //enableManualMoveOption(false); //MAKE SURE TO ENABLE THIS button
         //enablePrecinctSeedSelect(true)
         lock.lockAll()
+        updateButtons(ButtonState.RUNNING)
+
+        var requestData = {}
+
+        consoleWrite("Retrieving precinct seeds for server...")
+        requestData["precinct_seeds"] = Object.keys(precinctSeedTracker.selection_history)
+
         document.getElementById("reset").disabled = true;
         var console = document.getElementById("console")
         console.appendChild(document.createElement("br"))
@@ -610,10 +617,9 @@ function startAlgorithm(){
         console.append("Forwarding slider data to the server...")
         var url = "http://localhost:8080/startAlgorithm?algorithmType=" + algorithm_type + "&popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
         var request = new XMLHttpRequest()
-        request.open("GET", url, true)
+        request.open("POST", url, true)
 
-        request.send(null)
-        updateButtons(ButtonState.RUNNING)
+        request.send(JSON.stringify(requestData))
     }
 }
 
@@ -725,6 +731,7 @@ function removeDistrictOption(){
 
 
 // resource lock
+// NOT modular, need external variable: mode
 function makeControlLock(){
     cl = {}
     cl.users = {}
@@ -803,9 +810,6 @@ manualMoveToggle.onclick = function(e){
         //enablePrecinctSeedSelect(true)
     }
 }
-
-// NOT modular, need external variable: mode
-
 
 // Seeding
 precinctSeedTracker = makeRegionTracker(layer_manager, true)
