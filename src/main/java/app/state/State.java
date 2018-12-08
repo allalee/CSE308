@@ -65,4 +65,14 @@ public class State {
     public District getDistrict(int key){
         return this.districtMap.get(key);
     }
+
+    public Precinct getPrecinct(int key){
+        for(District d: districtMap.values()){
+            Precinct p = d.getPrecinct(key);
+            if(p!=null){
+                return p;
+            }
+        }
+        return null;
+    }
 }

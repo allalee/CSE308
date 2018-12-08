@@ -12,6 +12,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import gerrymandering.HibernateManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -192,9 +193,9 @@ public class RequestHandler {
         @Autowired BeanFactory beanFactory;
         @Autowired SocketHandler handler;
 
-        @RequestMapping(value = "/startAlgorithm", method = RequestMethod.GET)
+        @RequestMapping(value = "/startAlgorithm", method = RequestMethod.POST)
         public @ResponseBody
-        String startAlgo(@RequestParam("algorithmType") String algorithmType, @RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric ) throws Throwable {
+        String startAlgo(@RequestParam("algorithmType") String algorithmType, @RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric, @RequestBody String requestBody ) throws Throwable {
             handler.send("{\"console_log\":\"Server received connection...\"}");
             sm.cloneState(sm.getCurrentState().getName());
             handler.send("{\"console_log\":\"Building precinct neighbors...\"}");
@@ -217,6 +218,20 @@ public class RequestHandler {
             solver.setState(sm.getClonedState());
             solver.setFunctionWeights(partFairnessMetric/100, compactnessMetric/100, popEqualityMetric/100);
             solver.initAlgorithm();
+
+            Set<Precinct> precinctSeeds = new HashSet<>();
+            Set<District> districtSeeds = new HashSet<>();
+
+            JSONParser parser = new JSONParser();
+            JSONObject body = (JSONObject)parser.parse(requestBody);
+            JSONArray precinctSeedList = (JSONArray)body.get("precinct_seeds");
+            for(Object precinctIDString : precinctSeedList){
+                Integer id = Integer.parseInt((String)precinctIDString);
+                precinctSeeds.add(sm.getClonedState().getPrecinct(id));
+            }
+            solver.getCurrentAlgorithm().resetPrecinctSeeds(precinctSeeds);
+            solver.getCurrentAlgorithm().resetDistrictSeeds(districtSeeds);
+
             solver.run();
             return "Algo started";
         }

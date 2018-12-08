@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 @Service
 @Scope(value = "prototype")
@@ -36,6 +38,8 @@ public abstract class Algorithm{
     private final int ZERO = 0;
     protected final String endMessage = "{\"enable_reset\": 1, \"console_log\" : \"Algo ended\"}";
     protected String variant = "";
+    protected Set<Precinct> precinctSeeds;
+    protected Set<District> districtSeeds;
 
 
     public Algorithm(){
@@ -44,6 +48,28 @@ public abstract class Algorithm{
         listOfMoves = new ArrayDeque<>();
         weights = new HashMap<>();
         MAX_RUN_TIME = Integer.parseInt(PropertiesManager.get(Property.MAX_RUNTIME));
+        precinctSeeds = new HashSet<>();
+        districtSeeds = new HashSet<>();
+    }
+
+    public void resetPrecinctSeeds(Set<Precinct> seeds){
+        precinctSeeds.clear();
+        precinctSeeds.addAll(seeds);
+    }
+
+    public void resetDistrictSeeds(Set<District> seeds){
+        districtSeeds.clear();
+        districtSeeds.addAll(seeds);
+    }
+
+    protected Precinct getManualPrecinctSeed(District district){
+        for (Precinct seed : precinctSeeds) { // check for manually set seed
+            Precinct precinct = district.getPrecinct(seed.getID());
+            if (precinct != null) {
+                return precinct;
+            }
+        }
+        return null;
     }
 
     public void start(){

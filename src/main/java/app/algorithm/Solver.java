@@ -25,6 +25,10 @@ public class Solver {
         currentAlgorithm = algo;
     }
 
+    public Algorithm getCurrentAlgorithm(){
+        return currentAlgorithm;
+    }
+
     public void setState(State state){
         currentAlgorithm.setState(state);
     }

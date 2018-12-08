@@ -94,6 +94,10 @@ var layer_manager = (function(){
         manager.precinct_map[id].setStyle({fillColor: color})
     }
 
+    manager.color_district = function(id, color){
+        manager.district_map[id].setStyle({fillColor: color})
+    }
+
     manager.move_precinct = function(precinct_id, district_id){
         var precinct_layer = manager.precinct_map[precinct_id]
         precinct_layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME] = district_id
