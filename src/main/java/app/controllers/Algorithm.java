@@ -13,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Scope(value = "prototype")
@@ -40,6 +37,7 @@ public abstract class Algorithm{
     protected String variant = "";
     protected Set<Precinct> precinctSeeds;
     protected Set<District> districtSeeds;
+    protected Set<District> districtExcluded;
 
 
     public Algorithm(){
@@ -50,11 +48,17 @@ public abstract class Algorithm{
         MAX_RUN_TIME = Integer.parseInt(PropertiesManager.get(Property.MAX_RUNTIME));
         precinctSeeds = new HashSet<>();
         districtSeeds = new HashSet<>();
+        districtExcluded = new HashSet<>();
     }
 
     public void resetPrecinctSeeds(Set<Precinct> seeds){
         precinctSeeds.clear();
         precinctSeeds.addAll(seeds);
+    }
+
+    public void resetDistrictExcluded(Set<District> excludes){
+        districtExcluded.clear();
+        districtExcluded.addAll(excludes);
     }
 
     public void resetDistrictSeeds(Set<District> seeds){
@@ -72,6 +76,26 @@ public abstract class Algorithm{
         return null;
     }
 
+    public Set<District> removeExcludedDistricts(Collection<District> districts){
+        Set<District> notExcluded = new HashSet<>();
+        for(District d: districts){
+            if(!districtExcluded.contains(d)){
+                notExcluded.add(d);
+            }
+        }
+        return notExcluded;
+    }
+
+    public Set<Precinct> removeExcludedPrecincts(Collection<Precinct> precincts){
+        Set<Precinct> notExcludedPrecincts = new HashSet<>();
+        for(Precinct p: precincts){
+            if(!districtExcluded.contains(p.getDistrict())){
+                notExcludedPrecincts.add(p);
+            }
+        }
+        return notExcludedPrecincts;
+    }
+
     public void start(){
         if( running ){
             stop();
@@ -81,6 +105,7 @@ public abstract class Algorithm{
         algoThread = new Thread(()->{
             running = true;
             run();
+            running = false;
             handler.send(endMessage);
         });
         algoThread.start();

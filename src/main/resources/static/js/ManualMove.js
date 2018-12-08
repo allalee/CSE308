@@ -81,8 +81,19 @@ makeManualMover = function(layerManager, selector_option_div){
         var src_id = layerManager.get_district_id_by_precinct_layer(mm.selected_precinct)
         var precinct_id = mm.getSelectedID()
 
+        var populationEquality = document.getElementById("population_equality").value
+        var partisanFairness = document.getElementById("partisan_fairness").value
+        var compactness = document.getElementById("compactness").value
+
         var request = new XMLHttpRequest();
-        var url = "http://localhost:8080/" + url + "?src=" + src_id + "&dest=" + dest_id +"&precinct=" + precinct_id + "&lock=" + isLock
+        var url = "http://localhost:8080/" + url +
+        "?src=" + src_id +
+        "&dest=" + dest_id +
+        "&precinct=" + precinct_id +
+        "&lock=" + isLock +
+        "&popEqual=" + populationEquality +
+        "&partFairness=" + partisanFairness +
+        "&compactness=" + compactness;
         request.open("GET", url, true)
         request.onreadystatechange = function(){
             if(request.readyState == 4 && request.status == 200){

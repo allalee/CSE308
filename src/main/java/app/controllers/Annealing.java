@@ -21,6 +21,10 @@ public class Annealing extends Algorithm {
     @Override
     void run() {
         Collection<District> allDistricts = state.getAllDistricts();
+        allDistricts = removeExcludedDistricts(allDistricts);
+        if(allDistricts.size() <= 0)    // if all districts are excluded, end algo
+            return;
+
         int stagnant_iterations = 0;
         int max_stagnant = Integer.parseInt(PropertiesManager.get(Property.STAGNANT_ITERATION));
         double initFuncValue = functionValue;
@@ -42,8 +46,13 @@ public class Annealing extends Algorithm {
             double startFunctionValue = calculateFunctionValue();
             District districtToModify = getRandomDistrict(allDistricts);
             districtToModify.calculateBoundaryPrecincts();
-            Precinct neighboringPrecinctToAdd = getNeighborToAnneal(districtToModify.getBorderPrecincts());
-
+            //Precinct neighboringPrecinctToAdd = getNeighborToAnneal(districtToModify.getBorderPrecincts());
+            Set<Precinct> availableBorders = removeExcludedPrecincts(districtToModify.getBorderPrecincts());
+            if(availableBorders.size() <= 0){   // if all precincts are from exlucded district, next iter
+                stagnant_iterations++;
+                continue;
+            }
+            Precinct neighboringPrecinctToAdd = getNeighborToAnneal(availableBorders);
             District targetDistrict = neighboringPrecinctToAdd.getDistrict();
             targetDistrict.calculateBoundaryPrecincts();
             Move currentMove = new Move(neighboringPrecinctToAdd.getDistrict(), districtToModify, neighboringPrecinctToAdd);
@@ -66,7 +75,6 @@ public class Annealing extends Algorithm {
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
         }
-        running = false;
         handler.send("{\"console_log\": \"Initial Function Value = " + initFuncValue + "\"}");
         handler.send("{\"console_log\": \"Final Function Value = " + functionValue + "\"}");
     }

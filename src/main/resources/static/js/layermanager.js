@@ -59,11 +59,15 @@ var layer_manager = (function(){
         manager.precinct_map[id].setStyle({fillColor: color})
     }
 
-    manager.color_unassigned_precincts = function(){
+    manager.color_unassigned_precincts = function(district_id_to_whiten){
+        var district_id_hash = {}
+        district_id_to_whiten.forEach(function(e){district_id_hash[e]=0})
         for(var id in manager.precinct_map){
             var layer = manager.precinct_map[id]
-            layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME] = 0
-            manager.precinct_map[id].setStyle({fillColor : DEFAULT_REGION_COLOR})
+            if(layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME] in district_id_hash){
+                layer.feature[ATTR_PROPERTY_NAME][ATTR_DISTRICT_ID_NAME] = 0
+                manager.precinct_map[id].setStyle({fillColor : DEFAULT_REGION_COLOR})
+            }
         }
     }
 

@@ -51,7 +51,7 @@ function consoleLog(message_body){
         lock.releaseAll()
     }
     if(message_body["default"]){
-        layer_manager.color_unassigned_precincts()
+        layer_manager.color_unassigned_precincts(message_body["default"])
     }
     if(message_body["seeds"]){
         layer_manager.color_default_regions(message_body["seeds"])
@@ -201,7 +201,8 @@ function addDistrictsLayer() {
   }).addTo(mymap);
   layer_manager.build_district_maps(districtJson)
   layer_manager.color_districts()
-  update_district_list()
+  update_district_list("exclusionMenu")
+  update_district_list("district_seed_menu")
   currentLayer = 1;
   loadStateSavedMaps(currentStateName)
   sendState(currentStateID, currentStateName);
@@ -257,6 +258,7 @@ function addOriginalPrecinctsLayer() {
   layer_manager.build_precincts_map(originalPrecinctJson)
   layer_manager.color_precincts()
   currentLayer = 2;
+  lock.releaseAll()
 }
 
 function onEachStateFeature(feature, layer) {
@@ -288,12 +290,13 @@ function resetMap(){
     connector.start_reading()
 
     // update ui
-    updateButtons(ButtonState.RUNNABLE)
+    updateButtons(ButtonState.STOPPED)
 
     lock.lockAll()
     precinctSeedTracker.clear()
 
-    reset_district_exclusion()
+    reset_district_exclusion("exclusionMenu")
+    reset_district_exclusion("district_seed_menu")
 
 	if(mymap.hasLayer(districtJson)) {
     districtJson.remove();
@@ -423,6 +426,7 @@ function displayGeneratedMap() {
   }*/
   originalPrecinctJson.remove();
   addPrecinctsLayer();
+  lock.lockAll()
 }
 
 function loadPrecinctProperties(layer){
@@ -605,6 +609,17 @@ function startAlgorithm(){
 
         consoleWrite("Retrieving precinct seeds for server...")
         requestData["precinct_seeds"] = Object.keys(precinctSeedTracker.selection_history)
+
+        var district_seeds = []
+        document.getElementById("district_seed_menu").querySelectorAll("input[type=checkbox]:checked").forEach(function(e){district_seeds.push(e.value)})
+        requestData["district_seeds"] = district_seeds
+
+        var excludedDistricts = []
+        document.getElementById("exclusionMenu").querySelectorAll("input[type=checkbox]:checked").forEach(function(e){excludedDistricts.push(e.value)})
+        requestData["excludedDistricts"] = excludedDistricts
+
+
+
 
         document.getElementById("reset").disabled = true;
         var console = document.getElementById("console")
@@ -1036,10 +1051,10 @@ function delete_map() {
   mapObj.innerText = "Select"
 }
 
-function update_district_list() {
+function update_district_list(menuid) {
   var district_list = layer_manager.district_map;
   var color_mapping = layer_manager.district_layer_color_map;
-  var myMenu = document.getElementById("exclusionMenu");
+  var myMenu = document.getElementById(menuid);
   for (id in district_list) {
     color = color_mapping[id];
     myDiv = create_district_div();
@@ -1075,8 +1090,8 @@ function create_district_label(district_id, color) {
   return newLabel;
 }
 
-function reset_district_exclusion() {
-  var myNode = document.getElementById("exclusionMenu");
+function reset_district_exclusion(menuid) {
+  var myNode = document.getElementById(menuid);
   while (myNode.firstChild) {
       myNode.removeChild(myNode.firstChild);
   }

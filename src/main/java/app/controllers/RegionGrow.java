@@ -29,6 +29,11 @@ public class RegionGrow extends Algorithm {
     void run() {
         Collection<Precinct> allPrecincts = state.getAllPrecincts();
         Collection<District> allDistricts = state.getAllDistricts();
+        allPrecincts = removeExcludedPrecincts(allPrecincts);
+        allDistricts = removeExcludedDistricts(allDistricts);
+        if(allDistricts.size()<=0)  // if all districts are excluded, end algo
+            return;
+
         Collection<Precinct> unassignedPrecincts = new ArrayList<>();
         for(Precinct p : allPrecincts){
             p.setDistrict(null);
@@ -41,7 +46,14 @@ public class RegionGrow extends Algorithm {
         int roundRobinCounter = 0;
         double initFuncValue = functionValue;
         //Call to the client to update all of the precincts white to denote that they are not part of a district
-        handler.send("{\"default" + "\": \"" + 0 + "\"}");
+        //handler.send("{\"default" + "\": \"" + 0 + "\"}");
+        String clientInit = "{\"default\":[";
+        for(District d : allDistricts){
+            clientInit += d.getID()+",";
+        }
+        clientInit = clientInit.substring(0,clientInit.length()-1);
+        clientInit += "]}";
+        handler.send(clientInit);
         ArrayList<District> regions = generateRegions(allDistricts, unassignedPrecincts);
         //Color the starting precincts in the map
         updateClientForRegions(regions);
