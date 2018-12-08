@@ -44,7 +44,9 @@ function consoleLog(message_body){
         connector.clear_message()
         document.getElementById("reset").disabled = false;
         updateButtons(ButtonState.STOPPED)
-        enableManualMoveOption(true)
+        //enableManualMoveOption(true)
+        //enablePrecinctSeedSelect(true)
+        lock.releaseAll()
     }
     if(message_body["default"]){
         layer_manager.color_unassigned_precincts()
@@ -204,7 +206,9 @@ function loadPrecincts(e) {
     }
 
     // enable manual redistrict
-    enableManualMoveOption(true)
+    //enableManualMoveOption(true)
+    //enablePrecinctSeedSelect(true)
+    lock.releaseAll()
     updateButtons(ButtonState.RUNNABLE)
 }
 
@@ -272,7 +276,9 @@ function resetMap(){
 
     // update ui
     updateButtons(ButtonState.RUNNABLE)
-    enableManualMoveOption(false)
+
+    lock.lockAll()
+    precinctSeedTracker.clear()
 
 	if(mymap.hasLayer(districtJson)) {
     districtJson.remove();
@@ -560,7 +566,9 @@ function startAlgorithm(){
         document.getElementById("console").appendChild(document.createElement("br"))
         document.getElementById("console").append("No state selected for algorithm to run")
     } else {
-        enableManualMoveOption(false); //MAKE SURE TO ENABLE THIS button
+        //enableManualMoveOption(false); //MAKE SURE TO ENABLE THIS button
+        //enablePrecinctSeedSelect(true)
+        lock.lockAll()
         document.getElementById("reset").disabled = true;
         var console = document.getElementById("console")
         console.appendChild(document.createElement("br"))
@@ -681,6 +689,51 @@ function removeDistrictOption(){
     selectorDiv.innerHTML = ""
 }*/
 
+
+// resource lock
+function makeControlLock(){
+    cl = {}
+    cl.users = {}
+    cl.register = function(mode, toggleMethod){
+        cl.users[mode] = toggleMethod
+    }
+    cl.lock = function(toMode){
+        for(var i in cl.users){
+            if(i == toMode){
+                cl.users[i](true)
+            }
+            else{
+                cl.users[i](false)
+            }
+        }
+        mode = toMode
+    }
+    cl.release = function(fromMode){
+        for(var i in cl.users){
+             cl.users[i](true)
+        }
+        mode = MODE.NORMAL
+    }
+    cl.lockAll = function(){
+        for(var i in cl.users){
+             cl.users[i](false)
+        }
+        mode = MODE.NORMAL
+    }
+    cl.releaseAll = function(){
+        for(var i in cl.users){
+             cl.users[i](true)
+        }
+        mode = MODE.NORMAL
+    }
+
+    return cl
+}
+lock = makeControlLock()
+
+
+// Manual Move
+
 var fadeWriter = makeFadeOutWriter()
 var manualMoveWriter = { write: function(PLACEHOLDER, message){ consoleWrite(message) } }
 var district_selector_div = document.getElementById('district_selector_options')
@@ -703,19 +756,79 @@ manualMoveToggle.onclick = function(e){
     if(mode == MODE.NORMAL){    // switch to manual if normal
         tempMoveBtn.disabled = false
         lockMoveBtn.disabled = false
-        mode = MODE.MANUAL_SELECT
+        //mode = MODE.MANUAL_SELECT
+        lock.lock(MODE.MANUAL_SELECT)
+        //enablePrecinctSeedSelect(false)
     }
     else{
         tempMoveBtn.disabled = true
         lockMoveBtn.disabled = true
         mover.exit()
-        mode = MODE.NORMAL
+        //mode = MODE.NORMAL
+        lock.release(MODE.MANUAL_SELECT)
+        //enablePrecinctSeedSelect(true)
     }
 }
 
+// NOT modular, need external variable: mode
+
+
+// Seeding
+precinctSeedTracker = makeRegionTracker(layer_manager, true)
+precinctSeedToggleBtn = document.getElementById('precinct_seed_toggle')
+precinctSeedResetBtn = document.getElementById('precinct_seed_reset')
+precinctSeedToggleBtn.onclick = precinctSeedToggle
+precinctSeedResetBtn.onclick = precinctSeedReset
+precinctSeedOpenNext = true;
+function precinctSeedReset(){
+    precinctSeedTracker.clear()
+}
+function precinctSeedToggle(){
+    if ( precinctSeedOpenNext ){    // start selecting
+        precinctSeedTracker.open()
+        precinctSeedOpenNext = false;
+        precinctSeedToggleBtn.innerHTML = "Stop&nbsp"
+
+        //mode = MODE.SEED_PRECINCT
+        lock.lock(MODE.SEED_PRECINCT)
+        //enableManualMoveOption(false)
+    }
+    else{
+        precinctSeedTracker.close()
+        precinctSeedOpenNext = true;
+        precinctSeedToggleBtn.innerHTML = "Start"
+
+        //mode = MODE.NORMAL
+        lock.release(MODE.SEED_PRECINCT)
+        //enableManualMoveOption(true)
+    }
+}
+function enablePrecinctSeedSelect(enable){  //
+    if(!enable){
+        if(!precinctSeedOpenNext) // already opened, reset style
+            var x = "skip this if for now"
+            //precinctSeedToggleBtn.style.backgroundColor = "blue"
+
+        precinctSeedTracker.close()
+        precinctSeedToggleBtn.innerHTML = "Start"
+
+        precinctSeedToggleBtn.disabled = true
+        precinctSeedResetBtn.disabled = true
+        precinctSeedOpenNext = true;
+    }
+    else{
+        precinctSeedToggleBtn.disabled = false
+        precinctSeedResetBtn.disabled = false
+    }
+}
+
+
+// Map operation machine
+
 var MODE = {
     NORMAL: 0,
-    MANUAL_SELECT: 1
+    MANUAL_SELECT: 1,
+    SEED_PRECINCT: 2
 }
 var mode = MODE.NORMAL
 function precinctOverEvent(e){
@@ -725,6 +838,9 @@ function precinctOverEvent(e){
          break;
          case MODE.MANUAL_SELECT:
              mover.mouseoverFunction(e)
+         break;
+         case MODE.SEED_PRECINCT:
+             precinctSeedTracker.mouseoverFunction(e)
          break;
          default: console.log("invalid mode: "+ mode)
      }
@@ -737,6 +853,9 @@ function precinctOutEvent(e){
          case MODE.MANUAL_SELECT:
              mover.mouseoutFunction(e)
          break;
+         case MODE.SEED_PRECINCT:
+              precinctSeedTracker.mouseoutFunction(e)
+          break;
          default: console.log("invalid mode: "+ mode)
      }
  }
@@ -748,6 +867,9 @@ function precinctClickEvent(e){
         case MODE.MANUAL_SELECT:
              mover.clickFunction(e)
         break;
+        case MODE.SEED_PRECINCT:
+             precinctSeedTracker.clickFunction(e)
+         break;
         default: console.log("invalid mode: "+ mode)
     }
 }
@@ -761,10 +883,14 @@ function enableManualMoveOption(enable){
         tempMoveBtn.disabled = true
         lockMoveBtn.disabled = true
         mover.exit()
-        mode = MODE.NORMAL
     }
 }
-enableManualMoveOption(false)
+//enableManualMoveOption(false)
+//enablePrecinctSeedSelect(false)
+
+lock.register(MODE.MANUAL_SELECT, enableManualMoveOption)
+lock.register(MODE.SEED_PRECINCT, enablePrecinctSeedSelect)
+lock.lockAll()
 
 function save_map() {
   console.log("Save Map");

@@ -214,6 +214,23 @@
        </div>
        <div class="card rounded-0">
            <div class="card-header">
+               <a data-toggle="collapse" data-parent="#sidenav" href="#precinct_seed" class="card-link">
+                   Choose Seed Precincts
+               </a>
+           </div>
+           <div id="precinct_seed" class="collapse">
+               <div class="btn-group card-body">
+                   <div>
+                       <button id="precinct_seed_toggle" class="btn btn-primary display-button">Start</button>
+                   </div>
+                   <div>
+                       <button id="precinct_seed_reset" class="btn btn-primary display-button">Reset</button>
+                   </div>
+               </div>
+           </div>
+       </div>
+       <div class="card rounded-0">
+           <div class="card-header">
                <a data-toggle="collapse" data-parent="#sidenav" href="#display_option" class="card-link">
                    Display
                </a>
@@ -302,6 +319,7 @@
       <script src='../js/layermanager.js'></script>
       <script src='../js/SocketConnect.js'></script>
       <script src='../js/ManualMove.js'></script>
+      <script src='../js/RegionTracker.js'></script>
     <script src="../js/map.js"></script>
   </footer>
 

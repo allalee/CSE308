@@ -1,26 +1,20 @@
 makeRegionTracker = function(layerManager, forPrecinct){
     rt = {}
-    rt.selection = undefined
-    rt.selection_id = undefined
-    rt.style = undefined
     rt.color = "black"
     rt.selection_history = {}   //id -> original style
     //rt.selection_save = {}
-    rt.forPrecicnt = forPrecicnt
+    //layer.options.style() // get style
+    rt.forPrecinct = forPrecinct
 
     rt.clickFunction = function(e){
         var layer = e.target;
-        if (rt.selection == layer){ //toggle select
+        var layer_id = rt.get_layer_id(layer)
+        if (rt.selection_history[layer_id]){ //already selected
             rt.remove(layer)
-            return
         }
-
-        rt.prev_style = layer.options.style().
-        rt.selection = layer;
-        rt.selection_id = rt.get_layer_id()
-        layerManager.color_precinct(rt.selection_id, rt.color)
-
-        rt.selection_history[selection_id] = layer
+        else{
+            rt.add(layer)
+        }
     }
 
     rt.get_layer_id = function(layer){
@@ -28,38 +22,58 @@ makeRegionTracker = function(layerManager, forPrecinct){
         return layerManager.get_precinct_id(layer)
     }
 
-    rt.resetSelection = function(){
-        rt.selection.setStyle(rt.prev_style)
-    }
-
     rt.remove = function(layer){
         var layer_id = rt.get_layer_id(layer)
+        rt.reset_color(layer)
+        delete rt.selection_history[layer_id]
+    }
 
-        // revert to original style
-        if (forPrecint){
+    rt.add = function(layer){
+        var layer_id = rt.get_layer_id(layer)
+        rt.color_region(layer)
+        rt.selection_history[layer_id] = layer
+    }
 
-            layerManager.reset_precinct_color( rt.selection_history[layer_id] )
+
+    rt.color_region = function(layer){
+        var layer_id = rt.get_layer_id(layer)
+        if (rt.forPrecinct){
+            layerManager.color_precinct( layer_id, rt.color )
         }
         else{
-            layerManager.reset_district_color( rt.selection_history[layer_id] )
+            layerManager.color_district( layer_id, rt.color )
         }
-
-        rt.selection_history[layer_id] = undefined
+    }
+    rt.reset_color = function(layer){
+        if (rt.forPrecinct){
+            layerManager.reset_precinct_color( layer )
+        }
+        else{
+            layerManager.reset_district_color( layer )
+        }
     }
                                         //////
-    mm.mouseoutFunction = function(e){
+    rt.mouseoutFunction = function(e){
         var layer = e.target;
-        if (mm.selected_precinct == layer)  // reset to custom color for selected
-            layerManager.color_precinct(mm.getSelectedID(), mm.selected_color)
-        else
-            manager.reset_precinct_color(layer)
+        var layer_id = rt.get_layer_id(layer)
+
+        if (rt.selection_history[layer_id]) { // if is selected
+            rt.color_region(layer)
+        }
+        else {
+            rt.reset_color(layer)
+        }
         info.update();
     }
 
-    mm.mouseoverFunction = function(e){
+    rt.mouseoverFunction = function(e){
         var layer = e.target;
+        var layer_id = rt.get_layer_id(layer)
 
-        if (mm.selected_precinct != layer){
+        if(rt.selection_history[layer_id]){
+            // nothing will change to mouseover selected precinct
+        }
+        else{
             layer.setStyle({
                 weight: 5,
                 color: '#666',
@@ -70,10 +84,27 @@ makeRegionTracker = function(layerManager, forPrecinct){
         loadPrecinctProperties(layer)
     }
 
-    mm.exit = function(){
-        if (mm.selected_precinct){
-            mm.resetSelection()
+    rt.open = function(){
+        for(var layer_id in rt.selection_history){
+            var layer = rt.selection_history[layer_id]
+            rt.color_region(layer)
         }
-        mm.removeDistrictOption()
     }
+
+    rt.close = function(){
+        for(var layer_id in rt.selection_history){
+            var layer = rt.selection_history[layer_id]
+            rt.reset_color(layer)
+        }
+    }
+
+    rt.clear = function(){
+        for(var layer_id in rt.selection_history){
+            var layer = rt.selection_history[layer_id]
+            rt.reset_color(layer)
+        }
+        rt.selection_history = {}
+    }
+
+    return rt
 }
