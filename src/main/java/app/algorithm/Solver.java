@@ -28,7 +28,7 @@ public class Solver {
     public Algorithm getCurrentAlgorithm(){
         return currentAlgorithm;
     }
-
+    public double calculateFunctionValue() { return currentAlgorithm.calculateFunctionValue(); }
     public void setState(State state){
         currentAlgorithm.setState(state);
     }
