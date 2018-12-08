@@ -201,6 +201,8 @@ function addDistrictsLayer() {
   layer_manager.color_districts()
   update_district_list()
   currentLayer = 1;
+  loadStateSavedMaps(currentStateName)
+  sendState(currentStateID, currentStateName);
 }
 
 function loadPrecincts(e) {
@@ -306,6 +308,9 @@ function resetMap(){
     currentLayer = 0;
     mymap.setView([37.0902, -95.7129], 4);
   }
+  var mapDiv = document.getElementById("mapMenu");
+  mapDiv.innerHTML = '';
+  mapDiv.value = '';
 }
 
 
@@ -946,9 +951,29 @@ function reset_district_exclusion() {
   }
 }
 
-function loadStateSavedMaps(currentStateID){
-    var url = "http://localhost:8080/loadSavedMaps?currentStateID=" + currentStateID;
+function loadStateSavedMaps(currentStateName){
+    var url = "http://localhost:8080/loadSavedMaps?currentStateName=" + currentStateName;
     var request = new XMLHttpRequest();
-
+    request.open("GET", url, true);
+    request.onreadystatechange = function(){
+        if (request.readyState ==4 && request.status == 200) {
+            //fill
+            var mapDiv = document.getElementById("mapMenu")
+            var loadedJson = request.response
+            var mapNames = JSON.parse(loadedJson)
+            var len = mapNames.names.length
+            var i = 0;
+            while(i < len){
+                var newmap = document.createElement('a');
+                newmap.innerHTML = mapNames.names[i];
+                newmap.setAttribute("class", "dropdown-item");
+                newmap.setAttribute("onclick", "select_map(this);");
+                mapDiv.appendChild(newmap);
+                i = i + 1;
+            }
+            consoleWrite("Saved Maps Loaded");
+        }
+    }
+    request.send(null);
 
 }
