@@ -25,6 +25,8 @@ var loadedMapData;
 
 var currentConstText;
 
+var currentLayer = 0; //State: 0 ; District: 1 ; Precinct: 2
+
 var connector = makeConnector();
 connector.onMessage(consoleLog)
 connector.connect();
@@ -102,9 +104,13 @@ state_fps_hashmap =
 };
 
 function stateSearch() {
-  if(mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
+  if(currentLayer!=0) { //If not state layer, return
     return;
   }
+  /*
+  if(mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
+    return;
+  }*/
   stateName = document.getElementById('statefield').value;
   stateNameUpper = stateName.toUpperCase();
   if(id = state_fps_hashmap[stateNameUpper]) {
@@ -115,6 +121,7 @@ function stateSearch() {
     mymap.fitBounds(targetState.getBounds());
     stateJson.remove();
     loadStateJson(currentStateName, currentStateID);
+
   }
 }
 
@@ -181,7 +188,6 @@ function loadDistricts(e) {
     //Retrieve districts data from server and set
     loadStateJson(currentStateName, currentStateID);
     stateJson.remove();
-
 }
 function addDistrictsLayer() {
   districtJson = L.geoJson(districtData, {
@@ -195,6 +201,10 @@ function addDistrictsLayer() {
   }).addTo(mymap);
   layer_manager.build_district_maps(districtJson)
   layer_manager.color_districts()
+  update_district_list()
+  currentLayer = 1;
+  loadStateSavedMaps(currentStateName)
+  sendState(currentStateID, currentStateName);
 }
 
 function loadPrecincts(e) {
@@ -224,12 +234,14 @@ function addPrecinctsLayer() {
   }).addTo(mymap);
   layer_manager.build_precincts_map(precinctJson)
   layer_manager.color_precincts()
+  currentLayer = 2;
 }
 
 function addStateLayer () {
   stateJson = L.geoJson(statesData, {
       onEachFeature: onEachStateFeature
   }).addTo(mymap);
+  currentLayer = 0;
 }
 
 function addOriginalPrecinctsLayer() {
@@ -244,6 +256,7 @@ function addOriginalPrecinctsLayer() {
   }).addTo(mymap);
   layer_manager.build_precincts_map(originalPrecinctJson)
   layer_manager.color_precincts()
+  currentLayer = 2;
 }
 
 function onEachStateFeature(feature, layer) {
@@ -280,12 +293,16 @@ function resetMap(){
     lock.lockAll()
     precinctSeedTracker.clear()
 
+    reset_district_exclusion()
+
 	if(mymap.hasLayer(districtJson)) {
     districtJson.remove();
   } else if(mymap.hasLayer(precinctJson)) {
     precinctJson.remove();
   } else if(mymap.hasLayer(originalPrecinctJson)) {
     originalPrecinctJson.remove();
+  } else if(mymap.hasLayer(loadedMapJson)) {
+    loadedMapJson.remove();
   }
     currentStateID = null;
     currentConstText = null;
@@ -295,8 +312,12 @@ function resetMap(){
     return;
   } else {
     addStateLayer();
+    currentLayer = 0;
     mymap.setView([37.0902, -95.7129], 4);
   }
+  var mapDiv = document.getElementById("mapMenu");
+  mapDiv.innerHTML = '';
+  mapDiv.value = '';
 }
 
 
@@ -365,9 +386,14 @@ function loadStateJson(state, currentState){
     request.send(null);
 }
 function displayOriginalMap() {
+    if(currentLayer!=2 || mymap.hasLayer(originalPrecinctJson)) {
+      return;
+    }
+    /*
     if(mymap.hasLayer(stateJson) || mymap.hasLayer(districtJson) || mymap.hasLayer(originalPrecinctJson)) {
       return;
     }
+    */
     if(originalPrecinctJson) {
       precinctJson.remove();
       addOriginalPrecinctsLayer();
@@ -388,9 +414,13 @@ function displayOriginalMap() {
     request.send(null)
 }
 function displayGeneratedMap() {
-  if(mymap.hasLayer(stateJson) || mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
+  if(currentLayer!=2 || mymap.hasLayer(precinctJson)) {
     return;
   }
+  /*
+  if(mymap.hasLayer(stateJson) || mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
+    return;
+  }*/
   originalPrecinctJson.remove();
   addPrecinctsLayer();
 }
@@ -651,9 +681,13 @@ function toggleStateSearch(){
 }
 
 function dropdownStateSearch(){
+    if(currentLayer!=0) {
+      return;
+    }
+    /*
     if(mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
         return;
-    }
+    }*/
 
     var selected_radio = document.getElementById('state_selector_options').querySelector('input[type=radio]:checked')
     var name = selected_radio.value
@@ -894,7 +928,7 @@ lock.lockAll()
 
 function save_map() {
   console.log("Save Map");
-  if (!mymap.hasLayer(precinctJson)) {
+  if (!mymap.hasLayer(precinctJson)) { //Enforces the user to save only algorithm generated map
     return;
   }
   var mapDiv = document.getElementById("mapMenu");
@@ -931,13 +965,18 @@ function addLoadedPrecinctsLayer() {
   }).addTo(mymap);
   layer_manager.build_precincts_map(loadedMapJson)
   layer_manager.color_precincts()
+  currentLayer = 2;
 }
 
 function load_map() {
-  console.log("mapload")
-  if (!mymap.hasLayer(precinctJson)) { //Remember to check or originalPrecicntJson too
+  console.log("Load Map");
+  if(currentLayer!=2) { //Has to be on any precinct Layer to load map
     return;
   }
+  /*
+  if (!mymap.hasLayer(precinctJson) || !mymap.hasLayer(originalPrecinctJson)) { //Remember to check or originalPrecicntJson too
+    return;
+  }*/
   mapObj = document.getElementById("dropdownMapButton");
   mapName= mapObj.innerText;
   var request = new XMLHttpRequest();
@@ -955,6 +994,9 @@ function load_map() {
       if(mymap.hasLayer(originalPrecinctJson)) {
         originalPrecinctJson.remove();
       }
+      if(mymap.hasLayer(loadedMapJson)) {
+        loadedMapJson.remove();
+      }
       addLoadedPrecinctsLayer();
     }
   }
@@ -963,9 +1005,13 @@ function load_map() {
 
 function delete_map() {
   console.log("Delete Map");
-  if (!mymap.hasLayer(precinctJson)) {
+  if(currentLayer!=2) { //User has to be on any precinct layers to delete map
     return;
   }
+  /*
+  if (!mymap.hasLayer(precinctJson)) {
+    return;
+  }*/
   mapObj = document.getElementById("dropdownMapButton");
   mapName= mapObj.innerText;
   var request = new XMLHttpRequest();
@@ -973,7 +1019,7 @@ function delete_map() {
   request.open("GET", url, true);
   request.onreadystatechange = function() {
     if (request.readyState ==4 && request.status == 200) {
-      consoleWrite("Map Deleted"); 
+      consoleWrite("Map Deleted");
       children_list = document.getElementById("mapMenu").children;
       for (let i = 0; i < children_list.length; i++) {
         if(children_list[i].innerText==mapName) {
@@ -983,5 +1029,78 @@ function delete_map() {
     }
   }
   request.send(null);
-  mapObj.innerText="Select"
+  mapObj.innerText = "Select"
+}
+
+function update_district_list() {
+  var district_list = layer_manager.district_map;
+  var color_mapping = layer_manager.district_layer_color_map;
+  var myMenu = document.getElementById("exclusionMenu");
+  for (id in district_list) {
+    color = color_mapping[id];
+    myDiv = create_district_div();
+    myInput = create_district_input(id);
+    myLabel = create_district_label(id, color);
+    myDiv.appendChild(myInput);
+    myDiv.appendChild(myLabel);
+    myMenu.appendChild(myDiv);
+  }
+}
+
+function create_district_div() {
+  var newDiv = document.createElement("div");
+  newDiv.setAttribute("class", "form-check");
+  return newDiv;
+}
+
+function create_district_input(district_id) {
+  var newInput = document.createElement("input");
+  newInput.setAttribute("class", "form-check-input");
+  newInput.setAttribute("type", "checkbox");
+  newInput.setAttribute("value", district_id);
+  newInput.setAttribute("id", "district"+district_id);
+  return newInput;
+}
+
+function create_district_label(district_id, color) {
+  var newLabel = document.createElement("label");
+  newLabel.setAttribute("class", "form-check-label");
+  newLabel.setAttribute("for", "district"+district_id);
+  newLabel.setAttribute("style", "background-color:"+color);
+  newLabel.innerHTML = "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp"
+  return newLabel;
+}
+
+function reset_district_exclusion() {
+  var myNode = document.getElementById("exclusionMenu");
+  while (myNode.firstChild) {
+      myNode.removeChild(myNode.firstChild);
+  }
+}
+
+function loadStateSavedMaps(currentStateName){
+    var url = "http://localhost:8080/loadSavedMaps?currentStateName=" + currentStateName;
+    var request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.onreadystatechange = function(){
+        if (request.readyState ==4 && request.status == 200) {
+            //fill
+            var mapDiv = document.getElementById("mapMenu")
+            var loadedJson = request.response
+            var mapNames = JSON.parse(loadedJson)
+            var len = mapNames.names.length
+            var i = 0;
+            while(i < len){
+                var newmap = document.createElement('a');
+                newmap.innerHTML = mapNames.names[i];
+                newmap.setAttribute("class", "dropdown-item");
+                newmap.setAttribute("onclick", "select_map(this);");
+                mapDiv.appendChild(newmap);
+                i = i + 1;
+            }
+            consoleWrite("Saved Maps Loaded");
+        }
+    }
+    request.send(null);
+
 }
