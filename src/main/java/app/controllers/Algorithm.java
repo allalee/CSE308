@@ -209,7 +209,23 @@ public abstract class Algorithm{
         }
     }
 
+    public double computeFunctionDistrict(District d){
+        double idealPopulation = state.getIdealPopulation();
+        double percentError = Math.abs((double)(d.getPopulation() - idealPopulation)/idealPopulation);
+        double popEqualityValue = ONE - percentError;
+        int totalVotes = d.getTotalVotes();
+        HashMap<Parties, Integer> map = d.retrieveWastedVotes();
+        int democraticWastedVotes = map.get(Parties.DEMOCRATIC);
+        int republicanWastedVotes = map.get(Parties.REPUBLICAN);
+        double partisanFairness = Math.abs(((double)(democraticWastedVotes-republicanWastedVotes)/totalVotes));
+        double compactness = d.computePolsby();
+        return weights.get(Metric.POPULATION_EQUALITY) * popEqualityValue +
+                weights.get(Metric.PARTISAN_FAIRNESS) * partisanFairness+ weights.get(Metric.COMPACTNESS) *
+                compactness;
+    }
+
     public void setVariant(String variant){this.variant = variant;}
+
     abstract void run();
 
 }

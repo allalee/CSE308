@@ -265,6 +265,9 @@ public class RequestHandler {
                 case "Region Growing Variant":
                     solver.addAlgorithm(beanFactory.getBean(RegionGrow.class));
                     solver.setVariant("RR");
+                case "Simulated Annealing Variant":
+                    solver.addAlgorithm(beanFactory.getBean(Annealing.class));
+                    solver.setVariant("DL");
             }
             solver.setState(sm.getClonedState());
             solver.setFunctionWeights(partFairnessMetric/100, compactnessMetric/100, popEqualityMetric/100);
