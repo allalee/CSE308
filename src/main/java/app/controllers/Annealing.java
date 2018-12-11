@@ -27,7 +27,7 @@ public class Annealing extends Algorithm {
 
         int stagnant_iterations = 0;
         int max_stagnant = Integer.parseInt(PropertiesManager.get(Property.STAGNANT_ITERATION));
-        double initFuncValue = functionValue;
+        double initFuncValue = 1*functionValue;
         //Calculate boundary precincts which are precincts in the district that border another district
         for (District district : allDistricts) {
             district.calculateBoundaryPrecincts();
@@ -44,7 +44,12 @@ public class Annealing extends Algorithm {
             }
             long startTime = System.currentTimeMillis();
             double startFunctionValue = calculateFunctionValue();
-            District districtToModify = getRandomDistrict(allDistricts);
+            District districtToModify;
+            if(this.variant.equals("DL")){
+                districtToModify = findLowestFunctionDistrict(allDistricts);
+            } else {
+                districtToModify = getRandomDistrict(allDistricts);
+            }
             districtToModify.calculateBoundaryPrecincts();
             //Precinct neighboringPrecinctToAdd = getNeighborToAnneal(districtToModify.getBorderPrecincts());
             Set<Precinct> availableBorders = removeExcludedPrecincts(districtToModify.getBorderPrecincts());
@@ -107,6 +112,19 @@ public class Annealing extends Algorithm {
         Random random = new Random();
         int index = random.nextInt(borderingPrecincts.size());
         return (Precinct)borderingPrecincts.toArray()[index];
+    }
+
+    private District findLowestFunctionDistrict(Collection<District> allDistricts){
+        District worstDistrict = (District) allDistricts.toArray()[0];
+        double worstScore = this.computeFunctionDistrict(worstDistrict);
+        for(District d: allDistricts){
+            double score = this.computeFunctionDistrict(d);
+            if(score < worstScore){
+                worstDistrict = d;
+                worstScore = score;
+            }
+        }
+        return worstDistrict;
     }
 
     //Get a random boundary precinct from another district
