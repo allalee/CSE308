@@ -2,6 +2,7 @@ package app.state;
 
 import app.election.ElectionData;
 import app.enums.Ethnicity;
+import app.json.JTSConverter;
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.util.*;
@@ -95,9 +96,10 @@ public class Precinct{
         this.geometry = geometry;
     }
 
-    public Set<Precinct> getNeighbors(){
-        return neighbors;
-    }
+//    public Set<Precinct> getNeighbors(){
+//        return neighbors;
+//    }
+    public Set<Precinct> getNeighbors(){ return JTSConverter.getNeighbors(this); }
 
     public HashMap<Ethnicity, Integer> getDemographics(){ return demographics;}
 
