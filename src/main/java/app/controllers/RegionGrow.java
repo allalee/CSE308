@@ -44,7 +44,7 @@ public class RegionGrow extends Algorithm {
         int stagnant_iterations = 0;
         int max_stagnant = 100;
         int roundRobinCounter = 0;
-        double initFuncValue = functionValue;
+        double initFuncValue = 1*functionValue;
         //Call to the client to update all of the precincts white to denote that they are not part of a district
         //handler.send("{\"default" + "\": \"" + 0 + "\"}");
         String clientInit = "{\"default\":[";
