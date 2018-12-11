@@ -19,6 +19,9 @@ public class Move {
     private District src;
     private District dest;
     private Precinct precinct;
+    
+    private Geometry srcOriginalGeometry;
+    private Geometry destOriginalGeometry;
 
     //Annealing Constructor
     public Move(District src, District dest, Precinct precinct) {
@@ -28,6 +31,9 @@ public class Move {
         this.precinctID = precinct.getID();
         this.srcDistrict = src.getID();
         this.destDistrict = dest.getID();
+
+        srcOriginalGeometry = src.getCurrentGeometry();
+        destOriginalGeometry = dest.getCurrentGeometry();
     }
     //Region Growing Constructor
     public Move(District dest, Precinct precinct){
