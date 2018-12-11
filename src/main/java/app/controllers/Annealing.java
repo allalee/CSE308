@@ -64,7 +64,7 @@ public class Annealing extends Algorithm {
             currentMove.execute();
             functionValue = calculateFunctionValue();
             boolean cutOff = districtToModify.isCutoff() || targetDistrict.isCutoff();
-            System.out.println(districtToModify.getID() + " "+neighboringPrecinctToAdd.getDistrict().getID());
+            System.out.println(districtToModify.getID() + " "+targetDistrict.getID());
             if (!cutOff && checkThreshold(startFunctionValue, functionValue)) {
                 updateClient(currentMove);
             } else {

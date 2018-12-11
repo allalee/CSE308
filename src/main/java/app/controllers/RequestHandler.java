@@ -248,12 +248,17 @@ public class RequestHandler {
         public @ResponseBody
         String startAlgo(@RequestParam("algorithmType") String algorithmType, @RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric, @RequestBody String requestBody ) throws Throwable {
             handler.send("{\"console_log\":\"Server received connection...\"}");
-            sm.cloneState(sm.getCurrentState().getName());
+            if(sm.getClonedState() == null) {
+                sm.cloneState(sm.getCurrentState().getName());
+                sm.loadElectionData();
+                JTSConverter.buildNeighbor(sm.getClonedState().getAllPrecincts());
+            }
+            //sm.cloneState(sm.getCurrentState().getName());
             handler.send("{\"console_log\":\"Building precinct neighbors...\"}");
             HashMap<Integer, District> districtMap = sm.getClonedState().getDistrictMap();
-            JTSConverter.buildNeighbor(sm.getClonedState().getAllPrecincts());
+            //JTSConverter.buildNeighbor(sm.getClonedState().getAllPrecincts());
             handler.send("{\"console_log\":\"Retrieving election data...\"}");
-            sm.loadElectionData();
+            //sm.loadElectionData();
             handler.send("{\"console_log\":\"Setting up algorithm...\"}");
             switch(algorithmType){
                 case "Simulated Annealing":

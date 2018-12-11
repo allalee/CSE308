@@ -38,6 +38,7 @@ public class StateManager {
     }
 
     public String createState(String stateName, Integer stateID) throws Throwable {
+        clonedState = null;
         if (stateMap.get(stateName) != null){
             loadState(stateName);
         } else {
