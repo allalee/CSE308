@@ -43,7 +43,8 @@ function consoleLog(message_body){
             layer_manager.color_changed_precinct(message_body["precinct"], message_body["dest"])
     }
     if(message_body["enable_reset"]){
-        connector.clear_message()
+        setTimout(connector.clear_message, 500)
+        //connector.clear_message()
         document.getElementById("reset").disabled = false;
         updateButtons(ButtonState.STOPPED)
         //enableManualMoveOption(true)

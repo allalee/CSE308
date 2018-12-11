@@ -28,6 +28,9 @@ public class Annealing extends Algorithm {
         int stagnant_iterations = 0;
         int max_stagnant = Integer.parseInt(PropertiesManager.get(Property.STAGNANT_ITERATION));
         double initFuncValue = 1*functionValue;
+        double startFunctionValue = initFuncValue;
+        resetBest();
+        updateBest(startFunctionValue);
         //Calculate boundary precincts which are precincts in the district that border another district
         for (District district : allDistricts) {
             district.calculateBoundaryPrecincts();
@@ -43,7 +46,7 @@ public class Annealing extends Algorithm {
                 continue;
             }
             long startTime = System.currentTimeMillis();
-            double startFunctionValue = calculateFunctionValue();
+            //double startFunctionValue = calculateFunctionValue();
             District districtToModify;
             if(this.variant.equals("DL")){
                 districtToModify = findLowestFunctionDistrict(allDistricts);
@@ -60,16 +63,28 @@ public class Annealing extends Algorithm {
             Precinct neighboringPrecinctToAdd = getNeighborToAnneal(availableBorders);
             District targetDistrict = neighboringPrecinctToAdd.getDistrict();
             targetDistrict.calculateBoundaryPrecincts();
-            Move currentMove = new Move(neighboringPrecinctToAdd.getDistrict(), districtToModify, neighboringPrecinctToAdd);
-            currentMove.execute();
-            functionValue = calculateFunctionValue();
-            boolean cutOff = districtToModify.isCutoff() || targetDistrict.isCutoff();
+
+            Move currentMove = null;
+            boolean invalidMove = true;
+            try {
+                currentMove = new Move(neighboringPrecinctToAdd.getDistrict(), districtToModify, neighboringPrecinctToAdd);
+                currentMove.execute();
+                functionValue = calculateFunctionValue();
+                invalidMove = districtToModify.isCutoff() || targetDistrict.isCutoff();
+            }catch (com.vividsolutions.jts.geom.TopologyException | IllegalArgumentException e){
+                System.out.println("Merge problem");
+            }
+
             System.out.println(districtToModify.getID() + " "+targetDistrict.getID());
-            if (!cutOff && checkThreshold(startFunctionValue, functionValue)) {
+            System.out.println("IS valid: "+!invalidMove);
+
+            if (!invalidMove && checkThreshold(startFunctionValue, functionValue)) {
                 updateClient(currentMove);
+                System.out.println("Send");
             } else {
-                currentMove.undo();
-                functionValue = startFunctionValue;
+                if(currentMove!=null)
+                    currentMove.undo();
+                //functionValue = startFunctionValue;
             }
             if (isStagnant(startFunctionValue, functionValue)) {
                 stagnant_iterations++;
@@ -77,6 +92,11 @@ public class Annealing extends Algorithm {
             } else {
                 stagnant_iterations = 0;
             }
+            System.out.println("this iter - start: "+startFunctionValue+" end: "+functionValue);
+
+            startFunctionValue = functionValue;
+            updateBest(functionValue);
+
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
         }
@@ -84,11 +104,11 @@ public class Annealing extends Algorithm {
         handler.send("{\"console_log\": \"Final Function Value = " + functionValue + "\"}");
     }
 
-    private boolean isStagnant(double oldValue, double newValue){
-        double threshold = 0.0001;
-        return (Math.abs(oldValue - newValue) < threshold);
-    }
-
+//    private boolean isStagnant(double oldValue, double newValue){
+//        double threshold = 0.0001;
+//        return (Math.abs(oldValue - newValue) < threshold);
+//    }
+//
     private boolean checkThreshold(double oldValue, double newValue){
         double threshold = Double.parseDouble(PropertiesManager.get(Property.ANNEALINGTHRESHOLD));
         if(newValue > oldValue){
@@ -97,6 +117,27 @@ public class Annealing extends Algorithm {
             return (Math.abs(oldValue-newValue) < threshold);
         }
     }
+
+
+    private double bestValue = 0;
+    private void resetBest(){
+        bestValue = 0;
+    }
+    private void updateBest(double newValue){
+        bestValue = newValue > bestValue ? newValue : bestValue;
+    }
+    private boolean isStagnant(double oldValue, double newValue){
+        return newValue <= bestValue;
+    }
+//    private boolean checkThreshold(double oldValue, double newValue){
+//        double threshold = Double.parseDouble(PropertiesManager.get(Property.ANNEALINGTHRESHOLD));
+//        if(newValue > bestValue){
+//            bestValue = newValue;
+//            return true;
+//        } else {
+//            return Math.abs(bestValue - newValue) < threshold;
+//        }
+//    }
 
     private void updateClient(Move move){
         handler.send(move.toString());

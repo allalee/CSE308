@@ -21,7 +21,7 @@ public class Solver {
     }
 
     public void addAlgorithm(Algorithm algo){
-        algorithmList.add(algo);
+        //algorithmList.add(algo);
         currentAlgorithm = algo;
     }
 
