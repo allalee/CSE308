@@ -186,7 +186,7 @@ public class District{
     }
 
     public double computePolsby() {
-        return (4*Math.PI*this.geometry.getArea())/Math.pow(this.geometry.getLength(), 2);
+        return (4*Math.PI*this.currentGeometry.getArea())/Math.pow(this.currentGeometry.getLength(), 2);
     }
 
     public void setPopulation(int population){
