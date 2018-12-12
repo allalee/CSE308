@@ -117,6 +117,14 @@ public class District{
         this.currentGeometry = (Geometry) geometry.clone();
     }
 
+    public void setCurrentGeometry(Geometry g){
+        currentGeometry = g;
+    }
+
+    public Geometry getCurrentGeometry(){
+        return currentGeometry;
+    }
+
     //Merges the district geometry with the specified precinct geometry
     public void addToCurrentGeometry(Geometry geometry) {
 //        this.currentGeometry = VWSimplifier.simplify(currentGeometry, 0.001);
