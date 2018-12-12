@@ -157,6 +157,7 @@ public class StateManager {
                 Precincts p = (Precincts) o;
                 Precinct precinct = new Precinct(p.getPrecinctId(), reader.read(p.getBoundaryJSON()));
                 precinct.setDistrict(d);
+                precinct.setOriginalDistrictID(d.getID());
                 d.addPrecinct(precinct.getID(), precinct);
             }
         }

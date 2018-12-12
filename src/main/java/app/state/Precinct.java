@@ -10,6 +10,7 @@ import java.util.*;
 public class Precinct{
     private int ID;
     private District district;
+    private int originalDistrictID;
     private Set<Precinct> neighbors;
     private Geometry geometry;
     private double area;
@@ -69,6 +70,13 @@ public class Precinct{
 
     public double getArea() {
         return area;
+    }
+
+    public void setOriginalDistrictID(int id) {
+        this.originalDistrictID = id;
+    }
+    public int getOriginalDistrictID() {
+        return this.originalDistrictID;
     }
 
     public void setPopulation(int pop){
