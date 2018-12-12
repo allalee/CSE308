@@ -5,10 +5,7 @@ import app.enums.Parties;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.simplify.VWSimplifier;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class District{
     private int ID;
@@ -67,12 +64,48 @@ public class District{
         return numReached != expectedSize;
     }
 
+    private Set<Precinct> initIslands = new HashSet<>();
+    public Set<Precinct> gatherInitIslandPrecincts(){
+        Set<Precinct> islandPrecincts = new HashSet<>();
+        Set<Precinct> iteratedPrecincts = new HashSet<>();
+        Iterator<Precinct> iter = precinctMap.values().iterator();
+        int expectedSize = precinctMap.size();
+        int numReached = 0;
+        do {
+            iteratedPrecincts.clear();
+            Precinct beginPrecinct = iter.next();
+            numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
+
+            System.out.println("This is init island. numReached: " + numReached + " numExpected: " + expectedSize);
+        }while(numReached < 10);
+        if (numReached != expectedSize)
+            for(Precinct p : precinctMap.values()){
+                if(!iteratedPrecincts.contains(p))
+                    islandPrecincts.add(p);
+            }
+        initIslands = islandPrecincts;
+        return islandPrecincts;
+    }
+
     public boolean isCutoff(){
         int expectedSize = precinctMap.size();
         Precinct beginPrecinct = precinctMap.values().iterator().next();
         Set<Precinct> iteratedPrecincts = new HashSet<>();
         int numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
         System.out.println("numReached: " + numReached + " numExpected: " + expectedSize);
+
+        if(numReached!=expectedSize && numReached + initIslands.size() >= expectedSize){
+            int numIslandExpected = expectedSize - numReached;
+            for(Precinct p : precinctMap.values()){
+                if(!iteratedPrecincts.contains(p) && initIslands.contains(p)){
+                    numIslandExpected--;
+                }
+            }
+            if(numIslandExpected<=0){
+                return false;
+            }
+        }
+
         return numReached != expectedSize;
     }
 

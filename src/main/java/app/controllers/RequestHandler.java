@@ -143,7 +143,9 @@ public class RequestHandler {
                             "{\"area\":"+area+
                             ",\"perimeter\":"+perimeter+"}";
 
-            // is precinct a border
+            // count initial island precincts
+            System.out.println("Islands: "+d.gatherInitIslandPrecincts().size());
+
 
 
             String finalJson = "{";
@@ -187,6 +189,8 @@ public class RequestHandler {
                        "\"valid\" : false, " +
                        "\"message\" : \"invalid precinct\" }";
             }
+            currentState.getDistrict(src).gatherInitIslandPrecincts();
+            currentState.getDistrict(dest).gatherInitIslandPrecincts();
 
             currentState.getDistrict(src).calculateBoundaryPrecincts();
             currentState.getDistrict(dest).calculateBoundaryPrecincts();
@@ -205,7 +209,7 @@ public class RequestHandler {
 
             boolean cutOff = currentState.getDistrict(src).isCutoff();
             cutOff |= currentState.getDistrict(dest).isCutoff();
-            //System.out.println("is cut off: "+cutOff);
+            System.out.println("is cut off: "+cutOff);
 
             // undo if it is not a locking move
             if(!lock || cutOff) {
