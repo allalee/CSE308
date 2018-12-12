@@ -431,7 +431,8 @@ function displayGeneratedMap() {
 }
 
 function loadPrecinctProperties(layer){
-      var district_id = layer.feature["properties"]["DISTRICTID"]
+      //var district_id = layer.feature["properties"]["DISTRICTID"]
+      var district_id = layer.feature["properties"]["ORIGINALDISTID"]
       var precinct_id = layer.feature["properties"]["PRECINCTID"]
       var url = "http://localhost:8080/loadPrecinctData?districtID=" + district_id + "&precinctID=" + precinct_id
       var request = new XMLHttpRequest()
