@@ -99,12 +99,31 @@
                </a>
            </div>
            <div id="state_selector" class="collapse">
-               <div id="state_selector_options" class="card-body">
-                   <!--dynamically generated in map.js -> populateStateOptions-->
+             <div class="card-body p-0">
+               <div class="container">
+                 <div class="row">
+                   <div class="col-9">
+                     <div id="state_selector_options" class="p-1">
+                         <!--dynamically generated in map.js -> populateStateOptions-->
+                     </div>
+                   </div>
+                   <div class="col p-0">
+                     <button id = "dropdownStateSearch" class="btn btn-outline-success rounded-1 p-0" onclick="dropdownStateSearch()">Go</button>
+                   </div>
+                 </div>
                </div>
+
+               <!--<div id="state_selector_options">-->
+                   <!--dynamically generated in map.js -> populateStateOptions-->
+              <!-- </div>-->
+
+               <!--
                <div>
                    <button id = "dropdownStateSearch" class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="dropdownStateSearch()">Go</button>
                </div>
+             -->
+             </div>
+
            </div>
        </div>
 
@@ -200,9 +219,11 @@
                <div>
                    <button id="district_selector_toggle" class="btn">Manual Mode</button>
                </div>
+               <!--
                <div>
                     <label id="district_selector_message">&nbsp</label>
                </div>
+             -->
                <div id="district_selector_options" class="card-body">
                    <!--dynamically generated in map.js -> populateDistrictOptions-->
                </div>
@@ -312,7 +333,7 @@
            </div>
            <div id="district_options" class="collapse">
              <div id="exclusionMenu" class="card-body">
-          
+
              </div>
            </div>
          </div>
