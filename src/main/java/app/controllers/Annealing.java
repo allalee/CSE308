@@ -34,6 +34,7 @@ public class Annealing extends Algorithm {
         //Calculate boundary precincts which are precincts in the district that border another district
         for (District district : allDistricts) {
             district.calculateBoundaryPrecincts();
+            district.gatherInitIslandPrecincts();
         }
         handler.send("{\"console_log\": \"Starting algorithm...\"}");
         while (running && stagnant_iterations < max_stagnant && remainingRunTime > 0) {
