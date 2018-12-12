@@ -312,6 +312,7 @@ function resetMap(){
     currentConstText = null;
     originalPrecinctData = null;
     originalPrecinctJson = null;
+  document.getElementById('statefield').value = "";
   if(mymap.hasLayer(stateJson)) {
     return;
   } else {
@@ -411,7 +412,13 @@ function displayOriginalMap() {
         var loadedJson = request.response
         var obj = JSON.parse(loadedJson);
         originalPrecinctData = obj;
-        precinctJson.remove();
+        if(mymap.hasLayer(precinctJson)) {
+          precinctJson.remove();
+        }
+        if(mymap.hasLayer(loadedMapJson)) {
+          loadedMapJson.remove();
+        }
+
         addOriginalPrecinctsLayer();
       }
     }
@@ -425,7 +432,12 @@ function displayGeneratedMap() {
   if(mymap.hasLayer(stateJson) || mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
     return;
   }*/
-  originalPrecinctJson.remove();
+  if(mymap.hasLayer(originalPrecinctJson)) {
+    originalPrecinctJson.remove();
+  }
+  if(mymap.hasLayer(loadedMapJson)) {
+    loadedMapJson.remove();
+  }
   addPrecinctsLayer();
   lock.lockAll()
 }
@@ -955,6 +967,10 @@ function save_map() {
   var mapDiv = document.getElementById("mapMenu");
   mapInput = document.getElementById("mapfield");
   mapValue = mapInput.value;
+  if(mapValue=="") { //Check if user enters empty string
+    alert("Map name cannot be empty");
+    return;
+  }
   mapData = JSON.stringify(precinctData);
   var request = new XMLHttpRequest();
   var url = "http://localhost:8080/saveMap?name=" + mapValue
@@ -1000,6 +1016,10 @@ function load_map() {
   }*/
   mapObj = document.getElementById("dropdownMapButton");
   mapName= mapObj.innerText;
+  if(mapName.includes("Select")) { //Must select a saved map first
+    alert("Select a saved map");
+    return;
+  }
   var request = new XMLHttpRequest();
   var url = "http://localhost:8080/loadMap?name=" + mapName
   request.open("GET", url, true);
@@ -1035,6 +1055,10 @@ function delete_map() {
   }*/
   mapObj = document.getElementById("dropdownMapButton");
   mapName= mapObj.innerText;
+  if(mapName.includes("Select")) { //Must select a saved map first
+    alert("Select a saved map");
+    return;
+  }
   var request = new XMLHttpRequest();
   var url = "http://localhost:8080/deleteMap?name=" + mapName
   request.open("GET", url, true);
