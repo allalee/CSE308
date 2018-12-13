@@ -225,6 +225,7 @@ public class RequestHandler {
             currentState.getDistrict(dest).calculateBoundaryPrecincts();
 
             double functionValue = solver.calculateFunctionValue();
+            functionValue = Algorithm.normalize(functionValue);
             DecimalFormat df = new DecimalFormat("#.###");
             String decimalValue = df.format(functionValue);
             System.out.println("Moving precinct to district yields value: "+functionValue);
