@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import java.text.DecimalFormat;
 import java.util.*;
 
 
@@ -224,6 +225,8 @@ public class RequestHandler {
             currentState.getDistrict(dest).calculateBoundaryPrecincts();
 
             double functionValue = solver.calculateFunctionValue();
+            DecimalFormat df = new DecimalFormat("#.###");
+            String decimalValue = df.format(functionValue);
             System.out.println("Moving precinct to district yields value: "+functionValue);
 
             boolean cutOff = currentState.getDistrict(src).isCutoff();
@@ -262,7 +265,7 @@ public class RequestHandler {
 
             return  "{ \"value\" : \""+functionValue+"\", " +
                     "\"valid\" : true, " +
-                    "\"message\" : \"move value is: "+functionValue+"\" }";
+                    "\"message\" : \"move value is: "+decimalValue+"\" }";
                     //"\"message\" : \"cut off: "+cutOff+"\" }";
         }
 
