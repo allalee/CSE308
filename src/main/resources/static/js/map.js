@@ -107,6 +107,7 @@ state_fps_hashmap =
 
 function stateSearch() {
   if(currentLayer!=0) { //If not state layer, return
+    alert("You must be on state level to search");
     return;
   }
   /*
@@ -722,8 +723,13 @@ function createStateOption(id, name){
 
 function populateStateSelect(){
     selectorDiv = document.getElementById('state_selector_options')
-    for(var i in state_fps_hashmap){
-        optionDiv = createStateOption(state_fps_hashmap[i], i)
+    state_list = [];
+    for(var i in state_fps_hashmap) {
+      state_list.push(i);
+    }
+    state_list.sort();
+    for(var i in state_list){
+        optionDiv = createStateOption(state_fps_hashmap[state_list[i]], state_list[i]);
         selectorDiv.innerHTML += optionDiv
     }
 }
@@ -738,6 +744,7 @@ function toggleStateSearch(){
 
 function dropdownStateSearch(){
     if(currentLayer!=0) {
+      alert("You must be on state level to search");
       return;
     }
     /*
