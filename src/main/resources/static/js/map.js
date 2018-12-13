@@ -45,6 +45,7 @@ function consoleLog(message_body){
     if(message_body["enable_reset"]){
         //setTimeout(connector.clear_message, 500)
         //connector.clear_message()
+        displayOptionButtons(true);
         document.getElementById("reset").disabled = false;
         updateButtons(ButtonState.STOPPED)
         //enableManualMoveOption(true)
@@ -106,6 +107,7 @@ state_fps_hashmap =
 
 function stateSearch() {
   if(currentLayer!=0) { //If not state layer, return
+    alert("You must be on state level to search");
     return;
   }
   /*
@@ -203,7 +205,7 @@ function addDistrictsLayer() {
   layer_manager.build_district_maps(districtJson)
   layer_manager.color_districts()
   update_district_list("exclusionMenu")
-  update_district_list("district_seed_menu")
+  //update_district_list("district_seed_menu")
   currentLayer = 1;
   loadStateSavedMaps(currentStateName)
   sendState(currentStateID, currentStateName);
@@ -259,7 +261,7 @@ function addOriginalPrecinctsLayer() {
   layer_manager.build_precincts_map(originalPrecinctJson)
   layer_manager.color_precincts()
   currentLayer = 2;
-  lock.releaseAll()
+  lock.lockAll()
 }
 
 function onEachStateFeature(feature, layer) {
@@ -297,7 +299,7 @@ function resetMap(){
     precinctSeedTracker.clear()
 
     reset_district_exclusion("exclusionMenu")
-    reset_district_exclusion("district_seed_menu")
+    //reset_district_exclusion("district_seed_menu")
 
 	if(mymap.hasLayer(districtJson)) {
     districtJson.remove();
@@ -312,6 +314,8 @@ function resetMap(){
     currentConstText = null;
     originalPrecinctData = null;
     originalPrecinctJson = null;
+    displayOptionButtons(false);
+    document.getElementById("dropdownMapButton").innerText = "Select";
   document.getElementById('statefield').value = "";
   if(mymap.hasLayer(stateJson)) {
     return;
@@ -334,6 +338,9 @@ mymap.on("zoomend", function() {
       if(mymap.getZoom() > 9 && mymap.hasLayer(districtJson)) {
         districtJson.remove();
         addPrecinctsLayer();
+
+        lock.releaseAll()
+        updateButtons(ButtonState.RUNNABLE)
       }
     }
 })
@@ -390,6 +397,21 @@ function loadStateJson(state, currentState){
     }
     request.send(null);
 }
+
+function displayOptionButtons(bool) { //For controlling original vs generated display map
+  if(bool) {
+    document.getElementById("originalLabel").setAttribute("onclick","displayOriginalMap();");
+    document.getElementById("generatedLabel").setAttribute("onclick","displayGeneratedMap();");
+  } else {
+    document.getElementById("originalLabel").setAttribute("onclick","displayOptionAlert();");
+    document.getElementById("generatedLabel").setAttribute("onclick","displayOptionAlert();");
+  }
+}
+
+function displayOptionAlert() {
+  alert("Please run the algorithm first to see original and generated map");
+}
+
 function displayOriginalMap() {
     if(currentLayer!=2 || mymap.hasLayer(originalPrecinctJson)) {
       return;
@@ -439,7 +461,7 @@ function displayGeneratedMap() {
     loadedMapJson.remove();
   }
   addPrecinctsLayer();
-  lock.lockAll()
+  lock.releaseAll()
 }
 
 function loadPrecinctProperties(layer){
@@ -625,7 +647,7 @@ function startAlgorithm(){
         requestData["precinct_seeds"] = Object.keys(precinctSeedTracker.selection_history)
 
         var district_seeds = []
-        document.getElementById("district_seed_menu").querySelectorAll("input[type=checkbox]:checked").forEach(function(e){district_seeds.push(e.value)})
+        //document.getElementById("district_seed_menu").querySelectorAll("input[type=checkbox]:checked").forEach(function(e){district_seeds.push(e.value)})
         requestData["district_seeds"] = district_seeds
 
         var excludedDistricts = []
@@ -701,8 +723,13 @@ function createStateOption(id, name){
 
 function populateStateSelect(){
     selectorDiv = document.getElementById('state_selector_options')
-    for(var i in state_fps_hashmap){
-        optionDiv = createStateOption(state_fps_hashmap[i], i)
+    state_list = [];
+    for(var i in state_fps_hashmap) {
+      state_list.push(i);
+    }
+    state_list.sort();
+    for(var i in state_list){
+        optionDiv = createStateOption(state_fps_hashmap[state_list[i]], state_list[i]);
         selectorDiv.innerHTML += optionDiv
     }
 }
@@ -717,6 +744,7 @@ function toggleStateSearch(){
 
 function dropdownStateSearch(){
     if(currentLayer!=0) {
+      alert("You must be on state level to search");
       return;
     }
     /*
