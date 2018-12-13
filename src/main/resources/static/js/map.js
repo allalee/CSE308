@@ -399,9 +399,13 @@ function displayOptionButtons(bool) { //For controlling original vs generated di
     document.getElementById("originalLabel").setAttribute("onclick","displayOriginalMap();");
     document.getElementById("generatedLabel").setAttribute("onclick","displayGeneratedMap();");
   } else {
-    document.getElementById("originalLabel").setAttribute("onclick","");
-    document.getElementById("generatedLabel").setAttribute("onclick","");
+    document.getElementById("originalLabel").setAttribute("onclick","displayOptionAlert();");
+    document.getElementById("generatedLabel").setAttribute("onclick","displayOptionAlert();");
   }
+}
+
+function displayOptionAlert() {
+  alert("Please run the algorithm first to see original and generated map");
 }
 
 function displayOriginalMap() {
