@@ -1,6 +1,7 @@
 package app.controllers;
 
 import app.algorithm.Move;
+import app.enums.Metric;
 import app.enums.Property;
 import app.json.PropertiesManager;
 import app.state.District;
@@ -101,6 +102,8 @@ public class Annealing extends Algorithm {
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
         }
+        long totalRunTime = MAX_RUN_TIME-remainingRunTime;
+        summary(initFuncValue,functionValue,totalRunTime);
         handler.send("{\"console_log\": \"Initial Function Value = " + initFuncValue + "\"}");
         handler.send("{\"console_log\": \"Final Function Value = " + functionValue + "\"}");
     }
@@ -209,6 +212,27 @@ public class Annealing extends Algorithm {
                 }
             }
         }
+    }
+    public void summary(double initValue, double finalValue, long runTime) {
+        String algoName = "Simulated Annealing";
+        String algoVariant = this.variant;
+        if(algoVariant.equals("DL")) {
+            algoVariant = "Lowest District Score";
+        } else {
+            algoVariant = "Random";
+        }
+        double partisanWeight = getWeights().get(Metric.PARTISAN_FAIRNESS);
+        double compactWeight = getWeights().get(Metric.COMPACTNESS);
+        double popWeight = getWeights().get(Metric.POPULATION_EQUALITY);
+        System.out.println("Algorithm: " + algoName);
+        System.out.println("State: " + state.getName());
+        System.out.println("Variant: " + algoVariant);
+        System.out.println("Partisan Fairness Weight: " + partisanWeight);
+        System.out.println("Compactness Weight: " + compactWeight);
+        System.out.println("Population Equality Weight: " + popWeight);
+        System.out.println("Total Run Time: " + runTime +"ms");
+        System.out.println("Initial Value: " + initValue);
+        System.out.println("Final Value: " + finalValue);
     }
 
 }
