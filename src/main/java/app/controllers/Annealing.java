@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 @Service
@@ -104,8 +105,11 @@ public class Annealing extends Algorithm {
         }
         long totalRunTime = MAX_RUN_TIME-remainingRunTime;
         summary(initFuncValue,functionValue,totalRunTime);
-        handler.send("{\"console_log\": \"Initial Function Value = " + initFuncValue + "\"}");
-        handler.send("{\"console_log\": \"Final Function Value = " + functionValue + "\"}");
+        DecimalFormat df = new DecimalFormat("#.###");
+        String init = df.format(initFuncValue);
+        String fin = df.format(functionValue);
+        handler.send("{\"console_log\": \"Initial Function Value = " + init + "\"}");
+        handler.send("{\"console_log\": \"Final Function Value = " + fin + "\"}");
     }
 
 //    private boolean isStagnant(double oldValue, double newValue){

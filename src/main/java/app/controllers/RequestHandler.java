@@ -69,7 +69,10 @@ public class RequestHandler {
             if(userCookie != null) {
                 email = userCookie.getValue();
             }
-            sm.deleteMap(email, name);
+            if(email!="" && name!="") {
+                sm.deleteMap(email, name);
+            }
+            //sm.deleteMap(email, name);
         }
 
         @RequestMapping(value = "/loadPrecinctData", method = RequestMethod.GET)
