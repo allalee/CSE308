@@ -76,7 +76,7 @@ public class District{
             Precinct beginPrecinct = iter.next();
             numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
 
-            System.out.println("This is init island. numReached: " + numReached + " numExpected: " + expectedSize);
+            //System.out.println("This is init island. numReached: " + numReached + " numExpected: " + expectedSize);
         }while(numReached < 10);
         if (numReached != expectedSize)
             for(Precinct p : precinctMap.values()){
@@ -87,12 +87,16 @@ public class District{
         return islandPrecincts;
     }
 
+    public Set<Precinct> getInitIslands(){
+        return initIslands;
+    }
+
     public boolean isCutoff(){
         int expectedSize = precinctMap.size();
         Precinct beginPrecinct = precinctMap.values().iterator().next();
         Set<Precinct> iteratedPrecincts = new HashSet<>();
         int numReached = numBordersReachable(beginPrecinct, iteratedPrecincts);
-        System.out.println("numReached: " + numReached + " numExpected: " + expectedSize);
+        System.out.println("Precincts reached: " + numReached + " Precincts total: " + expectedSize);
 
         if(numReached!=expectedSize && numReached + initIslands.size() >= expectedSize){
             int numIslandExpected = expectedSize - numReached;
