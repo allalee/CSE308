@@ -166,7 +166,7 @@ public class RequestHandler {
         @RequestMapping(value = "/manualMove", method = RequestMethod.GET)
         public @ResponseBody
         String tempMove(@RequestParam ("src") Integer src, @RequestParam("dest") Integer dest, @RequestParam("precinct") Integer precinct, @RequestParam("lock") Boolean lock, @RequestParam ("popEqual") Double popEqualityMetric, @RequestParam("partFairness") Double partFairnessMetric, @RequestParam("compactness") Double compactnessMetric) throws Throwable {
-            System.out.println("inputs are: " + src+" "+ dest+" "+ precinct);
+            //System.out.println("inputs are: " + src+" "+ dest+" "+ precinct);
             if(sm.getClonedState() == null) {
                 sm.cloneState(sm.getCurrentState().getName());
                 sm.loadElectionData();
@@ -178,6 +178,10 @@ public class RequestHandler {
             solver.setState(sm.getClonedState());
             solver.setFunctionWeights(partFairnessMetric/100, compactnessMetric/100, popEqualityMetric/100);
             solver.initAlgorithm();
+
+            System.out.println("Precinct: " + precinct);
+            System.out.println("Precinct's district: "+ src);
+            System.out.println("District: " + dest);
 
             Precinct p = null;
             for(District d : currentState.getAllDistricts()){
@@ -194,29 +198,41 @@ public class RequestHandler {
             }
             currentState.getDistrict(src).gatherInitIslandPrecincts();
             currentState.getDistrict(dest).gatherInitIslandPrecincts();
+            System.out.println("Number of initial cut off precincts in precinct's district: "+currentState.getDistrict(src).getInitIslands().size());
+            System.out.println("Number of initial cut off precincts in district: "+currentState.getDistrict(dest).getInitIslands().size());
+
 
             currentState.getDistrict(src).calculateBoundaryPrecincts();
             currentState.getDistrict(dest).calculateBoundaryPrecincts();
 //
-//            boolean isBorder = currentState.getDistrict(src).getBorderPrecincts().contains(p);
-//            System.out.println("is border: "+  isBorder);
+            boolean isBorder = currentState.getDistrict(dest).getBorderPrecincts().contains(p);
+            System.out.println("Is precinct a border: "+  isBorder);
             // move
-            Move move = new Move(currentState.getDistrict(src), currentState.getDistrict(dest), p);
-            move.execute();
+            Move move = null;
+            boolean geometryTransformSuccess = false;
+            try {
+                move = new Move(currentState.getDistrict(src), currentState.getDistrict(dest), p);
+                move.execute();
+                geometryTransformSuccess = true;
+            }catch (Exception e){}
+            System.out.println("Geometry transformation in Move: "+ (geometryTransformSuccess?"success":"failed"));
 
             currentState.getDistrict(src).calculateBoundaryPrecincts();
             currentState.getDistrict(dest).calculateBoundaryPrecincts();
 
             double functionValue = solver.calculateFunctionValue();
-            System.out.println("Value is: "+functionValue);
+            System.out.println("Moving precinct to district yields value: "+functionValue);
 
             boolean cutOff = currentState.getDistrict(src).isCutoff();
-            cutOff |= currentState.getDistrict(dest).isCutoff();
-            System.out.println("is cut off: "+cutOff);
+            System.out.println("Is precinct's district cut off: "+cutOff);
+            boolean descutOff = currentState.getDistrict(dest).isCutoff();
+            cutOff |= descutOff;
+            System.out.println("Is district cut off: "+descutOff);
 
             // undo if it is not a locking move
             if(!lock || cutOff) {
-                move.undo();
+                if(move != null)
+                    move.undo();
 //                cutOff = currentState.getDistrict(src).isCutoff();
 //                System.out.println("is cut off: "+cutOff);
                 currentState.getDistrict(src).calculateBoundaryPrecincts();
