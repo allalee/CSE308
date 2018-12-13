@@ -54,7 +54,10 @@ public class RequestHandler {
             if(userCookie != null) {
                 email = userCookie.getValue();
             }
-            sm.saveMap(email, name); //REMEMBER TO CHANGE THIS TO MODIFIED ONE
+            if(email!="" && name!="") {
+                sm.saveMap(email, name);
+            }
+            //sm.saveMap(email, name);
         }
 
         @RequestMapping(value = "/deleteMap", method = RequestMethod.GET)

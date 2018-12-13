@@ -45,6 +45,7 @@ function consoleLog(message_body){
     if(message_body["enable_reset"]){
         //setTimeout(connector.clear_message, 500)
         //connector.clear_message()
+        displayOptionButtons(true);
         document.getElementById("reset").disabled = false;
         updateButtons(ButtonState.STOPPED)
         //enableManualMoveOption(true)
@@ -203,7 +204,7 @@ function addDistrictsLayer() {
   layer_manager.build_district_maps(districtJson)
   layer_manager.color_districts()
   update_district_list("exclusionMenu")
-  update_district_list("district_seed_menu")
+  //update_district_list("district_seed_menu")
   currentLayer = 1;
   loadStateSavedMaps(currentStateName)
   sendState(currentStateID, currentStateName);
@@ -259,7 +260,7 @@ function addOriginalPrecinctsLayer() {
   layer_manager.build_precincts_map(originalPrecinctJson)
   layer_manager.color_precincts()
   currentLayer = 2;
-  lock.releaseAll()
+  //lock.releaseAll()
 }
 
 function onEachStateFeature(feature, layer) {
@@ -297,7 +298,7 @@ function resetMap(){
     precinctSeedTracker.clear()
 
     reset_district_exclusion("exclusionMenu")
-    reset_district_exclusion("district_seed_menu")
+    //reset_district_exclusion("district_seed_menu")
 
 	if(mymap.hasLayer(districtJson)) {
     districtJson.remove();
@@ -312,6 +313,8 @@ function resetMap(){
     currentConstText = null;
     originalPrecinctData = null;
     originalPrecinctJson = null;
+    displayOptionButtons(false);
+    document.getElementById("dropdownMapButton").innerText = "Select";
   document.getElementById('statefield').value = "";
   if(mymap.hasLayer(stateJson)) {
     return;
@@ -390,6 +393,17 @@ function loadStateJson(state, currentState){
     }
     request.send(null);
 }
+
+function displayOptionButtons(bool) { //For controlling original vs generated display map
+  if(bool) {
+    document.getElementById("originalLabel").setAttribute("onclick","displayOriginalMap();");
+    document.getElementById("generatedLabel").setAttribute("onclick","displayGeneratedMap();");
+  } else {
+    document.getElementById("originalLabel").setAttribute("onclick","");
+    document.getElementById("generatedLabel").setAttribute("onclick","");
+  }
+}
+
 function displayOriginalMap() {
     if(currentLayer!=2 || mymap.hasLayer(originalPrecinctJson)) {
       return;
@@ -625,7 +639,7 @@ function startAlgorithm(){
         requestData["precinct_seeds"] = Object.keys(precinctSeedTracker.selection_history)
 
         var district_seeds = []
-        document.getElementById("district_seed_menu").querySelectorAll("input[type=checkbox]:checked").forEach(function(e){district_seeds.push(e.value)})
+        //document.getElementById("district_seed_menu").querySelectorAll("input[type=checkbox]:checked").forEach(function(e){district_seeds.push(e.value)})
         requestData["district_seeds"] = district_seeds
 
         var excludedDistricts = []

@@ -250,6 +250,7 @@
                </div>
            </div>
        </div>
+       <!--
        <div class="card rounded-0">
            <div class="card-header">
                <a data-toggle="collapse" data-parent="#sidenav" href="#district_seed_options" class="card-link">
@@ -262,6 +263,7 @@
                </div>
            </div>
        </div>
+     -->
        <div class="card rounded-0">
            <div class="card-header">
                <a data-toggle="collapse" data-parent="#sidenav" href="#display_option" class="card-link">
@@ -270,10 +272,10 @@
            </div>
            <div id="display_option" class="collapse">
                <div class="btn-group btn-group-toggle card-body" data-toggle="buttons">
-                   <label class="btn btn-primary display-button" onclick="displayOriginalMap()">
+                   <label class="btn btn-primary display-button" id="originalLabel" onclick="">
                        <input type="radio" name="options" id="original"> Original
                    </label>
-                   <label class="btn btn-primary display-button" onclick="displayGeneratedMap()">
+                   <label class="btn btn-primary display-button" id="generatedLabel" onclick="">
                        <input type="radio" name="options" id="generated"> Generated
                    </label>
                </div>
