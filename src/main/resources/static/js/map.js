@@ -43,13 +43,16 @@ function consoleLog(message_body){
             layer_manager.color_changed_precinct(message_body["precinct"], message_body["dest"])
     }
     if(message_body["enable_reset"]){
-        connector.clear_message()
+        //setTimeout(connector.clear_message, 500)
+        //connector.clear_message()
         document.getElementById("reset").disabled = false;
         updateButtons(ButtonState.STOPPED)
-        enableManualMoveOption(true)
+        //enableManualMoveOption(true)
+        //enablePrecinctSeedSelect(true)
+        lock.releaseAll()
     }
     if(message_body["default"]){
-        layer_manager.color_unassigned_precincts()
+        layer_manager.color_unassigned_precincts(message_body["default"])
     }
     if(message_body["seeds"]){
         layer_manager.color_default_regions(message_body["seeds"])
@@ -199,7 +202,8 @@ function addDistrictsLayer() {
   }).addTo(mymap);
   layer_manager.build_district_maps(districtJson)
   layer_manager.color_districts()
-  update_district_list()
+  update_district_list("exclusionMenu")
+  update_district_list("district_seed_menu")
   currentLayer = 1;
   loadStateSavedMaps(currentStateName)
   sendState(currentStateID, currentStateName);
@@ -214,7 +218,9 @@ function loadPrecincts(e) {
     }
 
     // enable manual redistrict
-    enableManualMoveOption(true)
+    //enableManualMoveOption(true)
+    //enablePrecinctSeedSelect(true)
+    lock.releaseAll()
     updateButtons(ButtonState.RUNNABLE)
 }
 
@@ -253,6 +259,7 @@ function addOriginalPrecinctsLayer() {
   layer_manager.build_precincts_map(originalPrecinctJson)
   layer_manager.color_precincts()
   currentLayer = 2;
+  lock.releaseAll()
 }
 
 function onEachStateFeature(feature, layer) {
@@ -284,9 +291,13 @@ function resetMap(){
     connector.start_reading()
 
     // update ui
-    updateButtons(ButtonState.RUNNABLE)
-    enableManualMoveOption(false)
-    reset_district_exclusion()
+    updateButtons(ButtonState.STOPPED)
+
+    lock.lockAll()
+    precinctSeedTracker.clear()
+
+    reset_district_exclusion("exclusionMenu")
+    reset_district_exclusion("district_seed_menu")
 
 	if(mymap.hasLayer(districtJson)) {
     districtJson.remove();
@@ -301,6 +312,7 @@ function resetMap(){
     currentConstText = null;
     originalPrecinctData = null;
     originalPrecinctJson = null;
+  document.getElementById('statefield').value = "";
   if(mymap.hasLayer(stateJson)) {
     return;
   } else {
@@ -400,7 +412,13 @@ function displayOriginalMap() {
         var loadedJson = request.response
         var obj = JSON.parse(loadedJson);
         originalPrecinctData = obj;
-        precinctJson.remove();
+        if(mymap.hasLayer(precinctJson)) {
+          precinctJson.remove();
+        }
+        if(mymap.hasLayer(loadedMapJson)) {
+          loadedMapJson.remove();
+        }
+
         addOriginalPrecinctsLayer();
       }
     }
@@ -414,12 +432,19 @@ function displayGeneratedMap() {
   if(mymap.hasLayer(stateJson) || mymap.hasLayer(districtJson) || mymap.hasLayer(precinctJson)) {
     return;
   }*/
-  originalPrecinctJson.remove();
+  if(mymap.hasLayer(originalPrecinctJson)) {
+    originalPrecinctJson.remove();
+  }
+  if(mymap.hasLayer(loadedMapJson)) {
+    loadedMapJson.remove();
+  }
   addPrecinctsLayer();
+  lock.lockAll()
 }
 
 function loadPrecinctProperties(layer){
-      var district_id = layer.feature["properties"]["DISTRICTID"]
+      //var district_id = layer.feature["properties"]["DISTRICTID"]
+      var district_id = layer.feature["properties"]["ORIGINALDISTID"]
       var precinct_id = layer.feature["properties"]["PRECINCTID"]
       var url = "http://localhost:8080/loadPrecinctData?districtID=" + district_id + "&precinctID=" + precinct_id
       var request = new XMLHttpRequest()
@@ -589,7 +614,27 @@ function startAlgorithm(){
         document.getElementById("console").appendChild(document.createElement("br"))
         document.getElementById("console").append("No state selected for algorithm to run")
     } else {
-        enableManualMoveOption(false); //MAKE SURE TO ENABLE THIS button
+        //enableManualMoveOption(false); //MAKE SURE TO ENABLE THIS button
+        //enablePrecinctSeedSelect(true)
+        lock.lockAll()
+        updateButtons(ButtonState.RUNNING)
+
+        var requestData = {}
+
+        consoleWrite("Retrieving precinct seeds for server...")
+        requestData["precinct_seeds"] = Object.keys(precinctSeedTracker.selection_history)
+
+        var district_seeds = []
+        document.getElementById("district_seed_menu").querySelectorAll("input[type=checkbox]:checked").forEach(function(e){district_seeds.push(e.value)})
+        requestData["district_seeds"] = district_seeds
+
+        var excludedDistricts = []
+        document.getElementById("exclusionMenu").querySelectorAll("input[type=checkbox]:checked").forEach(function(e){excludedDistricts.push(e.value)})
+        requestData["excludedDistricts"] = excludedDistricts
+
+
+
+
         document.getElementById("reset").disabled = true;
         var console = document.getElementById("console")
         console.appendChild(document.createElement("br"))
@@ -601,10 +646,9 @@ function startAlgorithm(){
         console.append("Forwarding slider data to the server...")
         var url = "http://localhost:8080/startAlgorithm?algorithmType=" + algorithm_type + "&popEqual=" + populationEquality + "&partFairness=" + partisanFairness + "&compactness=" + compactness
         var request = new XMLHttpRequest()
-        request.open("GET", url, true)
+        request.open("POST", url, true)
 
-        request.send(null)
-        updateButtons(ButtonState.RUNNING)
+        request.send(JSON.stringify(requestData))
     }
 }
 
@@ -714,6 +758,52 @@ function removeDistrictOption(){
     selectorDiv.innerHTML = ""
 }*/
 
+
+// resource lock
+// NOT modular, need external variable: mode
+function makeControlLock(){
+    cl = {}
+    cl.users = {}
+    cl.register = function(mode, toggleMethod){
+        cl.users[mode] = toggleMethod
+    }
+    cl.lock = function(toMode){
+        for(var i in cl.users){
+            if(i == toMode){
+                cl.users[i](true)
+            }
+            else{
+                cl.users[i](false)
+            }
+        }
+        mode = toMode
+    }
+    cl.release = function(fromMode){
+        for(var i in cl.users){
+             cl.users[i](true)
+        }
+        mode = MODE.NORMAL
+    }
+    cl.lockAll = function(){
+        for(var i in cl.users){
+             cl.users[i](false)
+        }
+        mode = MODE.NORMAL
+    }
+    cl.releaseAll = function(){
+        for(var i in cl.users){
+             cl.users[i](true)
+        }
+        mode = MODE.NORMAL
+    }
+
+    return cl
+}
+lock = makeControlLock()
+
+
+// Manual Move
+
 var fadeWriter = makeFadeOutWriter()
 var manualMoveWriter = { write: function(PLACEHOLDER, message){ consoleWrite(message) } }
 var district_selector_div = document.getElementById('district_selector_options')
@@ -736,19 +826,76 @@ manualMoveToggle.onclick = function(e){
     if(mode == MODE.NORMAL){    // switch to manual if normal
         tempMoveBtn.disabled = false
         lockMoveBtn.disabled = false
-        mode = MODE.MANUAL_SELECT
+        //mode = MODE.MANUAL_SELECT
+        lock.lock(MODE.MANUAL_SELECT)
+        //enablePrecinctSeedSelect(false)
     }
     else{
         tempMoveBtn.disabled = true
         lockMoveBtn.disabled = true
         mover.exit()
-        mode = MODE.NORMAL
+        //mode = MODE.NORMAL
+        lock.release(MODE.MANUAL_SELECT)
+        //enablePrecinctSeedSelect(true)
     }
 }
 
+// Seeding
+precinctSeedTracker = makeRegionTracker(layer_manager, true)
+precinctSeedToggleBtn = document.getElementById('precinct_seed_toggle')
+precinctSeedResetBtn = document.getElementById('precinct_seed_reset')
+precinctSeedToggleBtn.onclick = precinctSeedToggle
+precinctSeedResetBtn.onclick = precinctSeedReset
+precinctSeedOpenNext = true;
+function precinctSeedReset(){
+    precinctSeedTracker.clear()
+}
+function precinctSeedToggle(){
+    if ( precinctSeedOpenNext ){    // start selecting
+        precinctSeedTracker.open()
+        precinctSeedOpenNext = false;
+        precinctSeedToggleBtn.innerHTML = "Stop&nbsp"
+
+        //mode = MODE.SEED_PRECINCT
+        lock.lock(MODE.SEED_PRECINCT)
+        //enableManualMoveOption(false)
+    }
+    else{
+        precinctSeedTracker.close()
+        precinctSeedOpenNext = true;
+        precinctSeedToggleBtn.innerHTML = "Start"
+
+        //mode = MODE.NORMAL
+        lock.release(MODE.SEED_PRECINCT)
+        //enableManualMoveOption(true)
+    }
+}
+function enablePrecinctSeedSelect(enable){  //
+    if(!enable){
+        if(!precinctSeedOpenNext) // already opened, reset style
+            var x = "skip this if for now"
+            //precinctSeedToggleBtn.style.backgroundColor = "blue"
+
+        precinctSeedTracker.close()
+        precinctSeedToggleBtn.innerHTML = "Start"
+
+        precinctSeedToggleBtn.disabled = true
+        precinctSeedResetBtn.disabled = true
+        precinctSeedOpenNext = true;
+    }
+    else{
+        precinctSeedToggleBtn.disabled = false
+        precinctSeedResetBtn.disabled = false
+    }
+}
+
+
+// Map operation machine
+
 var MODE = {
     NORMAL: 0,
-    MANUAL_SELECT: 1
+    MANUAL_SELECT: 1,
+    SEED_PRECINCT: 2
 }
 var mode = MODE.NORMAL
 function precinctOverEvent(e){
@@ -758,6 +905,9 @@ function precinctOverEvent(e){
          break;
          case MODE.MANUAL_SELECT:
              mover.mouseoverFunction(e)
+         break;
+         case MODE.SEED_PRECINCT:
+             precinctSeedTracker.mouseoverFunction(e)
          break;
          default: console.log("invalid mode: "+ mode)
      }
@@ -770,6 +920,9 @@ function precinctOutEvent(e){
          case MODE.MANUAL_SELECT:
              mover.mouseoutFunction(e)
          break;
+         case MODE.SEED_PRECINCT:
+              precinctSeedTracker.mouseoutFunction(e)
+          break;
          default: console.log("invalid mode: "+ mode)
      }
  }
@@ -781,6 +934,9 @@ function precinctClickEvent(e){
         case MODE.MANUAL_SELECT:
              mover.clickFunction(e)
         break;
+        case MODE.SEED_PRECINCT:
+             precinctSeedTracker.clickFunction(e)
+         break;
         default: console.log("invalid mode: "+ mode)
     }
 }
@@ -794,10 +950,14 @@ function enableManualMoveOption(enable){
         tempMoveBtn.disabled = true
         lockMoveBtn.disabled = true
         mover.exit()
-        mode = MODE.NORMAL
     }
 }
-enableManualMoveOption(false)
+//enableManualMoveOption(false)
+//enablePrecinctSeedSelect(false)
+
+lock.register(MODE.MANUAL_SELECT, enableManualMoveOption)
+lock.register(MODE.SEED_PRECINCT, enablePrecinctSeedSelect)
+lock.lockAll()
 
 function save_map() {
   console.log("Save Map");
@@ -807,6 +967,10 @@ function save_map() {
   var mapDiv = document.getElementById("mapMenu");
   mapInput = document.getElementById("mapfield");
   mapValue = mapInput.value;
+  if(mapValue=="") { //Check if user enters empty string
+    alert("Map name cannot be empty");
+    return;
+  }
   mapData = JSON.stringify(precinctData);
   var request = new XMLHttpRequest();
   var url = "http://localhost:8080/saveMap?name=" + mapValue
@@ -852,6 +1016,10 @@ function load_map() {
   }*/
   mapObj = document.getElementById("dropdownMapButton");
   mapName= mapObj.innerText;
+  if(mapName.includes("Select")) { //Must select a saved map first
+    alert("Select a saved map");
+    return;
+  }
   var request = new XMLHttpRequest();
   var url = "http://localhost:8080/loadMap?name=" + mapName
   request.open("GET", url, true);
@@ -887,6 +1055,10 @@ function delete_map() {
   }*/
   mapObj = document.getElementById("dropdownMapButton");
   mapName= mapObj.innerText;
+  if(mapName.includes("Select")) { //Must select a saved map first
+    alert("Select a saved map");
+    return;
+  }
   var request = new XMLHttpRequest();
   var url = "http://localhost:8080/deleteMap?name=" + mapName
   request.open("GET", url, true);
@@ -905,10 +1077,10 @@ function delete_map() {
   mapObj.innerText = "Select"
 }
 
-function update_district_list() {
+function update_district_list(menuid) {
   var district_list = layer_manager.district_map;
   var color_mapping = layer_manager.district_layer_color_map;
-  var myMenu = document.getElementById("exclusionMenu");
+  var myMenu = document.getElementById(menuid);
   for (id in district_list) {
     color = color_mapping[id];
     myDiv = create_district_div();
@@ -944,8 +1116,8 @@ function create_district_label(district_id, color) {
   return newLabel;
 }
 
-function reset_district_exclusion() {
-  var myNode = document.getElementById("exclusionMenu");
+function reset_district_exclusion(menuid) {
+  var myNode = document.getElementById(menuid);
   while (myNode.firstChild) {
       myNode.removeChild(myNode.firstChild);
   }

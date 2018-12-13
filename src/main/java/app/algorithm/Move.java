@@ -5,6 +5,7 @@ import app.election.ElectionData;
 import app.state.Precinct;
 import app.enums.Parties;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.TopologyException;
 
 import java.util.HashMap;
 
@@ -20,6 +21,11 @@ public class Move {
     private District dest;
     private Precinct precinct;
 
+    private Geometry srcPreExeGeometry;
+    private Geometry destPreExeGeometry;
+    private Geometry srcExeGeometry;
+    private Geometry destExeGeometry;
+
     //Annealing Constructor
     public Move(District src, District dest, Precinct precinct) {
         this.src = src;
@@ -28,6 +34,14 @@ public class Move {
         this.precinctID = precinct.getID();
         this.srcDistrict = src.getID();
         this.destDistrict = dest.getID();
+
+        srcPreExeGeometry = src.getCurrentGeometry();
+        destPreExeGeometry = dest.getCurrentGeometry();
+
+        srcExeGeometry = srcPreExeGeometry.difference(precinct.getGeometry());
+        destExeGeometry = destPreExeGeometry.union(precinct.getGeometry());
+        if(!srcExeGeometry.isValid() || !destExeGeometry.isValid())
+            throw new TopologyException("The execute() will produce invalid geometries");
     }
     //Region Growing Constructor
     public Move(District dest, Precinct precinct){
@@ -42,10 +56,12 @@ public class Move {
         precinct.setDistrict(dest);
         src.removePrecinct(precinct);
         dest.addPrecinct(precinctID, precinct);
+        src.setCurrentGeometry(srcExeGeometry);
+        dest.setCurrentGeometry(destExeGeometry);
 
         Geometry precinctGeometry = precinct.getGeometry();
-        dest.addToCurrentGeometry(precinctGeometry);
-        src.subtractFromCurrentGeometry(precinctGeometry);
+        //dest.addToCurrentGeometry(precinctGeometry);
+        //src.subtractFromCurrentGeometry(precinctGeometry);
 
         int precinctPopulation = precinct.getPopulation();
         dest.addPopulation(precinctPopulation);
@@ -88,8 +104,10 @@ public class Move {
         src.addPrecinct(precinctID, precinct);
 
         Geometry precinctGeometry = precinct.getGeometry();
-        src.addToCurrentGeometry(precinctGeometry);
-        dest.subtractFromCurrentGeometry(precinctGeometry);
+        //src.addToCurrentGeometry(precinctGeometry);
+        //dest.subtractFromCurrentGeometry(precinctGeometry);
+        src.setCurrentGeometry(srcPreExeGeometry);
+        dest.setCurrentGeometry(destPreExeGeometry);
 
         int precinctPopulation = precinct.getPopulation();
         src.addPopulation(precinctPopulation);

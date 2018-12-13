@@ -29,6 +29,11 @@ public class RegionGrow extends Algorithm {
     void run() {
         Collection<Precinct> allPrecincts = state.getAllPrecincts();
         Collection<District> allDistricts = state.getAllDistricts();
+        allPrecincts = removeExcludedPrecincts(allPrecincts);
+        allDistricts = removeExcludedDistricts(allDistricts);
+        if(allDistricts.size()<=0)  // if all districts are excluded, end algo
+            return;
+
         Collection<Precinct> unassignedPrecincts = new ArrayList<>();
         for(Precinct p : allPrecincts){
             p.setDistrict(null);
@@ -39,9 +44,16 @@ public class RegionGrow extends Algorithm {
         int stagnant_iterations = 0;
         int max_stagnant = 100;
         int roundRobinCounter = 0;
-        double initFuncValue = functionValue;
+        double initFuncValue = 1*functionValue;
         //Call to the client to update all of the precincts white to denote that they are not part of a district
-        handler.send("{\"default" + "\": \"" + 0 + "\"}");
+        //handler.send("{\"default" + "\": \"" + 0 + "\"}");
+        String clientInit = "{\"default\":[";
+        for(District d : allDistricts){
+            clientInit += d.getID()+",";
+        }
+        clientInit = clientInit.substring(0,clientInit.length()-1);
+        clientInit += "]}";
+        handler.send(clientInit);
         ArrayList<District> regions = generateRegions(allDistricts, unassignedPrecincts);
         //Color the starting precincts in the map
         updateClientForRegions(regions);
@@ -124,9 +136,12 @@ public class RegionGrow extends Algorithm {
         ArrayList<District> regions = new ArrayList<>();
         ArrayList<Precinct> temp = new ArrayList<>(unassignedPrecincts);
         for(District d : allDistricts){
-            Random rnd = new Random();
-            int i = rnd.nextInt(d.getAllPrecincts().size());
-            Precinct seedPrecinct = (Precinct)d.getAllPrecincts().toArray()[i];
+            Precinct seedPrecinct = getManualPrecinctSeed(d); // check for manual seed
+            if(seedPrecinct == null){
+                Random rnd = new Random();
+                int i = rnd.nextInt(d.getAllPrecincts().size());
+                seedPrecinct = (Precinct)d.getAllPrecincts().toArray()[i];
+            }
             temp.remove(seedPrecinct);
             District newDistrict = new District(d.getID(), d.getState(), seedPrecinct.getGeometry());
             newDistrict.addPrecinct(seedPrecinct.getID(), seedPrecinct);

@@ -21,10 +21,14 @@ public class Solver {
     }
 
     public void addAlgorithm(Algorithm algo){
-        algorithmList.add(algo);
+        //algorithmList.add(algo);
         currentAlgorithm = algo;
     }
 
+    public Algorithm getCurrentAlgorithm(){
+        return currentAlgorithm;
+    }
+    public double calculateFunctionValue() { return currentAlgorithm.calculateFunctionValue(); }
     public void setState(State state){
         currentAlgorithm.setState(state);
     }

@@ -99,12 +99,31 @@
                </a>
            </div>
            <div id="state_selector" class="collapse">
-               <div id="state_selector_options" class="card-body">
-                   <!--dynamically generated in map.js -> populateStateOptions-->
+             <div class="card-body p-0">
+               <div class="container">
+                 <div class="row">
+                   <div class="col-9">
+                     <div id="state_selector_options" class="p-1">
+                         <!--dynamically generated in map.js -> populateStateOptions-->
+                     </div>
+                   </div>
+                   <div class="col p-0">
+                     <button id = "dropdownStateSearch" class="btn btn-outline-success rounded-1 p-0" onclick="dropdownStateSearch()">Go</button>
+                   </div>
+                 </div>
                </div>
+
+               <!--<div id="state_selector_options">-->
+                   <!--dynamically generated in map.js -> populateStateOptions-->
+              <!-- </div>-->
+
+               <!--
                <div>
                    <button id = "dropdownStateSearch" class="btn btn-outline-success my-2 my-sm-0 rounded-0" onclick="dropdownStateSearch()">Go</button>
                </div>
+             -->
+             </div>
+
            </div>
        </div>
 
@@ -183,7 +202,7 @@
            </div>
            <div class="custom-control custom-radio">
              <input type="radio" id="algorithm4" name="algorithm" class="custom-control-input" value="Simulated Annealing Variant">
-             <label class="custom-control-label" for="algorithm4">Simulated Annealing Variant</label>
+             <label class="custom-control-label" for="algorithm4">Simulated Annealing (Lowest District Score)</label>
            </div>
          </div>
        </div>
@@ -200,15 +219,46 @@
                <div>
                    <button id="district_selector_toggle" class="btn">Manual Mode</button>
                </div>
+               <!--
                <div>
                     <label id="district_selector_message">&nbsp</label>
                </div>
+             -->
                <div id="district_selector_options" class="card-body">
                    <!--dynamically generated in map.js -> populateDistrictOptions-->
                </div>
                <div>
                    <button id="move_temporary" class="btn btn-outline-success my-2 my-sm-0 rounded-0" disabled>Move</button>
                    <button id="move_lock" class="btn btn-outline-success my-2 my-sm-0 rounded-0" disabled>Lock</button>
+               </div>
+           </div>
+       </div>
+       <div class="card rounded-0">
+           <div class="card-header">
+               <a data-toggle="collapse" data-parent="#sidenav" href="#precinct_seed" class="card-link">
+                   Choose Seed Precincts
+               </a>
+           </div>
+           <div id="precinct_seed" class="collapse">
+               <div class="btn-group card-body">
+                   <div>
+                       <button id="precinct_seed_toggle" class="btn btn-primary display-button">Start</button>
+                   </div>
+                   <div>
+                       <button id="precinct_seed_reset" class="btn btn-primary display-button">Reset</button>
+                   </div>
+               </div>
+           </div>
+       </div>
+       <div class="card rounded-0">
+           <div class="card-header">
+               <a data-toggle="collapse" data-parent="#sidenav" href="#district_seed_options" class="card-link">
+                   Choose Seed Districts
+               </a>
+           </div>
+           <div id="district_seed_options" class="collapse">
+               <div id="district_seed_menu" class="card-body">
+
                </div>
            </div>
        </div>
@@ -283,7 +333,7 @@
            </div>
            <div id="district_options" class="collapse">
              <div id="exclusionMenu" class="card-body">
-          
+
              </div>
            </div>
          </div>
@@ -312,6 +362,7 @@
       <script src='../js/layermanager.js'></script>
       <script src='../js/SocketConnect.js'></script>
       <script src='../js/ManualMove.js'></script>
+      <script src='../js/RegionTracker.js'></script>
     <script src="../js/map.js"></script>
   </footer>
 

@@ -12,9 +12,7 @@ import org.json.simple.parser.ParseException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Yixiu Liu on 11/10/2018.
@@ -37,17 +35,64 @@ public class JTSConverter {
         district.setGeometry(geometry);
     }
 
+    private static Map<Integer, Set<Integer>> neighborMap = new HashMap<>();
+    private static Map<Integer, Precinct> precinctMap = new HashMap<>();
+
+    public static void resetPrecinctReference(Collection<Precinct> precincts){
+        precinctMap.clear();
+        for(Precinct p: precincts){
+            precinctMap.put(p.getID(), p);
+        }
+    }
+
+    // Revert instructions:
+    // go under this method, use the commented out original builNeighbor method
+    // go to precinct class, use the commented out original getNeighbor method
     public static void buildNeighbor(Collection<Precinct> precinctCollection){
+        if(precinctMap.size() == precinctCollection.size()){// a hack, I assume our districts don't have same amt of precincts
+            resetPrecinctReference(precinctCollection);
+            return;
+        }
+        neighborMap.clear();
+        precinctMap.clear();
         for(Precinct p : precinctCollection) {
+            precinctMap.put(p.getID(), p);
             for(Precinct p2 : precinctCollection) {
                 if (p != p2) {
                     boolean isNeighbor = p.getGeometry().touches(p2.getGeometry());
                     if (isNeighbor) {
-                        p.addNeighbor(p2);
+                        if(!neighborMap.containsKey(p.getID())){
+                            neighborMap.put(p.getID(), new HashSet<>());
+                        }
+                        neighborMap.get(p.getID()).add(p2.getID());
+                        if(!neighborMap.containsKey(p2.getID())){
+                            neighborMap.put(p2.getID(), new HashSet<>());
+                        }
+                        neighborMap.get(p2.getID()).add(p.getID());
                     }
                 }
             }
         }
+    }
+
+//    public static void buildNeighbor(Collection<Precinct> precinctCollection){
+//        for(Precinct p : precinctCollection) {
+//            for(Precinct p2 : precinctCollection) {
+//                if (p != p2) {
+//                    boolean isNeighbor = p.getGeometry().touches(p2.getGeometry());
+//                    if (isNeighbor) {
+//                        p.addNeighbor(p2);
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+    public static Set<Precinct> getNeighbors(Precinct precinct){
+        Set<Precinct> neighbors = new HashSet<>();
+        for(Integer i : neighborMap.get(precinct.getID()))
+            neighbors.add(precinctMap.get(i));
+        return neighbors;
     }
 
     // Remove all below when use DB

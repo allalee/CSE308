@@ -83,7 +83,8 @@ public class JsonBuilder {
         for(Precinct precinct: precincts) {
             Geometry precinctGeometry = precinct.getGeometry();
             jsonBuilderHelper(builder, precinctGeometry);
-            builder.append(" \"properties\": {\"DISTRICTID\": \"" + precinct.getDistrict().getID() + "\", \"PRECINCTID\": \"" + precinct.getID() + "\"}},\n");
+            //builder.append(" \"properties\": {\"DISTRICTID\": \"" + precinct.getDistrict().getID() + "\", \"PRECINCTID\": \"" + precinct.getID() + "\"}},\n");
+            builder.append(" \"properties\": {\"DISTRICTID\": \"" + precinct.getDistrict().getID() + "\", \"PRECINCTID\": \"" + precinct.getID() + "\", \"ORIGINALDISTID\": \"" + precinct.getOriginalDistrictID() + "\"}},\n");
         }
         builder.setCharAt(builder.length()-2, ']');
         return builder.toString();

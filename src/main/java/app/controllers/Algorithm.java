@@ -13,8 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayDeque;
-import java.util.HashMap;
+import java.util.*;
 
 @Service
 @Scope(value = "prototype")
@@ -36,6 +35,9 @@ public abstract class Algorithm{
     private final int ZERO = 0;
     protected final String endMessage = "{\"enable_reset\": 1, \"console_log\" : \"Algo ended\"}";
     protected String variant = "";
+    protected Set<Precinct> precinctSeeds;
+    protected Set<District> districtSeeds;
+    protected Set<District> districtExcluded;
 
 
     public Algorithm(){
@@ -44,6 +46,54 @@ public abstract class Algorithm{
         listOfMoves = new ArrayDeque<>();
         weights = new HashMap<>();
         MAX_RUN_TIME = Integer.parseInt(PropertiesManager.get(Property.MAX_RUNTIME));
+        precinctSeeds = new HashSet<>();
+        districtSeeds = new HashSet<>();
+        districtExcluded = new HashSet<>();
+    }
+
+    public void resetPrecinctSeeds(Set<Precinct> seeds){
+        precinctSeeds.clear();
+        precinctSeeds.addAll(seeds);
+    }
+
+    public void resetDistrictExcluded(Set<District> excludes){
+        districtExcluded.clear();
+        districtExcluded.addAll(excludes);
+    }
+
+    public void resetDistrictSeeds(Set<District> seeds){
+        districtSeeds.clear();
+        districtSeeds.addAll(seeds);
+    }
+
+    protected Precinct getManualPrecinctSeed(District district){
+        for (Precinct seed : precinctSeeds) { // check for manually set seed
+            Precinct precinct = district.getPrecinct(seed.getID());
+            if (precinct != null) {
+                return precinct;
+            }
+        }
+        return null;
+    }
+
+    public Set<District> removeExcludedDistricts(Collection<District> districts){
+        Set<District> notExcluded = new HashSet<>();
+        for(District d: districts){
+            if(!districtExcluded.contains(d)){
+                notExcluded.add(d);
+            }
+        }
+        return notExcluded;
+    }
+
+    public Set<Precinct> removeExcludedPrecincts(Collection<Precinct> precincts){
+        Set<Precinct> notExcludedPrecincts = new HashSet<>();
+        for(Precinct p: precincts){
+            if(!districtExcluded.contains(p.getDistrict())){
+                notExcludedPrecincts.add(p);
+            }
+        }
+        return notExcludedPrecincts;
     }
 
     public void start(){
@@ -55,6 +105,7 @@ public abstract class Algorithm{
         algoThread = new Thread(()->{
             running = true;
             run();
+            running = false;
             handler.send(endMessage);
         });
         algoThread.start();
@@ -158,7 +209,23 @@ public abstract class Algorithm{
         }
     }
 
+    public double computeFunctionDistrict(District d){
+        double idealPopulation = state.getIdealPopulation();
+        double percentError = Math.abs((double)(d.getPopulation() - idealPopulation)/idealPopulation);
+        double popEqualityValue = ONE - percentError;
+        int totalVotes = d.getTotalVotes();
+        HashMap<Parties, Integer> map = d.retrieveWastedVotes();
+        int democraticWastedVotes = map.get(Parties.DEMOCRATIC);
+        int republicanWastedVotes = map.get(Parties.REPUBLICAN);
+        double partisanFairness = Math.abs(((double)(democraticWastedVotes-republicanWastedVotes)/totalVotes));
+        double compactness = d.computePolsby();
+        return weights.get(Metric.POPULATION_EQUALITY) * popEqualityValue +
+                weights.get(Metric.PARTISAN_FAIRNESS) * partisanFairness+ weights.get(Metric.COMPACTNESS) *
+                compactness;
+    }
+
     public void setVariant(String variant){this.variant = variant;}
+
     abstract void run();
 
 }

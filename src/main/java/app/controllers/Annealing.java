@@ -1,6 +1,7 @@
 package app.controllers;
 
 import app.algorithm.Move;
+import app.enums.Metric;
 import app.enums.Property;
 import app.json.PropertiesManager;
 import app.state.District;
@@ -21,12 +22,20 @@ public class Annealing extends Algorithm {
     @Override
     void run() {
         Collection<District> allDistricts = state.getAllDistricts();
+        allDistricts = removeExcludedDistricts(allDistricts);
+        if(allDistricts.size() <= 0)    // if all districts are excluded, end algo
+            return;
+
         int stagnant_iterations = 0;
         int max_stagnant = Integer.parseInt(PropertiesManager.get(Property.STAGNANT_ITERATION));
-        double initFuncValue = functionValue;
+        double initFuncValue = 1*functionValue;
+        double startFunctionValue = initFuncValue;
+        resetBest();
+        updateBest(startFunctionValue);
         //Calculate boundary precincts which are precincts in the district that border another district
         for (District district : allDistricts) {
             district.calculateBoundaryPrecincts();
+            district.gatherInitIslandPrecincts();
         }
         handler.send("{\"console_log\": \"Starting algorithm...\"}");
         while (running && stagnant_iterations < max_stagnant && remainingRunTime > 0) {
@@ -39,23 +48,45 @@ public class Annealing extends Algorithm {
                 continue;
             }
             long startTime = System.currentTimeMillis();
-            double startFunctionValue = calculateFunctionValue();
-            District districtToModify = getRandomDistrict(allDistricts);
+            //double startFunctionValue = calculateFunctionValue();
+            District districtToModify;
+            if(this.variant.equals("DL")){
+                districtToModify = findLowestFunctionDistrict(allDistricts);
+            } else {
+                districtToModify = getRandomDistrict(allDistricts);
+            }
             districtToModify.calculateBoundaryPrecincts();
-            Precinct neighboringPrecinctToAdd = getNeighborToAnneal(districtToModify.getBorderPrecincts());
-
+            //Precinct neighboringPrecinctToAdd = getNeighborToAnneal(districtToModify.getBorderPrecincts());
+            Set<Precinct> availableBorders = removeExcludedPrecincts(districtToModify.getBorderPrecincts());
+            if(availableBorders.size() <= 0){   // if all precincts are from exlucded district, next iter
+                stagnant_iterations++;
+                continue;
+            }
+            Precinct neighboringPrecinctToAdd = getNeighborToAnneal(availableBorders);
             District targetDistrict = neighboringPrecinctToAdd.getDistrict();
             targetDistrict.calculateBoundaryPrecincts();
-            Move currentMove = new Move(neighboringPrecinctToAdd.getDistrict(), districtToModify, neighboringPrecinctToAdd);
-            currentMove.execute();
-            functionValue = calculateFunctionValue();
-            boolean cutOff = districtToModify.isCutoff() || targetDistrict.isCutoff();
-            System.out.println(districtToModify.getID() + " "+neighboringPrecinctToAdd.getDistrict().getID());
-            if (!cutOff && checkThreshold(startFunctionValue, functionValue)) {
+
+            Move currentMove = null;
+            boolean invalidMove = true;
+            try {
+                currentMove = new Move(neighboringPrecinctToAdd.getDistrict(), districtToModify, neighboringPrecinctToAdd);
+                currentMove.execute();
+                functionValue = calculateFunctionValue();
+                invalidMove = districtToModify.isCutoff() || targetDistrict.isCutoff();
+            }catch (com.vividsolutions.jts.geom.TopologyException | IllegalArgumentException e){
+                System.out.println("Merge problem");
+            }
+
+            System.out.println(districtToModify.getID() + " "+targetDistrict.getID());
+            System.out.println("IS valid: "+!invalidMove);
+
+            if (!invalidMove && checkThreshold(startFunctionValue, functionValue)) {
                 updateClient(currentMove);
+                System.out.println("Send");
             } else {
-                currentMove.undo();
-                functionValue = startFunctionValue;
+                if(currentMove!=null)
+                    currentMove.undo();
+                //functionValue = startFunctionValue;
             }
             if (isStagnant(startFunctionValue, functionValue)) {
                 stagnant_iterations++;
@@ -63,19 +94,25 @@ public class Annealing extends Algorithm {
             } else {
                 stagnant_iterations = 0;
             }
+            System.out.println("this iter - start: "+startFunctionValue+" end: "+functionValue);
+
+            startFunctionValue = functionValue;
+            updateBest(functionValue);
+
             long deltaTime = System.currentTimeMillis() - startTime;
             remainingRunTime -= deltaTime;
         }
-        running = false;
+        long totalRunTime = MAX_RUN_TIME-remainingRunTime;
+        summary(initFuncValue,functionValue,totalRunTime);
         handler.send("{\"console_log\": \"Initial Function Value = " + initFuncValue + "\"}");
         handler.send("{\"console_log\": \"Final Function Value = " + functionValue + "\"}");
     }
 
-    private boolean isStagnant(double oldValue, double newValue){
-        double threshold = 0.0001;
-        return (Math.abs(oldValue - newValue) < threshold);
-    }
-
+//    private boolean isStagnant(double oldValue, double newValue){
+//        double threshold = 0.0001;
+//        return (Math.abs(oldValue - newValue) < threshold);
+//    }
+//
     private boolean checkThreshold(double oldValue, double newValue){
         double threshold = Double.parseDouble(PropertiesManager.get(Property.ANNEALINGTHRESHOLD));
         if(newValue > oldValue){
@@ -84,6 +121,27 @@ public class Annealing extends Algorithm {
             return (Math.abs(oldValue-newValue) < threshold);
         }
     }
+
+
+    private double bestValue = 0;
+    private void resetBest(){
+        bestValue = 0;
+    }
+    private void updateBest(double newValue){
+        bestValue = newValue > bestValue ? newValue : bestValue;
+    }
+    private boolean isStagnant(double oldValue, double newValue){
+        return newValue <= bestValue;
+    }
+//    private boolean checkThreshold(double oldValue, double newValue){
+//        double threshold = Double.parseDouble(PropertiesManager.get(Property.ANNEALINGTHRESHOLD));
+//        if(newValue > bestValue){
+//            bestValue = newValue;
+//            return true;
+//        } else {
+//            return Math.abs(bestValue - newValue) < threshold;
+//        }
+//    }
 
     private void updateClient(Move move){
         handler.send(move.toString());
@@ -99,6 +157,19 @@ public class Annealing extends Algorithm {
         Random random = new Random();
         int index = random.nextInt(borderingPrecincts.size());
         return (Precinct)borderingPrecincts.toArray()[index];
+    }
+
+    private District findLowestFunctionDistrict(Collection<District> allDistricts){
+        District worstDistrict = (District) allDistricts.toArray()[0];
+        double worstScore = this.computeFunctionDistrict(worstDistrict);
+        for(District d: allDistricts){
+            double score = this.computeFunctionDistrict(d);
+            if(score < worstScore){
+                worstDistrict = d;
+                worstScore = score;
+            }
+        }
+        return worstDistrict;
     }
 
     //Get a random boundary precinct from another district
@@ -141,6 +212,27 @@ public class Annealing extends Algorithm {
                 }
             }
         }
+    }
+    public void summary(double initValue, double finalValue, long runTime) {
+        String algoName = "Simulated Annealing";
+        String algoVariant = this.variant;
+        if(algoVariant.equals("DL")) {
+            algoVariant = "Lowest District Score";
+        } else {
+            algoVariant = "Random";
+        }
+        double partisanWeight = getWeights().get(Metric.PARTISAN_FAIRNESS);
+        double compactWeight = getWeights().get(Metric.COMPACTNESS);
+        double popWeight = getWeights().get(Metric.POPULATION_EQUALITY);
+        System.out.println("Algorithm: " + algoName);
+        System.out.println("State: " + state.getName());
+        System.out.println("Variant: " + algoVariant);
+        System.out.println("Partisan Fairness Weight: " + partisanWeight);
+        System.out.println("Compactness Weight: " + compactWeight);
+        System.out.println("Population Equality Weight: " + popWeight);
+        System.out.println("Total Run Time: " + runTime +"ms");
+        System.out.println("Initial Value: " + initValue);
+        System.out.println("Final Value: " + finalValue);
     }
 
 }

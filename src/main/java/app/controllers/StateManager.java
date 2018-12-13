@@ -38,6 +38,7 @@ public class StateManager {
     }
 
     public String createState(String stateName, Integer stateID) throws Throwable {
+        clonedState = null;
         if (stateMap.get(stateName) != null){
             loadState(stateName);
         } else {
@@ -156,6 +157,7 @@ public class StateManager {
                 Precincts p = (Precincts) o;
                 Precinct precinct = new Precinct(p.getPrecinctId(), reader.read(p.getBoundaryJSON()));
                 precinct.setDistrict(d);
+                precinct.setOriginalDistrictID(d.getID());
                 d.addPrecinct(precinct.getID(), precinct);
             }
         }

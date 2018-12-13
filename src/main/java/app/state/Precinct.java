@@ -2,6 +2,7 @@ package app.state;
 
 import app.election.ElectionData;
 import app.enums.Ethnicity;
+import app.json.JTSConverter;
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.util.*;
@@ -9,6 +10,7 @@ import java.util.*;
 public class Precinct{
     private int ID;
     private District district;
+    private int originalDistrictID;
     private Set<Precinct> neighbors;
     private Geometry geometry;
     private double area;
@@ -70,6 +72,13 @@ public class Precinct{
         return area;
     }
 
+    public void setOriginalDistrictID(int id) {
+        this.originalDistrictID = id;
+    }
+    public int getOriginalDistrictID() {
+        return this.originalDistrictID;
+    }
+
     public void setPopulation(int pop){
         this.population = pop;
     }
@@ -95,9 +104,10 @@ public class Precinct{
         this.geometry = geometry;
     }
 
-    public Set<Precinct> getNeighbors(){
-        return neighbors;
-    }
+//    public Set<Precinct> getNeighbors(){
+//        return neighbors;
+//    }
+    public Set<Precinct> getNeighbors(){ return JTSConverter.getNeighbors(this); }
 
     public HashMap<Ethnicity, Integer> getDemographics(){ return demographics;}
 
