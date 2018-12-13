@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -89,7 +90,7 @@ public class RegionGrow extends Algorithm {
             unassignedPrecincts.remove(precinctToAdd);
             Move move = new Move(currentDistrictToGrow, precinctToAdd);
             move.execute(true);
-            calculateFunctionValue();
+            functionValue = calculateFunctionValue();
             if(checkThreshold(startFunctionValue, functionValue)){
                 currentDistrictToGrow.calculateBoundaryPrecincts(true);
                 updateClient(move);
@@ -115,8 +116,11 @@ public class RegionGrow extends Algorithm {
         }
         running = false;
         System.out.println("Algo done");
-        handler.send("{\"console_log\": \"Initial Function Value = " + initFuncValue + "\"}");
-        handler.send("{\"console_log\": \"Final Function Value = " + functionValue + "\"}");
+        DecimalFormat df = new DecimalFormat("#.###");
+        String init = df.format(initFuncValue);
+        String fin = df.format(functionValue);
+        handler.send("{\"console_log\": \"Initial Function Value = " + init + "\"}");
+        handler.send("{\"console_log\": \"Final Function Value = " + fin + "\"}");
     }
 
     private boolean isStagnant(double oldValue, double newValue) {
