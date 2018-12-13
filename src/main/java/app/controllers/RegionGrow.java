@@ -117,8 +117,8 @@ public class RegionGrow extends Algorithm {
         running = false;
         System.out.println("Algo done");
         DecimalFormat df = new DecimalFormat("#.###");
-        String init = df.format(initFuncValue);
-        String fin = df.format(functionValue);
+        String init = df.format(Algorithm.normalize(initFuncValue));
+        String fin = df.format(Algorithm.normalize(functionValue));
         handler.send("{\"console_log\": \"Initial Function Value = " + init + "\"}");
         handler.send("{\"console_log\": \"Final Function Value = " + fin + "\"}");
     }

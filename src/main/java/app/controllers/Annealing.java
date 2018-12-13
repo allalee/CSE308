@@ -106,8 +106,8 @@ public class Annealing extends Algorithm {
         long totalRunTime = MAX_RUN_TIME-remainingRunTime;
         summary(initFuncValue,functionValue,totalRunTime);
         DecimalFormat df = new DecimalFormat("#.###");
-        String init = df.format(initFuncValue);
-        String fin = df.format(functionValue);
+        String init = df.format(Algorithm.normalize(initFuncValue));
+        String fin = df.format(Algorithm.normalize(functionValue));
         handler.send("{\"console_log\": \"Initial Function Value = " + init + "\"}");
         handler.send("{\"console_log\": \"Final Function Value = " + fin + "\"}");
     }
