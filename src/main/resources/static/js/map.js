@@ -1143,7 +1143,9 @@ function loadStateSavedMaps(currentStateName){
                 mapDiv.appendChild(newmap);
                 i = i + 1;
             }
-            consoleWrite("Saved Maps Loaded");
+            if(len > 0){
+                consoleWrite("Saved Maps Loaded");
+            }
         }
     }
     request.send(null);

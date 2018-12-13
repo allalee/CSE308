@@ -107,12 +107,13 @@ public class LoginLogoutHandler {
             addCookie(resp, "user", email, 3600);
             model.addAttribute("username", username);
             model.addAttribute("usertype", usertype);
+            model.addAttribute("invalid", false);
             return "redirect:http://localhost:8080/";
         }
         else{
             //redirect to login page stating invalid login
-            model.addAttribute("invalid","");
-            return "../static/login.html";
+            model.addAttribute("invalid", true);
+            return "../static/templates/login.html";
         }
 
     }
