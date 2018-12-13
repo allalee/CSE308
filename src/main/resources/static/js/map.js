@@ -50,7 +50,7 @@ function consoleLog(message_body){
         updateButtons(ButtonState.STOPPED)
         //enableManualMoveOption(true)
         //enablePrecinctSeedSelect(true)
-        lock.releaseAll()
+        //lock.releaseAll()
     }
     if(message_body["default"]){
         layer_manager.color_unassigned_precincts(message_body["default"])
@@ -338,6 +338,9 @@ mymap.on("zoomend", function() {
       if(mymap.getZoom() > 9 && mymap.hasLayer(districtJson)) {
         districtJson.remove();
         addPrecinctsLayer();
+
+        lock.releaseAll()
+        updateButtons(ButtonState.RUNNABLE)
       }
     }
 })
