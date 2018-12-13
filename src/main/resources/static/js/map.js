@@ -50,7 +50,7 @@ function consoleLog(message_body){
         updateButtons(ButtonState.STOPPED)
         //enableManualMoveOption(true)
         //enablePrecinctSeedSelect(true)
-        //lock.releaseAll()
+        lock.releaseAll()
     }
     if(message_body["default"]){
         layer_manager.color_unassigned_precincts(message_body["default"])
@@ -260,7 +260,7 @@ function addOriginalPrecinctsLayer() {
   layer_manager.build_precincts_map(originalPrecinctJson)
   layer_manager.color_precincts()
   currentLayer = 2;
-  //lock.releaseAll()
+  lock.lockAll()
 }
 
 function onEachStateFeature(feature, layer) {
@@ -460,7 +460,7 @@ function displayGeneratedMap() {
     loadedMapJson.remove();
   }
   addPrecinctsLayer();
-  lock.lockAll()
+  lock.releaseAll()
 }
 
 function loadPrecinctProperties(layer){
