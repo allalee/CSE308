@@ -60,12 +60,45 @@ public class AdminHandler {
         }
 
         if(!username.equals("") && !password.equals("")) {
+            //remove account's associated preferences and then add back with new email.
+            List<Object> prefList = getUserPreferences(currentEmail);
+            int index = 0;
+            while(index < prefList.size()) {
+                Preferences thisPreference = (Preferences) prefList.get(index);
+                hm.removeFromDB(thisPreference);
+                index = index + 1;
+            }
+            //remove account's associated maps and then add back with new email.
+            List<Object> mapsList = getUserMaps(currentEmail);
+            index = 0;
+            while(index < mapsList.size()) {
+                Maps thisMap = (Maps) mapsList.get(index);
+                hm.removeFromDB(thisMap);
+                index = index + 1;
+            }
+            //add new user
             UsersModel usersModel = new UsersModel(currentUsername, currentPassword, currentEmail, "user");
             boolean persisted = hm.removeFromDB(usersModel);
             currentEmail = "";
             UsersModel newUsersModel = new UsersModel(username, password, email, "user");
             hm.persistToDB(newUsersModel);
             System.out.println(persisted);
+            //add back with new email to preferences
+            index = 0;
+            while(index < prefList.size()) {
+                Preferences thisPreference = (Preferences) prefList.get(index);
+                thisPreference.setEmail(email);
+                hm.persistToDB(thisPreference);
+                index = index + 1;
+            }
+            //add back with new email to maps
+            index = 0;
+            while(index < mapsList.size()) {
+                Maps thisMap = (Maps) mapsList.get(index);
+                thisMap.setEmail(email);
+                hm.persistToDB(thisMap);
+                index = index + 1;
+            }
         }
         return "redirect:http://localhost:8080/admin";
     }
