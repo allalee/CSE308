@@ -117,10 +117,28 @@ public class RegionGrow extends Algorithm {
         running = false;
         System.out.println("Algo done");
         DecimalFormat df = new DecimalFormat("#.###");
-        String init = df.format(initFuncValue);
-        String fin = df.format(functionValue);
+        String init = df.format(Algorithm.normalize(initFuncValue));
+        String fin = df.format(Algorithm.normalize(functionValue));
         handler.send("{\"console_log\": \"Initial Function Value = " + init + "\"}");
         handler.send("{\"console_log\": \"Final Function Value = " + fin + "\"}");
+        int demoDistrictsToRepub = 0;
+        for(District d: regions){
+            if(d.getDemocraticVotes() > d.getRepublicanVotes()){
+                demoDistrictsToRepub += 1;
+            }
+        }
+        for(District d: districtExcluded){
+                if(d.getDemocraticVotes() > d.getRepublicanVotes()){
+                    demoDistrictsToRepub += 1;
+                }
+        }
+        if(state.getAllDistricts().size() + districtExcluded.size() - demoDistrictsToRepub < demoDistrictsToRepub){
+            int repubDistrict = state.getAllDistricts().size() + districtExcluded.size() - demoDistrictsToRepub;
+            handler.send("{\"console_log\": \"Democratic wins: " + demoDistrictsToRepub + " districts to " + repubDistrict + "\"}");
+        } else {
+            int repubDistrict = state.getAllDistricts().size() + districtExcluded.size() - demoDistrictsToRepub;
+            handler.send("{\"console_log\": \"Republican wins: " + repubDistrict + " districts to " + demoDistrictsToRepub + "\"}");
+        }
     }
 
     private boolean isStagnant(double oldValue, double newValue) {

@@ -106,10 +106,30 @@ public class Annealing extends Algorithm {
         long totalRunTime = MAX_RUN_TIME-remainingRunTime;
         summary(initFuncValue,functionValue,totalRunTime);
         DecimalFormat df = new DecimalFormat("#.###");
-        String init = df.format(initFuncValue);
-        String fin = df.format(functionValue);
+        String init = df.format(Algorithm.normalize(initFuncValue));
+        String fin = df.format(Algorithm.normalize(functionValue));
         handler.send("{\"console_log\": \"Initial Function Value = " + init + "\"}");
         handler.send("{\"console_log\": \"Final Function Value = " + fin + "\"}");
+        int demoDistrictsToRepub = 0;
+        for(District d: allDistricts){
+            if(d.getDemocraticVotes() > d.getRepublicanVotes()){
+                demoDistrictsToRepub += 1;
+            }
+        }
+        for(District d: state.getAllDistricts()){
+            if(!allDistricts.contains(d)){
+                if(d.getDemocraticVotes() > d.getRepublicanVotes()){
+                    demoDistrictsToRepub += 1;
+                }
+            }
+        }
+        if(state.getAllDistricts().size() - demoDistrictsToRepub < demoDistrictsToRepub){
+            int repubDistrict = state.getAllDistricts().size() - demoDistrictsToRepub;
+            handler.send("{\"console_log\": \"Democratic wins: " + demoDistrictsToRepub + " districts to " + repubDistrict + "\"}");
+        } else {
+            int repubDistrict = state.getAllDistricts().size() - demoDistrictsToRepub;
+            handler.send("{\"console_log\": \"Republican wins: " + repubDistrict + " districts to " + demoDistrictsToRepub + "\"}");
+        }
     }
 
 //    private boolean isStagnant(double oldValue, double newValue){

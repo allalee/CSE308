@@ -226,6 +226,10 @@ public abstract class Algorithm{
 
     public void setVariant(String variant){this.variant = variant;}
 
+    public static double normalize(double number){
+        return ((number/3) * 1 + 0);
+    }
+
     abstract void run();
 
 }
